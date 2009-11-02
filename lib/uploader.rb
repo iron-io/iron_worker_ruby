@@ -6,11 +6,12 @@ module SimpleWorker
 
         extend SimpleWorker::HttpEnabled
 
-        def initialize(access_key, secret_key, class_name)
+        def initialize(access_key, secret_key)
             super(access_key, secret_key)
-            @class_name = class_name
         end
 
+        # Options:
+        #    - :callback_url
         def put(filename, class_name, data={})
             mystring = nil
             file = File.open(filename, "r") do |f|

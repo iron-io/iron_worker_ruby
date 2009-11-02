@@ -15,7 +15,7 @@ end
 
 module SimpleWorker
 
-    DEFAULT_HOST = "http://simpleworker.appoxy.com/api/v1/"
+    DEFAULT_HOST = "http://simpleworker.appoxy.com/api/"
 
     module HttpEnabled
 
@@ -49,7 +49,7 @@ module SimpleWorker
             else
                 parameters = {} if parameters.nil?
                 parameters.update(extra_params)
-                puts 'params=' + parameters.inspect
+#                puts 'params=' + parameters.inspect
 
             end
 
