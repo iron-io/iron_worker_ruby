@@ -1,5 +1,6 @@
 require File.join(File.dirname(__FILE__), 'http_enabled')
 require File.join(File.dirname(__FILE__), 'api_auth')
+require File.join(File.dirname(__FILE__), 'worker')
 
 module SimpleWorker
 
@@ -7,8 +8,8 @@ module SimpleWorker
 
         include SimpleWorker::HttpEnabled
 
-        def initialize(access_key, secret_key)
-            super(access_key, secret_key)
+        def initialize(access_key, secret_key, options={})
+            super(access_key, secret_key, options)
         end
 
         # Options:

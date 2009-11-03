@@ -1,4 +1,8 @@
+require 'simple_worker'
+
 class TestRunner
+
+    include SimpleWorker::Worker
 
     def run(data=nil)
         puts 'running the runner for leroy '.upcase + ' with data: ' + data.inspect
@@ -6,6 +10,7 @@ class TestRunner
         @times.times do |i|
             puts 'running at ' + i.to_s
             sleep 1
+            set_progress(:percent=> (i / @times * 100))
         end
     end
 

@@ -3,7 +3,7 @@ module SimpleWorker
 
     module Worker
         def set_progress(hash)
-            puts 'Progress set: ' + hash.inspect         
+            puts 'set_progress: ' + hash.inspect
         end
     end
 end
