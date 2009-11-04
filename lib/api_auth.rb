@@ -1,6 +1,9 @@
 module SimpleWorker
-    attr_accessor :host
+
     class ApiAuth
+
+        attr_accessor :host
+
         def initialize(access_key, secret_key, options={})
             @access_key = access_key
             @secret_key = secret_key

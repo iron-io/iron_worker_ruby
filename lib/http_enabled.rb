@@ -15,23 +15,16 @@ end
 
 module SimpleWorker
 
-    DEFAULT_HOST = "http://simpleworker.appoxy.com/api/"
 
     module HttpEnabled
 
-
-        def self.host
-            return DEFAULT_HOST
-        end
-
-
         # body is a hash
-        def run_http(access_key, secret_key, http_method, command_path, body=nil, parameters={}, extra_headers=nil)
+        def run_http(host, access_key, secret_key, http_method, command_path, body=nil, parameters={}, extra_headers=nil)
             ts = generate_timestamp(Time.now.gmtime)
             # puts 'timestamp = ' + ts
             sig = generate_signature_v0(command_path, ts, secret_key)
             # puts "My signature = " + sig
-            url = SimpleWorker::HttpEnabled.host + command_path
+            url = host + command_path
             # puts url
 
             user_agent = "Ruby Client"
