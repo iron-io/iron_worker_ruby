@@ -99,11 +99,15 @@ module SimpleWorker
             return gmtime.strftime("%Y-%m-%dT%H:%M:%SZ")
         end
 
-        def generate_signature_v0(operation, timestamp, secret_access_key)
+        def generate_signature_v0(operation, timestamp, secret_key)
+            HttpEnabled.generate_signature_v0(operation, timestamp, secret_key)
+        end
+
+        def self.generate_signature_v0(operation, timestamp, secret_key)
             if USE_EMBEDDED_HMAC
-                my_sha_hmac = HMAC::SHA1.digest(secret_access_key, operation + timestamp)
+                my_sha_hmac = HMAC::SHA1.digest(secret_key, operation + timestamp)
             else
-                my_sha_hmac = Digest::HMAC.digest(operation + timestamp, secret_access_key, Digest::SHA1)
+                my_sha_hmac = Digest::HMAC.digest(operation + timestamp, secret_key, Digest::SHA1)
             end
             my_b64_hmac_digest = Base64.encode64(my_sha_hmac).strip
             return my_b64_hmac_digest
