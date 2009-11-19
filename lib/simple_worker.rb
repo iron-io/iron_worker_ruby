@@ -4,7 +4,7 @@ require File.join(File.dirname(__FILE__), 'worker')
 
 module SimpleWorker
 
-    class Base < SimpleWorker::ApiAuth
+    class Service < SimpleWorker::ApiAuth
 
         include SimpleWorker::HttpEnabled
 
@@ -30,19 +30,22 @@ module SimpleWorker
         def queue(class_name, data={})
 
             params = nil
-            hash_to_send = {}
-            unless data["data"]
-                hash_to_send = {}
-                if !data.is_a?(Array)
-                    data = [data]
-                end
-                hash_to_send["data"] = data
-                hash_to_send["class_name"] = class_name unless hash_to_send["class_name"]
-            else
-                puts 'sending it raw duuuude'
-                hash_to_send = data
+            if !data.is_a?(Array)
+                data = [data]
             end
+            hash_to_send = {}
+            hash_to_send["data"] = data
+            hash_to_send["class_name"] = class_name
+            puts 'hash_to_send=' + hash_to_send.inspect
+            response = run_http(@host, @access_key, @secret_key, :put, "queue/add", hash_to_send, params)
+            puts "response=" + response
+            return ActiveSupport::JSON.decode(response)
 
+        end
+
+        def queue_raw(class_name, data={})
+            params = nil
+            hash_to_send = data
             #            puts 'hash_to_send=' + hash_to_send.inspect
             response = run_http(@host, @access_key, @secret_key, :put, "queue/add", hash_to_send, params)
             #            puts "response=" + response

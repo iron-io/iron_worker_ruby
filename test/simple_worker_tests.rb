@@ -17,7 +17,7 @@ class SimpleWorkerTests < Test::Unit::TestCase
 
     def test_queue
 
-        worker = SimpleWorker::Base.new(@access_key, @secret_key)
+        worker = SimpleWorker::Service.new(@access_key, @secret_key)
 
         # Upload latest runner code
         worker.upload(File.join(File.dirname(__FILE__), "./test_runner.rb"), "TestRunner")

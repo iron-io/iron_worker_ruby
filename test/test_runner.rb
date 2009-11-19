@@ -1,6 +1,6 @@
 require 'simple_worker'
 
-class TestRunner < SimpleWorker::Worker
+class TestRunner < SimpleWorker::Base
 
     def run(data=nil)
         puts 'running the runner for leroy '.upcase + ' with data: ' + data.inspect
