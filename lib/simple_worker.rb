@@ -9,6 +9,7 @@ module SimpleWorker
         include SimpleWorker::HttpEnabled
 
         def initialize(access_key, secret_key, options={})
+            puts 'Starting SimpleWorker::Service...'
             super(access_key, secret_key, options)
         end
 
