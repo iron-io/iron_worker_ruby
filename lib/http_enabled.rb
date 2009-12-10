@@ -3,6 +3,7 @@ require 'active_support'
 require 'net/http'
 require 'base64'
 
+require File.join(File.dirname(__FILE__), 'simple_worker_error')
 
 begin
     require 'digest/hmac'
@@ -86,11 +87,11 @@ module SimpleWorker
                 when Net::HTTPSuccess
                     # puts 'response body=' + res.body
                     ret = res.body
+                when Net::HTTPClientError
+                    raise SimpleWorker::ClientError.new(res.class.name, ActiveSupport::JSON.decode(res.body))
                 else
                     #res.error
-                    puts 'HTTP ERROR: ' + res.class.name
-                    puts res.body
-                    ret = res.body
+                    raise SimpleWorker::ServiceError.new(res.class.name, res.body)
             end
             return ret
         end

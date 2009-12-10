@@ -1,6 +1,8 @@
 require File.join(File.dirname(__FILE__), 'http_enabled')
 require File.join(File.dirname(__FILE__), 'api_auth')
 require File.join(File.dirname(__FILE__), 'worker')
+require File.join(File.dirname(__FILE__), 'simple_worker_error')
+
 
 module SimpleWorker
 
