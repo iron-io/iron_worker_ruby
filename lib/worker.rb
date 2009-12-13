@@ -2,6 +2,11 @@
 module SimpleWorker
 
     class Base
+
+        def log(str)
+            puts str.to_s
+        end
+
         def set_progress(hash)
             puts 'set_progress: ' + hash.inspect
         end

@@ -25,7 +25,7 @@ module SimpleWorker
             options = {"code"=>mystring, "class_name"=>class_name}
             response = run_http(@host, @access_key, @secret_key, :post, "code/put", nil, options)
 #            puts "response=" + response
-            return ActiveSupport::JSON.decode(response)
+            parse_response response
         end
 
         #
@@ -39,10 +39,11 @@ module SimpleWorker
             hash_to_send = {}
             hash_to_send["data"] = data
             hash_to_send["class_name"] = class_name
-            puts 'hash_to_send=' + hash_to_send.inspect
-            response = run_http(@host, @access_key, @secret_key, :put, "queue/add", hash_to_send, params)
-            puts "response=" + response
-            return ActiveSupport::JSON.decode(response)
+            if defined?(RAILS_ENV)
+                hash_to_send["rails_env"] = RAILS_ENV
+            end
+#            puts 'hash_to_send=' + hash_to_send.inspect
+            return queue_raw(class_name, hash_to_send)
 
         end
 
@@ -52,7 +53,18 @@ module SimpleWorker
             #            puts 'hash_to_send=' + hash_to_send.inspect
             response = run_http(@host, @access_key, @secret_key, :put, "queue/add", hash_to_send, params)
             #            puts "response=" + response
-            return ActiveSupport::JSON.decode(response)
+
+            parse_response response
+
+        end
+
+        def parse_response(response)
+            begin
+                return ActiveSupport::JSON.decode(response)
+            rescue => ex
+                puts 'response that caused error = ' + response.to_s
+                raise ex
+            end
         end
 
 
@@ -79,7 +91,7 @@ module SimpleWorker
 #            puts 'hash_to_send=' + hash_to_send.inspect
             response = run_http(@host, @access_key, @secret_key, :put, "queue/schedule", hash_to_send, params)
 #            puts "response=" + response
-            return ActiveSupport::JSON.decode(response)
+            parse_response response
         end
 
         #
@@ -96,15 +108,23 @@ module SimpleWorker
 #            puts 'hash_to_send=' + hash_to_send.inspect
             response = run_http(@host, @access_key, @secret_key, :put, "queue/add", hash_to_send, params)
 #            puts "response=" + response
-            return ActiveSupport::JSON.decode(response)
+            parse_response response
         end
 
         def status(task_id)
             data = {"task_id"=>task_id}
             #puts run_http(@access_key, @secret_key, :post, "queue/status", nil, {"task_id"=>@task_id})
-            response = run_http(@host, @access_key, @secret_key, :get, "queue/status", nil, data)
+            response = run_http(@host, @access_key, @secret_key, :get, "task/status", nil, data)
 #            puts "response=" + response
-            return ActiveSupport::JSON.decode(response)
+            parse_response response
+        end
+
+        def log(task_id)
+            data = {"task_id"=>task_id}
+            #puts run_http(@access_key, @secret_key, :post, "queue/status", nil, {"task_id"=>@task_id})
+            response = run_http(@host, @access_key, @secret_key, :get, "task/log", nil, data)
+#            puts "response=" + response
+            parse_response response
         end
 
 
