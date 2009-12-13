@@ -124,7 +124,9 @@ module SimpleWorker
             #puts run_http(@access_key, @secret_key, :post, "queue/status", nil, {"task_id"=>@task_id})
             response = run_http(@host, @access_key, @secret_key, :get, "task/log", nil, data)
 #            puts "response=" + response
-            parse_response response
+            ret = parse_response response
+            ret["log"] = Base64.decode64(ret["log"])
+            ret
         end
 
 
