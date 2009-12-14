@@ -28,9 +28,9 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{Classified}
   s.test_files = [
-    "test/scheduled_runner.rb",
+    "test/scheduled_worker.rb",
      "test/simple_worker_tests.rb",
-     "test/test_runner.rb"
+     "test/test_worker.rb"
   ]
 
   if s.respond_to? :specification_version then
