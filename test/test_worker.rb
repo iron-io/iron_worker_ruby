@@ -1,7 +1,7 @@
 require 'simple_worker'
 
 # Bump for new checksum.
-class TestRunner < SimpleWorker::Base
+class TestWorker < SimpleWorker::Base
 
     def run(data=nil)
         log 'running the runner for leroy '.upcase + ' with data: ' + data.inspect

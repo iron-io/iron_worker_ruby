@@ -22,7 +22,7 @@ class SimpleWorkerTests < Test::Unit::TestCase
 
 
         # Upload latest runner code
-        @worker.upload(File.join(File.dirname(__FILE__), "./test_runner.rb"), "TestRunner")
+        @worker.upload(File.join(File.dirname(__FILE__), "./test_runner.rb"), "TestWorker")
 
         # Add something to queue, get task ID back
         # Single task
@@ -53,7 +53,7 @@ class SimpleWorkerTests < Test::Unit::TestCase
     def test_scheduled
 
         # Upload latest runner code
-        @worker.upload(File.join(File.dirname(__FILE__), "./scheduled_runner.rb"), "ScheduledRunner")
+        @worker.upload(File.join(File.dirname(__FILE__), "./scheduled_runner.rb"), "ScheduledWorker")
 
         start_at = 10.seconds.since
         #start_at = start_at.gmtime # testing different timezone

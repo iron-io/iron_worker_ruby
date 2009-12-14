@@ -1,6 +1,6 @@
 require 'simple_worker'
 
-class ScheduledRunner < SimpleWorker::Base
+class ScheduledWorker < SimpleWorker::Base
 
     def scheduled_run(data=nil)
         
