@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'active_support'
 require 'net/http'
 require 'base64'
