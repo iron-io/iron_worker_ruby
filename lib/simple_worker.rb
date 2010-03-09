@@ -68,28 +68,21 @@ module SimpleWorker
             hash_to_send["data"] = data
             hash_to_send["class_name"] = class_name
             hash_to_send["schedule"] = schedule
-            ret = put("queue/schedule", hash_to_send)
+            ret = put("scheduler/schedule", hash_to_send)
             ret
         end
 
-
-        #
-        #
-        #
-        def get_scheduled_tasks(schedule_id)
-            params = nil
-            if !data.is_a?(Array)
-                data = [data]
-            end
+        def cancel_schedule(scheduled_task_id)
+            raise "Must include a schedule id." if scheduled_task_id.blank?
             hash_to_send = {}
-            hash_to_send["data"] = data
-            hash_to_send["class_name"] = class_name
-#            puts 'hash_to_send=' + hash_to_send.inspect
-#            response = run_http(@host, @access_key, @secret_key, :put, "queue/add", hash_to_send, params)
-#            puts "response=" + response
-#            parse_response response
+            hash_to_send["scheduled_task_id"] = scheduled_task_id
+            ret = put("scheduler/cancel", hash_to_send)
+            ret
+        end
 
-            ret = put("queue/add", hash_to_send)
+        def get_schedules()
+            hash_to_send = {}
+            ret = get("scheduler/list", hash_to_send)
             ret
         end
 
