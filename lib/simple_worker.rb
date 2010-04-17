@@ -30,7 +30,7 @@ module SimpleWorker
                 data = [data]
             end
             hash_to_send = {}
-            hash_to_send["data"] = data
+            hash_to_send["payload"] = data
             hash_to_send["class_name"] = class_name
             if defined?(RAILS_ENV)
                 hash_to_send["rails_env"] = RAILS_ENV
@@ -42,8 +42,8 @@ module SimpleWorker
         def queue_raw(class_name, data={})
             params = nil
             hash_to_send = data
-
-            ret = put("queue/add", hash_to_send)
+            hash_to_send["class_name"] = class_name
+            ret = post("queue/add", hash_to_send)
             ret
 
         end
@@ -61,14 +61,15 @@ module SimpleWorker
         #
         def schedule(class_name, data, schedule)
             raise "Schedule must be a hash." if !schedule.is_a? Hash
-            if !data.is_a?(Array)
-                data = [data]
-            end
+#            if !data.is_a?(Array)
+#                data = [data]
+#            end
             hash_to_send = {}
-            hash_to_send["data"] = data
+            hash_to_send["payload"] = data
             hash_to_send["class_name"] = class_name
             hash_to_send["schedule"] = schedule
-            ret = put("scheduler/schedule", hash_to_send)
+            puts 'about to send ' + hash_to_send.inspect
+            ret = post("scheduler/schedule", hash_to_send)
             ret
         end
 
@@ -76,7 +77,7 @@ module SimpleWorker
             raise "Must include a schedule id." if scheduled_task_id.blank?
             hash_to_send = {}
             hash_to_send["scheduled_task_id"] = scheduled_task_id
-            ret = put("scheduler/cancel", hash_to_send)
+            ret = post("scheduler/cancel", hash_to_send)
             ret
         end
 
@@ -88,22 +89,15 @@ module SimpleWorker
 
         def status(task_id)
             data = {"task_id"=>task_id}
-            #puts run_http(@access_key, @secret_key, :post, "queue/status", nil, {"task_id"=>@task_id})
             ret = get("task/status", data)
-#            response = run_http(@host, @access_key, @secret_key, :get, "task/status", nil, data)
-#            puts "response=" + response
-#            parse_response response
             ret
         end
 
         def log(task_id)
             data = {"task_id"=>task_id}
-            #puts run_http(@access_key, @secret_key, :post, "queue/status", nil, {"task_id"=>@task_id})
-#            response = run_http(@host, @access_key, @secret_key, :get, "task/log", nil, data)
-            ret = get("task/status", data)
-#            puts "response=" + response
-#            ret = parse_response response
-            ret["log"] = Base64.decode64(ret["log"])
+            ret = get("task/log", data)
+            puts 'ret=' + ret.inspect
+#            ret["log"] = Base64.decode64(ret["log"])
             ret
         end
 
