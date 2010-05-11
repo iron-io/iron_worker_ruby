@@ -138,6 +138,12 @@ module SimpleWorker
             ret
         end
 
+        def schedule_status(schedule_id)
+            data = {"schedule_id"=>schedule_id}
+            ret = get("scheduler/status", data)
+            ret
+        end
+
         def log(task_id)
             data = {"task_id"=>task_id}
             ret = get("task/log", data)

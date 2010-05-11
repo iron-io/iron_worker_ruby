@@ -37,14 +37,28 @@ class SimpleWorkerTests < Test::Unit::TestCase
         tw.s3_key = "active style runner"
         tw.times = 3
         tw.x = true
+
+        # schedule up a task
+        start_at = 10.seconds.since
+        response_hash_single = tw.schedule(:start_at=>start_at, :run_every=>30, :run_times=>3)
+        puts 'response_hash=' + response_hash_single.inspect
+
+        10.times do |i|
+            puts "status #{i}: " + tw.schedule_status.inspect
+        end
+
+        # queue up a task
         response_hash_single = tw.queue
         puts 'response_hash=' + response_hash_single.inspect
         puts 'task_set_id=' + tw.task_set_id
         puts 'task_id=' + tw.task_id
         10.times do |i|
             puts "status #{i}: " + tw.status.inspect
+            break if tw.status["status"] == "complete"
             sleep 2
         end
+
+        assert tw.status["status"] == "complete"
 
     end
 

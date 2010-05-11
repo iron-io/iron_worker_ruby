@@ -6,7 +6,7 @@ module SimpleWorker
 
     class Base
 
-        attr_accessor :task_set_id, :task_id
+        attr_accessor :task_set_id, :task_id, :schedule_id
 
         class << self
             attr_accessor :subclass, :caller_file
@@ -15,7 +15,6 @@ module SimpleWorker
         def self.inherited(subclass)
             puts "New subclass: #{subclass}"
             puts "subclass.inspect=" + subclass.inspect
-            @subclass = subclass
             puts 'existing caller=' + (subclass.class_variable_defined?(:@@caller_file) ? subclass.class_variable_get(:@@caller_file).inspect : "nil")
             puts "caller=" + caller.inspect
             splits = caller[0].split(":")
@@ -26,7 +25,6 @@ module SimpleWorker
 
         end
 
-        attr_accessor :data
 
         def log(str)
             puts str.to_s
@@ -41,8 +39,49 @@ module SimpleWorker
         end
 
         def uploaded?
-            @uploaded
+            self.class.class_variable_defined?(:@@uploaded) && self.class.class_variable_get(:@@uploaded)
         end
+
+
+        # Will send in all instance_variables.
+        def queue
+            upload_if_needed
+
+            response = SimpleWorker.service.queue(self.class.name, sw_get_data)
+            puts 'queue response=' + response.inspect
+            @task_set_id = response["task_set_id"]
+            @task_id = response["tasks"][0]["task_id"]
+            response
+        end
+
+        def status
+            SimpleWorker.service.status(task_id)
+        end
+
+
+        def schedule(schedule)
+            upload_if_needed
+
+            response = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
+            puts 'schedule response=' + response.inspect
+            @schedule_id = response["schedule_id"]
+            response
+        end
+
+        def schedule_status
+            SimpleWorker.service.schedule_status(schedule_id)
+        end
+
+
+#        def queue_other(class_name, data)
+#            SimpleWorker.service.queue(class_name, data)
+#        end
+#
+#        def schedule_other(class_name, data, schedule)
+#            SimpleWorker.service.schedule(class_name, data, schedule)
+#        end
+
+        private
 
         def upload_if_needed
 
@@ -51,29 +90,15 @@ module SimpleWorker
 #                if feature[feature.rindex("/")..feature.length] ==
 #}
             unless uploaded?
-                subclass = Base.subclass
+                subclass = self.class
                 rfile = subclass.class_variable_get(:@@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
                 puts 'rfile=' + rfile.inspect
                 puts 'self.class.name=' + subclass.name
                 SimpleWorker.service.upload(rfile, subclass.name)
-                @uploaded = true
+                self.class.class_variable_set(:@@uploaded, true)
             else
                 puts 'already uploaded for ' + self.class.name
             end
-        end
-
-        # Will send in all instance_variables.
-        def queue
-            upload_if_needed
-
-            response = SimpleWorker.service.queue(self.class.name, sw_get_data)
-            @task_set_id = response["task_set_id"]
-            @task_id = response["tasks"][0]["task_id"]
-            response
-        end
-
-        def status
-            SimpleWorker.service.status(task_id)
         end
 
         def sw_get_data
@@ -84,12 +109,6 @@ module SimpleWorker
             return data
         end
 
-        def queue_other(class_name, data)
 
-        end
-
-        def schedule_other(class_name, data, schedule)
-
-        end
     end
 end
