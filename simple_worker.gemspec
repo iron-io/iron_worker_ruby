@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_worker}
-  s.version = "0.1.2"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder"]
-  s.date = %q{2010-04-17}
+  s.date = %q{2010-05-08}
   s.description = %q{I could tell you, but then I'd have to...}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -17,7 +17,8 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     "lib/simple_worker.rb",
-     "lib/worker.rb"
+     "lib/simple_worker/base.rb",
+     "lib/simple_worker/config.rb"
   ]
   s.homepage = %q{http://github.com/appoxy/simple_worker}
   s.rdoc_options = ["--charset=UTF-8"]
@@ -26,8 +27,10 @@ Gem::Specification.new do |s|
   s.summary = %q{Classified}
   s.test_files = [
     "test/scheduled_worker.rb",
+     "test/test_inheritance.rb",
      "test/test_simple_worker.rb",
-     "test/test_worker.rb"
+     "test/test_worker.rb",
+     "test/test_worker_2.rb"
   ]
 
   if s.respond_to? :specification_version then

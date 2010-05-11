@@ -1,19 +1,57 @@
 require 'appoxy_api'
-require File.join(File.dirname(__FILE__), 'worker')
-
+require File.join(File.dirname(__FILE__), 'simple_worker', 'base')
+require File.join(File.dirname(__FILE__), 'simple_worker', 'config')
 
 module SimpleWorker
 
+    class << self
+        attr_accessor :config,
+                      :service
+
+    end
+
+    def self.configure()
+        SimpleWorker.config ||= Config.new
+        yield(config)
+        SimpleWorker.service = Service.new(config.access_key, config.secret_key, :config=>config)
+    end
+
     class Service < Appoxy::Api::Client
+
+        attr_accessor :config
 
         def initialize(access_key, secret_key, options={})
             puts 'Starting SimpleWorker::Service...'
+            self.config = options[:config] if options[:config]
             super("http://api.simpleworkr.com/api/", access_key, secret_key, options)
+            self.host = self.config.host if self.config && self.config.host
         end
 
         # Options:
         #    - :callback_url
         def upload(filename, class_name, options={})
+
+            # check whether it should upload again
+            tmp = Dir.tmpdir()
+            puts 'tmp=' + tmp.to_s
+            md5file = "simple_workr_#{class_name.gsub("::", ".")}.md5"
+            existing_md5 = nil
+            f = File.join(tmp, md5file)
+            if File.exists?(f)
+                existing_md5 = IO.read(f)
+                puts 'existing_md5=' + existing_md5
+            end
+#            sys.classes[subclass].__file__
+#            puts '__FILE__=' + Base.subclass.__file__.to_s
+            md5 = Digest::MD5.hexdigest(File.read(filename))
+            puts "new md5=" + md5
+            if md5 != existing_md5
+                puts 'new code, so uploading'
+                File.open(f, 'w') { |f| f.write(md5) }
+            else
+                puts 'same code, not uploading'
+            end
+
             mystring = nil
             file = File.open(filename, "r") do |f|
                 mystring = f.read
@@ -23,8 +61,13 @@ module SimpleWorker
             ret
         end
 
-        #
-        # data: 
+        def add_sw_params(hash_to_send)
+            hash_to_send["sw_access_key"] = self.access_key
+            hash_to_send["sw_secret_key"] = self.secret_key
+        end
+
+        # class_name: The class name of a previously upload class, eg: MySuperWorker
+        # data: Arbitrary hash of your own data that your task will need to run.
         def queue(class_name, data={})
             if !data.is_a?(Array)
                 data = [data]
@@ -32,6 +75,7 @@ module SimpleWorker
             hash_to_send = {}
             hash_to_send["payload"] = data
             hash_to_send["class_name"] = class_name
+            add_sw_params(hash_to_send)
             if defined?(RAILS_ENV)
                 hash_to_send["rails_env"] = RAILS_ENV
             end
@@ -68,7 +112,8 @@ module SimpleWorker
             hash_to_send["payload"] = data
             hash_to_send["class_name"] = class_name
             hash_to_send["schedule"] = schedule
-            puts 'about to send ' + hash_to_send.inspect
+            add_sw_params(hash_to_send)
+#            puts 'about to send ' + hash_to_send.inspect
             ret = post("scheduler/schedule", hash_to_send)
             ret
         end
