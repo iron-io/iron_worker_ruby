@@ -7,7 +7,10 @@ end
 # Bump for new checksum.
 class TestWorker2 < SimpleWorker::Base
 
+    merge "models/model_1.rb"
+
     attr_accessor :s3_key, :times, :x
+
 
     def who_am_i2?
         return self.class.name
@@ -22,6 +25,9 @@ class TestWorker2 < SimpleWorker::Base
             sleep 1
             set_progress(:percent=> (i / times * 100))
         end
+        m1 = Model1.new
+        log "I made a new model1"
+        m1.say_hello
     end
 
     def set_complete(params=nil)

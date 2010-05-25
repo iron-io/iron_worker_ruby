@@ -1,6 +1,7 @@
 require 'appoxy_api'
 require File.join(File.dirname(__FILE__), 'simple_worker', 'base')
 require File.join(File.dirname(__FILE__), 'simple_worker', 'config')
+require File.join(File.dirname(__FILE__), 'simple_worker', 'used_in_worker')
 
 module SimpleWorker
 
@@ -29,6 +30,7 @@ module SimpleWorker
 
         # Options:
         #    - :callback_url
+        #    - :merge => array of files to merge in with this file
         def upload(filename, class_name, options={})
 
             # check whether it should upload again
@@ -41,6 +43,9 @@ module SimpleWorker
                 existing_md5 = IO.read(f)
                 puts 'existing_md5=' + existing_md5
             end
+
+            filename = build_merged_file(filename, options[:merge]) if options[:merge]
+
 #            sys.classes[subclass].__file__
 #            puts '__FILE__=' + Base.subclass.__file__.to_s
             md5 = Digest::MD5.hexdigest(File.read(filename))
@@ -59,6 +64,20 @@ module SimpleWorker
             options = {"code"=>mystring, "class_name"=>class_name}
             ret = post("code/put", options)
             ret
+        end
+
+        def build_merged_file(filename, merge)
+            merge = merge.dup
+            merge.insert(0, filename)
+            fname2 = File.join(Dir.tmpdir(), File.basename(filename))
+            puts 'fname2=' + fname2
+            File.open(fname2, "w") do |f|
+                merge.each do |m|
+                    f.write File.open(m, 'r') { |mo| mo.read }
+                    f.write "\n\n"
+                end
+            end
+            fname2
         end
 
         def add_sw_params(hash_to_send)

@@ -10,19 +10,38 @@ module SimpleWorker
 
         class << self
             attr_accessor :subclass, :caller_file
-        end
+            @merged = []
 
-        def self.inherited(subclass)
-            puts "New subclass: #{subclass}"
-            puts "subclass.inspect=" + subclass.inspect
-            puts 'existing caller=' + (subclass.class_variable_defined?(:@@caller_file) ? subclass.class_variable_get(:@@caller_file).inspect : "nil")
-            puts "caller=" + caller.inspect
-            splits = caller[0].split(":")
-            caller_file = splits[0] + ":" + splits[1]
-            puts 'caller_file=' + caller_file
-            # don't need these class_variables anymore probably
-            subclass.class_variable_set(:@@caller_file, caller_file)
+            def reset!
+                @merged = []
+            end
 
+            def inherited(subclass)
+                subclass.reset!
+
+                puts "New subclass: #{subclass}"
+                puts "subclass.inspect=" + subclass.inspect
+                puts 'existing caller=' + (subclass.instance_variable_defined?(:@caller_file) ? subclass.instance_variable_get(:@caller_file).inspect : "nil")
+                puts "caller=" + caller.inspect
+                splits = caller[0].split(":")
+                caller_file = splits[0] + ":" + splits[1]
+                puts 'caller_file=' + caller_file
+                # don't need these class_variables anymore probably
+                subclass.instance_variable_set(:@caller_file, caller_file)
+
+                super
+            end
+
+            # merges the specified files.
+            def merge(*files)
+                files.each do |f|
+                    unless File.exist? f
+                        raise "File not found: " + f
+                    end
+                    require f
+                    @merged << File.expand_path(f)
+                end
+            end
         end
 
 
@@ -39,7 +58,7 @@ module SimpleWorker
         end
 
         def uploaded?
-            self.class.class_variable_defined?(:@@uploaded) && self.class.class_variable_get(:@@uploaded)
+            self.class.instance_variable_defined?(:@uploaded) && self.class.instance_variable_get(:@uploaded)
         end
 
 
@@ -91,11 +110,11 @@ module SimpleWorker
 #}
             unless uploaded?
                 subclass = self.class
-                rfile = subclass.class_variable_get(:@@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
+                rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
                 puts 'rfile=' + rfile.inspect
                 puts 'self.class.name=' + subclass.name
-                SimpleWorker.service.upload(rfile, subclass.name)
-                self.class.class_variable_set(:@@uploaded, true)
+                SimpleWorker.service.upload(rfile, subclass.name, :merge=>self.class.instance_variable_get(:@merged))
+                self.class.instance_variable_set(:@uploaded, true)
             else
                 puts 'already uploaded for ' + self.class.name
             end
@@ -108,6 +127,7 @@ module SimpleWorker
             end
             return data
         end
+
 
 
     end
