@@ -39,13 +39,13 @@ class SimpleWorkerTests < Test::Unit::TestCase
         tw.x = true
 
         # schedule up a task
-#        start_at = 10.seconds.since
-#        response_hash_single = tw.schedule(:start_at=>start_at, :run_every=>30, :run_times=>3)
-#        puts 'response_hash=' + response_hash_single.inspect
-#
-#        10.times do |i|
-#            puts "status #{i}: " + tw.schedule_status.inspect
-#        end
+        start_at = 10.seconds.since
+        response_hash_single = tw.schedule(:start_at=>start_at, :run_every=>30, :run_times=>3)
+        puts 'response_hash=' + response_hash_single.inspect
+
+        10.times do |i|
+            puts "status #{i}: " + tw.schedule_status.inspect
+        end
 
         # queue up a task
         response_hash_single = tw.queue

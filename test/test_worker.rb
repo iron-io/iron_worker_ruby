@@ -11,7 +11,7 @@ class TestWorker < SimpleWorker::Base
     def run(data=nil)
         log 'running the runner for leroy '.upcase + ' with data: ' + data.inspect
 
-        log 's3_key instance_variable = ' + self.s3_key
+        log 's3_key instance_variable = ' + self.s3_key.to_s
 
         @times = data["times"].to_i
         @times.times do |i|
