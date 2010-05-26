@@ -7,7 +7,8 @@ end
 # Bump for new checksum.
 class TestWorker2 < SimpleWorker::Base
 
-    merge "models/model_1.rb"
+    merge 'models/model_1.rb'
+    merge 'second_worker.rb'
 
     attr_accessor :s3_key, :times, :x
 
@@ -16,8 +17,8 @@ class TestWorker2 < SimpleWorker::Base
         return self.class.name
     end
 
-    def run(data=nil)
-        log 'running the runner for leroy '.upcase + ' with data: ' + data.inspect
+    def run
+        log 'running the runner for leroy '.upcase + ' with data: '
 
         log 's3_key instance_variable = ' + self.s3_key
         times.times do |i|
@@ -28,6 +29,23 @@ class TestWorker2 < SimpleWorker::Base
         m1 = Model1.new
         log "I made a new model1"
         m1.say_hello
+
+        second_workers = []
+        now = Time.now
+        10.times do |i|
+            second_worker = SecondWorker.new
+            second_worker.start_time = now
+            second_worker.num = i
+            second_worker.queue
+            second_workers << second_worker
+        end
+
+        10.times do |i|
+            second_workers.each do |sw|
+                puts sw.to_s
+                puts sw.status["status"].to_s
+            end
+        end
     end
 
     def set_complete(params=nil)
@@ -35,4 +53,3 @@ class TestWorker2 < SimpleWorker::Base
     end
 
 end
-

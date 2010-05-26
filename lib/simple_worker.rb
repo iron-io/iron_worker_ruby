@@ -9,12 +9,11 @@ module SimpleWorker
         attr_accessor :config,
                       :service
 
-    end
-
-    def self.configure()
-        SimpleWorker.config ||= Config.new
-        yield(config)
-        SimpleWorker.service = Service.new(config.access_key, config.secret_key, :config=>config)
+        def configure()
+            SimpleWorker.config ||= Config.new
+            yield(config)
+            SimpleWorker.service = Service.new(config.access_key, config.secret_key, :config=>config)
+        end
     end
 
     class Service < Appoxy::Api::Client
@@ -81,6 +80,7 @@ module SimpleWorker
         end
 
         def add_sw_params(hash_to_send)
+            # todo: remove secret key??  Can use worker service from within a worker without it now
             hash_to_send["sw_access_key"] = self.access_key
             hash_to_send["sw_secret_key"] = self.secret_key
         end

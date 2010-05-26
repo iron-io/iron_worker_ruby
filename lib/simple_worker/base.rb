@@ -19,13 +19,13 @@ module SimpleWorker
             def inherited(subclass)
                 subclass.reset!
 
-                puts "New subclass: #{subclass}"
-                puts "subclass.inspect=" + subclass.inspect
-                puts 'existing caller=' + (subclass.instance_variable_defined?(:@caller_file) ? subclass.instance_variable_get(:@caller_file).inspect : "nil")
-                puts "caller=" + caller.inspect
+#                puts "New subclass: #{subclass}"
+#                puts "subclass.inspect=" + subclass.inspect
+#                puts 'existing caller=' + (subclass.instance_variable_defined?(:@caller_file) ? subclass.instance_variable_get(:@caller_file).inspect : "nil")
+#                puts "caller=" + caller.inspect
                 splits = caller[0].split(":")
                 caller_file = splits[0] + ":" + splits[1]
-                puts 'caller_file=' + caller_file
+#                puts 'caller_file=' + caller_file
                 # don't need these class_variables anymore probably
                 subclass.instance_variable_set(:@caller_file, caller_file)
 
