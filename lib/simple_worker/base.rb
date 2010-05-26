@@ -11,21 +11,24 @@ module SimpleWorker
         class << self
             attr_accessor :subclass, :caller_file
             @merged = []
+            @merged_workers = []
 
             def reset!
                 @merged = []
+                @merged_workers = []
             end
 
             def inherited(subclass)
                 subclass.reset!
 
-#                puts "New subclass: #{subclass}"
-#                puts "subclass.inspect=" + subclass.inspect
-#                puts 'existing caller=' + (subclass.instance_variable_defined?(:@caller_file) ? subclass.instance_variable_get(:@caller_file).inspect : "nil")
-#                puts "caller=" + caller.inspect
-                splits = caller[0].split(":")
-                caller_file = splits[0] + ":" + splits[1]
-#                puts 'caller_file=' + caller_file
+                puts "subclass.inspect=" + subclass.inspect
+                puts 'existing caller=' + (subclass.instance_variable_defined?(:@caller_file) ? subclass.instance_variable_get(:@caller_file).inspect : "nil")
+                puts "caller=" + caller.inspect
+#                splits = caller[0].split(":")
+#                caller_file = splits[0] + ":" + splits[1]
+                caller_file = caller[0][0...(caller[0].index(":in"))]
+                caller_file = caller_file[0...(caller_file.rindex(":"))]
+                puts 'caller_file=' + caller_file
                 # don't need these class_variables anymore probably
                 subclass.instance_variable_set(:@caller_file, caller_file)
 
@@ -41,6 +44,13 @@ module SimpleWorker
                     require f
                     @merged << File.expand_path(f)
                 end
+            end
+
+            def merge_worker(file, class_name)
+                puts 'merge_worker in ' + self.name
+                puts 'FUCK'
+                merge(file)
+                @merged_workers << [File.expand_path(file), class_name]
             end
         end
 
@@ -64,6 +74,7 @@ module SimpleWorker
 
         # Will send in all instance_variables.
         def queue
+            puts 'in queue'
             upload_if_needed
 
             response = SimpleWorker.service.queue(self.class.name, sw_get_data)
@@ -77,6 +88,9 @@ module SimpleWorker
             SimpleWorker.service.status(task_id)
         end
 
+        def upload
+            upload_if_needed
+        end
 
         def schedule(schedule)
             upload_if_needed
@@ -91,23 +105,11 @@ module SimpleWorker
             SimpleWorker.service.schedule_status(schedule_id)
         end
 
-
-#        def queue_other(class_name, data)
-#            SimpleWorker.service.queue(class_name, data)
-#        end
-#
-#        def schedule_other(class_name, data, schedule)
-#            SimpleWorker.service.schedule(class_name, data, schedule)
-#        end
-
         private
-
+        
         def upload_if_needed
 
-#            $LOADED_FEATURES.each_with_index { |feature, idx|
-#  puts "#{ sprintf("%2s", idx) } #{feature}"
-#                if feature[feature.rindex("/")..feature.length] ==
-#}
+            puts 'upload_if_needed'
             unless uploaded?
                 subclass = self.class
                 rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
@@ -117,6 +119,13 @@ module SimpleWorker
                 self.class.instance_variable_set(:@uploaded, true)
             else
                 puts 'already uploaded for ' + self.class.name
+            end
+            puts 'uploading merged workers'
+            self.class.instance_variable_get(:@merged_workers).each do |mw|
+                # to support merges in the secondary worker, we should instantiate it here, then call "upload"
+                puts 'instantiating and uploading ' + mw[1]
+                Kernel.const_get(mw[1]).new.upload
+#                    SimpleWorker.service.upload(mw[0], mw[1])
             end
         end
 

@@ -1,7 +1,10 @@
+puts 'REQUIRING THIS SHIT!'
+
 require 'appoxy_api'
 require File.join(File.dirname(__FILE__), 'simple_worker', 'base')
 require File.join(File.dirname(__FILE__), 'simple_worker', 'config')
 require File.join(File.dirname(__FILE__), 'simple_worker', 'used_in_worker')
+
 
 module SimpleWorker
 

@@ -1,7 +1,8 @@
 begin
-    require File.join(File.dirname(__FILE__), '../lib/simple_worker')
-rescue Exception
-    require 'simple_worker'
+    require File.join(File.dirname(__FILE__), '../../lib/simple_worker')
+rescue Exception => ex
+    puts 'ERROR!!! ' + ex.message
+#    require 'simple_worker'
 end
 
 

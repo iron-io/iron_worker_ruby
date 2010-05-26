@@ -1,18 +1,20 @@
 begin
     require File.join(File.dirname(__FILE__), '../lib/simple_worker')
-rescue Exception
+rescue Exception => ex
+    puts ex.message
     require 'simple_worker'
 end
 
-# Bump for new checksum.
+# Bump for new checksum.sdf
 class TestWorker2 < SimpleWorker::Base
 
     merge 'models/model_1.rb'
-    merge 'second_worker.rb'
+    merge_worker 'second_worker.rb', 'SecondWorker'
 
     attr_accessor :s3_key, :times, :x
 
 
+    #TEST dsd
     def who_am_i2?
         return self.class.name
     end
