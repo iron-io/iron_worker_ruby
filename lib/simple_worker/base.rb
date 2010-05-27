@@ -48,7 +48,6 @@ module SimpleWorker
 
             def merge_worker(file, class_name)
                 puts 'merge_worker in ' + self.name
-                puts 'FUCK'
                 merge(file)
                 @merged_workers << [File.expand_path(file), class_name]
             end
