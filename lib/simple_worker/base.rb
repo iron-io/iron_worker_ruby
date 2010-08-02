@@ -114,7 +114,17 @@ module SimpleWorker
                 rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
                 puts 'rfile=' + rfile.inspect
                 puts 'self.class.name=' + subclass.name
-                SimpleWorker.service.upload(rfile, subclass.name, :merge=>self.class.instance_variable_get(:@merged))
+                merged = self.class.instance_variable_get(:@merged)
+                puts 'merged1=' + merged.inspect
+                superclass = subclass
+                # Also get merged from subclasses up to SimpleWorker::Base
+                while (superclass = superclass.superclass)
+                    puts 'superclass=' + superclass.name
+                    break if superclass.name == SimpleWorker::Base.name
+                    merged.concat superclass.instance_variable_get(:@merged)
+                    puts 'merged with superclass=' + merged.inspect
+                end
+                SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged)
                 self.class.instance_variable_set(:@uploaded, true)
             else
                 puts 'already uploaded for ' + self.class.name
