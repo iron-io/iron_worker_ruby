@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_worker}
-  s.version = "0.3.9"
+  s.version = "0.3.10"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder"]
-  s.date = %q{2010-06-03}
+  s.date = %q{2010-08-24}
   s.description = %q{I could tell you, but then I'd have to...}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -30,10 +30,12 @@ Gem::Specification.new do |s|
     "test/models/model_1.rb",
      "test/scheduled_worker.rb",
      "test/second_worker.rb",
+     "test/test_base.rb",
      "test/test_inheritance.rb",
      "test/test_simple_worker.rb",
      "test/test_worker.rb",
-     "test/test_worker_2.rb"
+     "test/test_worker_2.rb",
+     "test/test_worker_3.rb"
   ]
 
   if s.respond_to? :specification_version then

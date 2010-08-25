@@ -104,11 +104,30 @@ module SimpleWorker
             SimpleWorker.service.schedule_status(schedule_id)
         end
 
+        # Callbacks for developer
+        def before_upload
+
+        end
+
+        def after_upload
+
+        end
+
+           def before_run
+
+        end
+        def after_run
+
+        end
+
         private
-        
+
         def upload_if_needed
 
+            before_upload
+
             puts 'upload_if_needed'
+            # Todo, watch for this file changing or something so we can reupload
             unless uploaded?
                 subclass = self.class
                 rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
@@ -121,8 +140,12 @@ module SimpleWorker
                 while (superclass = superclass.superclass)
                     puts 'superclass=' + superclass.name
                     break if superclass.name == SimpleWorker::Base.name
-                    merged.concat superclass.instance_variable_get(:@merged)
+                    super_merged = superclass.instance_variable_get(:@merged)
+#                     puts 'merging caller file: ' + superclass.instance_variable_get(:@caller_file).inspect
+                    super_merged << superclass.instance_variable_get(:@caller_file)
+                    merged = super_merged + merged
                     puts 'merged with superclass=' + merged.inspect
+
                 end
                 SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged)
                 self.class.instance_variable_set(:@uploaded, true)
@@ -136,6 +159,8 @@ module SimpleWorker
                 Kernel.const_get(mw[1]).new.upload
 #                    SimpleWorker.service.upload(mw[0], mw[1])
             end
+
+            after_upload
         end
 
         def sw_get_data
@@ -145,7 +170,6 @@ module SimpleWorker
             end
             return data
         end
-
 
 
     end

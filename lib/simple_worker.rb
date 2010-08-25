@@ -68,9 +68,10 @@ module SimpleWorker
 
         def build_merged_file(filename, merge)
             merge = merge.dup
-            merge.insert(0, filename)
+            merge << filename
             fname2 = File.join(Dir.tmpdir(), File.basename(filename))
             puts 'fname2=' + fname2
+            puts 'merged_file_array=' + merge.inspect
             File.open(fname2, "w") do |f|
                 merge.each do |m|
                     f.write File.open(m, 'r') { |mo| mo.read }
