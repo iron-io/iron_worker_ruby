@@ -24,7 +24,7 @@ module SimpleWorker
         def initialize(access_key, secret_key, options={})
             puts 'Starting SimpleWorker::Service...'
             self.config = options[:config] if options[:config]
-            super("http://api.simpleworkr.com/api/", access_key, secret_key, options)
+            super("http://api.simpleworker.com/api/", access_key, secret_key, options)
             self.host = self.config.host if self.config && self.config.host
         end
 

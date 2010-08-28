@@ -58,6 +58,10 @@ module SimpleWorker
             puts str.to_s
         end
 
+        def user_dir
+            "."
+        end
+
         def set_progress(hash)
             puts 'set_progress: ' + hash.inspect
         end
@@ -113,9 +117,10 @@ module SimpleWorker
 
         end
 
-           def before_run
+        def before_run
 
         end
+
         def after_run
 
         end
