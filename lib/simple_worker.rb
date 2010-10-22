@@ -1,4 +1,5 @@
 require 'appoxy_api'
+require 'active_support/core_ext'
 require File.join(File.dirname(__FILE__), 'simple_worker', 'base')
 require File.join(File.dirname(__FILE__), 'simple_worker', 'config')
 require File.join(File.dirname(__FILE__), 'simple_worker', 'used_in_worker')
@@ -35,13 +36,13 @@ module SimpleWorker
 
             # check whether it should upload again
             tmp = Dir.tmpdir()
-            puts 'tmp=' + tmp.to_s
+#            puts 'tmp=' + tmp.to_s
             md5file = "simple_workr_#{class_name.gsub("::", ".")}.md5"
             existing_md5 = nil
             f = File.join(tmp, md5file)
             if File.exists?(f)
                 existing_md5 = IO.read(f)
-                puts 'existing_md5=' + existing_md5
+#                puts 'existing_md5=' + existing_md5
             end
 
             filename = build_merged_file(filename, options[:merge]) if options[:merge]
@@ -49,12 +50,13 @@ module SimpleWorker
 #            sys.classes[subclass].__file__
 #            puts '__FILE__=' + Base.subclass.__file__.to_s
             md5 = Digest::MD5.hexdigest(File.read(filename))
-            puts "new md5=" + md5
+#            puts "new md5=" + md5
+
             if md5 != existing_md5
-                puts 'new code, so uploading'
+                puts "#{class_name}: new code, so uploading"
                 File.open(f, 'w') { |f| f.write(md5) }
             else
-                puts 'same code, not uploading'
+                puts "#{class_name}: same code, not uploading"
             end
 
             mystring = nil
