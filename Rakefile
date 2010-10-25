@@ -8,8 +8,8 @@ begin
         gemspec.homepage = "http://github.com/appoxy/simple_worker"
         gemspec.authors = ["Travis Reeder"]
         gemspec.files = FileList['lib/**/*.rb']
-        gemspec.add_dependency 'appoxy_api'
         gemspec.add_dependency 'active_support'
+        gemspec.add_dependency 'appoxy_api'
     end
 rescue LoadError
     puts "Jeweler not available. Install it with: sudo gem install jeweler -s http://gems.github.com"

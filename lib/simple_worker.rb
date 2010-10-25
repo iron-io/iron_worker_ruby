@@ -72,8 +72,8 @@ module SimpleWorker
             merge = merge.dup
             merge << filename
             fname2 = File.join(Dir.tmpdir(), File.basename(filename))
-            puts 'fname2=' + fname2
-            puts 'merged_file_array=' + merge.inspect
+#            puts 'fname2=' + fname2
+#            puts 'merged_file_array=' + merge.inspect
             File.open(fname2, "w") do |f|
                 merge.each do |m|
                     f.write File.open(m, 'r') { |mo| mo.read }
@@ -170,7 +170,7 @@ module SimpleWorker
         def log(task_id)
             data = {"task_id"=>task_id}
             ret = get("task/log", data)
-            puts 'ret=' + ret.inspect
+#            puts 'ret=' + ret.inspect
 #            ret["log"] = Base64.decode64(ret["log"])
             ret
         end
