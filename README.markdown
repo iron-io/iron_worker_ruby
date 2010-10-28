@@ -34,6 +34,17 @@ Here's an example worker that sends an email:
         end
     end
 
+Test It Locally
+---------------
+
+Let's say someone does something in your app and you want to send an email about it.
+
+    worker = EmailWorker.new
+    worker.to = current_user.email
+    worker.subject = "Here is your mail!"
+    worker.body = "This is the body"
+    **worker.run**
+
 Queue up your Worker
 --------------------
 
@@ -43,7 +54,7 @@ Let's say someone does something in your app and you want to send an email about
     worker.to = current_user.email
     worker.subject = "Here is your mail!"
     worker.body = "This is the body"
-    worker.queue
+    **worker.queue**
 
 Schedule your Worker
 --------------------
@@ -55,7 +66,12 @@ action in your application. This is almost the same as queuing your worker.
     worker.to = current_user.email
     worker.subject = "Here is your mail!"
     worker.body = "This is the body"
-    worker.schedule(:start_at=>1.hours.since)
+    **worker.schedule(:start_at=>1.hours.since)**
+
+
+
+Schedule your Worker Recurring
+------------------------------
 
 The alternative is when you want to user it like Cron. In this case you'll probably
 want to write a script that will schedule, you don't want to schedule it everytime your
@@ -71,4 +87,19 @@ Create a file called 'schedule_email_worker.rb' and add this:
     worker.body = "This is the body"
     worker.schedule(:start_at=>1.hours.since, :run_every=>3600)
 
-Now your worker will be scheduled to run every hour.
+Now run it and your worker will be scheduled to run every hour.
+
+SimpleWorker on Rails
+---------------------
+
+SimpleWorker only supports Rails 3+.
+
+Setup:
+
+- Make a workers directory at RAILS_ROOT/app/workers.
+- In application.rb, uncomment config.autoload_paths and put:
+
+    config.autoload_paths += %W(#{config.paths.app}/workers)
+
+Now you can use your workers like their part of your app!
+
