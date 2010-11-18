@@ -103,3 +103,22 @@ Setup:
 
 Now you can use your workers like their part of your app!
 
+
+Configuration Options
+---------------------
+
+### Global Attributes
+
+These are attributes that can be set as part of your config block then will be set on
+all your worker objects automatically. This is particularly good for things like database
+connection info or things that you would need to use across the board.
+
+Eg:
+
+    config.global_attributes[:db_user] = "sa"
+    config.global_attributes[:db_pass] = "pass"
+
+Then in your worker, you must have:
+
+    attr_accessor :db_user, :db_pass
+
