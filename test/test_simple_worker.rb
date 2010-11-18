@@ -1,6 +1,6 @@
 
 
-require 'test_base'
+require_relative 'test_base'
 
 class SimpleWorkerTests < TestBase
 
@@ -36,6 +36,18 @@ class SimpleWorkerTests < TestBase
         end
 
         assert tw.status["status"] == "complete"
+
+    end
+
+    def test_global_attributes
+        worker = TestWorker3.new
+        worker.run_local
+
+        puts 'worker=' + worker.inspect
+
+        assert_equal "sa", worker.db_user
+        assert_equal "pass", worker.db_pass
+        assert_equal 123, worker.x
 
     end
 #

@@ -26,6 +26,9 @@ class TestBase < Test::Unit::TestCase
             config.access_key = @access_key
             config.secret_key = @secret_key
             config.host = "http://localhost:3000/api/"
+            config.global_attributes["db_user"] = "sa"
+            config.global_attributes["db_pass"] = "pass"
+
         end
     end
 end

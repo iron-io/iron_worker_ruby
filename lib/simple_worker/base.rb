@@ -74,14 +74,33 @@ module SimpleWorker
             self.class.instance_variable_defined?(:@uploaded) && self.class.instance_variable_get(:@uploaded)
         end
 
+        # Call this if you want to run locally and get some extra features from this gem like global attributes.
+        def run_local
+#            puts 'run_local'
+            set_global_attributes
+            run
+        end
+
+        def set_global_attributes
+            ga = SimpleWorker.config.global_attributes
+            if ga && ga.size > 0
+                ga.each_pair do |k,v|
+#                    puts "k=#{k} v=#{v}"
+                    if self.respond_to?(k)
+                        self.send("#{k}=", v)
+                    end
+                end
+            end
+        end
 
         # Will send in all instance_variables.
         def queue
-            puts 'in queue'
+#            puts 'in queue'
+            set_global_attributes
             upload_if_needed
 
             response = SimpleWorker.service.queue(self.class.name, sw_get_data)
-            puts 'queue response=' + response.inspect
+#            puts 'queue response=' + response.inspect
             @task_set_id = response["task_set_id"]
             @task_id = response["tasks"][0]["task_id"]
             response
@@ -96,10 +115,11 @@ module SimpleWorker
         end
 
         def schedule(schedule)
+            set_global_attributes
             upload_if_needed
 
             response = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
-            puts 'schedule response=' + response.inspect
+#            puts 'schedule response=' + response.inspect
             @schedule_id = response["schedule_id"]
             response
         end
