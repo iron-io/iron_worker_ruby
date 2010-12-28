@@ -13,19 +13,19 @@ require File.join(File.dirname(__FILE__), "./test_worker_3")
 class TestBase < Test::Unit::TestCase
 
     def setup
-        @config = YAML::load(File.open(File.expand_path("~/.test-configs/simple_worker.yml")))
+        @config = YAML::load(File.open(File.expand_path("~/.test_configs/simple_worker.yml")))
         #puts @config.inspect
         @access_key = @config['simple_worker']['access_key']
         @secret_key = @config['simple_worker']['secret_key']
 
         @worker = SimpleWorker::Service.new(@access_key, @secret_key)
-        @worker.host = "http://localhost:3000/api/"
+#        @worker.host = "http://localhost:3000/api/"
 
         # new style
         SimpleWorker.configure do |config|
             config.access_key = @access_key
             config.secret_key = @secret_key
-            config.host = "http://localhost:3000/api/"
+#            config.host = "http://localhost:3000/api/"
             config.global_attributes["db_user"] = "sa"
             config.global_attributes["db_pass"] = "pass"
 
