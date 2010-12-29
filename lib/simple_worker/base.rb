@@ -4,208 +4,237 @@ require 'digest/md5'
 
 module SimpleWorker
 
-    class Base
+  class Base
 
-        attr_accessor :task_set_id, :task_id, :schedule_id
+    attr_accessor :task_set_id, :task_id, :schedule_id
 
-        class << self
-            attr_accessor :subclass, :caller_file
-            @merged = []
-            @merged_workers = []
+    class << self
+      attr_accessor :subclass, :caller_file
+      @merged         = []
+      @merged_workers = []
 
-            def reset!
-                @merged = []
-                @merged_workers = []
-            end
+      def reset!
+        @merged         = []
+        # @merged         = $models||[]
+        @merged_workers = []
+      end
 
-            def inherited(subclass)
-                subclass.reset!
+      def inherited(subclass)
+        subclass.reset!
 
 #                puts "subclass.inspect=" + subclass.inspect
 #                puts 'existing caller=' + (subclass.instance_variable_defined?(:@caller_file) ? subclass.instance_variable_get(:@caller_file).inspect : "nil")
 #                puts "caller=" + caller.inspect
 #                splits = caller[0].split(":")
 #                caller_file = splits[0] + ":" + splits[1]
-                caller_file = caller[0][0...(caller[0].index(":in"))]
-                caller_file = caller_file[0...(caller_file.rindex(":"))]
+        caller_file = caller[0][0...(caller[0].index(":in"))]
+        caller_file = caller_file[0...(caller_file.rindex(":"))]
 #                puts 'caller_file=' + caller_file
-                # don't need these class_variables anymore probably
-                subclass.instance_variable_set(:@caller_file, caller_file)
+        # don't need these class_variables anymore probably
+        subclass.instance_variable_set(:@caller_file, caller_file)
 
-                super
+        super
+      end
+
+      # merges the specified files.
+      # todo: don't allow multiple files per merge, just one like require
+      def merge(*files)
+        files.each do |f|
+          f = f.to_str
+          unless ends_with?(f, ".rb")
+            f << ".rb"
+          end
+          exists = false
+          if File.exist? f
+            exists = true
+          else
+            # try relative
+            f2 = File.join(File.dirname(caller[0]), f)
+            if File.exist? f2
+              exists = true
+              f = f2
             end
-
-            # merges the specified files.
-            def merge(*files)
-                files.each do |f|
-                    unless File.exist? f
-                        raise "File not found: " + f
-                    end
-                    require f
-                    @merged << File.expand_path(f)
-                end
-            end
-
-            def merge_worker(file, class_name)
-                puts 'merge_worker in ' + self.name
-                merge(file)
-                @merged_workers << [File.expand_path(file), class_name]
-            end
+          end
+          unless exists
+            raise "File not found: " + f
+          end
+          require f
+          @merged << File.expand_path(f)
         end
+      end
+
+      def ends_with?(s, suffix)
+        suffix = suffix.to_s
+        s[-suffix.length, suffix.length] == suffix
+      end
+
+      def merge_worker(file, class_name)
+        puts 'merge_worker in ' + self.name
+        merge(file)
+        @merged_workers << [File.expand_path(file), class_name]
+      end
+    end
 
 
-        def log(str)
-            puts str.to_s
-        end
+    def log(str)
+      puts str.to_s
+    end
 
-        def user_dir
-            "."
-        end
+    def user_dir
+      "."
+    end
 
-        def set_progress(hash)
-            puts 'set_progress: ' + hash.inspect
-        end
+    def set_progress(hash)
+      puts 'set_progress: ' + hash.inspect
+    end
 
-        def who_am_i?
-            return self.class.name
-        end
+    def who_am_i?
+      return self.class.name
+    end
 
-        def uploaded?
-            self.class.instance_variable_defined?(:@uploaded) && self.class.instance_variable_get(:@uploaded)
-        end
+    def uploaded?
+      self.class.instance_variable_defined?(:@uploaded) && self.class.instance_variable_get(:@uploaded)
+    end
 
-        # Call this if you want to run locally and get some extra features from this gem like global attributes.
-        def run_local
+    # Call this if you want to run locally and get some extra features from this gem like global attributes.
+    def run_local
 #            puts 'run_local'
-            set_global_attributes
-            run
-        end
+      set_auto_attributes
+      run
+    end
 
-        def set_global_attributes
-            ga = SimpleWorker.config.global_attributes
-            if ga && ga.size > 0
-                ga.each_pair do |k,v|
+    def set_auto_attributes
+      set_global_attributes
+    end
+
+    def set_global_attributes
+      ga = SimpleWorker.config.global_attributes
+      if ga && ga.size > 0
+        ga.each_pair do |k, v|
 #                    puts "k=#{k} v=#{v}"
-                    if self.respond_to?(k)
-                        self.send("#{k}=", v)
-                    end
-                end
-            end
+          if self.respond_to?(k)
+            self.send("#{k}=", v)
+          end
         end
+      end
+    end
 
-        # Will send in all instance_variables.
-        def queue
+    # Will send in all instance_variables.
+    def queue
 #            puts 'in queue'
-            set_global_attributes
-            upload_if_needed
+      set_auto_attributes
+      upload_if_needed
 
-            response = SimpleWorker.service.queue(self.class.name, sw_get_data)
+      config_data = {}
+      config_data['database'] = SimpleWorker.config.database if SimpleWorker.config.database
+      response     = SimpleWorker.service.queue(self.class.name, sw_get_data, config_data)
 #            puts 'queue response=' + response.inspect
-            @task_set_id = response["task_set_id"]
-            @task_id = response["tasks"][0]["task_id"]
-            response
-        end
+      @task_set_id = response["task_set_id"]
+      @task_id     = response["tasks"][0]["task_id"]
+      response
+    end
 
-        def status
-            SimpleWorker.service.status(task_id)
-        end
+    def status
+      SimpleWorker.service.status(task_id)
+    end
 
-        def upload
-            upload_if_needed
-        end
+    def upload
+      upload_if_needed
+    end
 
-        #
-        # schedule: hash of scheduling options that can include:
-        #     Required:
-        #     - start_at:      Time of first run - DateTime or Time object.
-        #     Optional:
-        #     - run_every:     Time in seconds between runs. If ommitted, task will only run once.
-        #     - delay_type:    Fixed Rate or Fixed Delay. Default is fixed_delay.
-        #     - end_at:        Scheduled task will stop running after this date (optional, if ommitted, runs forever or until cancelled)
-        #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
-        #
-        def schedule(schedule)
-            set_global_attributes
-            upload_if_needed
+    #
+    # schedule: hash of scheduling options that can include:
+    #     Required:
+    #     - start_at:      Time of first run - DateTime or Time object.
+    #     Optional:
+    #     - run_every:     Time in seconds between runs. If ommitted, task will only run once.
+    #     - delay_type:    Fixed Rate or Fixed Delay. Default is fixed_delay.
+    #     - end_at:        Scheduled task will stop running after this date (optional, if ommitted, runs forever or until cancelled)
+    #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
+    #
+    def schedule(schedule)
+      set_global_attributes
+      upload_if_needed
 
-            response = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
+      response     = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
 #            puts 'schedule response=' + response.inspect
-            @schedule_id = response["schedule_id"]
-            response
-        end
+      @schedule_id = response["schedule_id"]
+      response
+    end
 
-        def schedule_status
-            SimpleWorker.service.schedule_status(schedule_id)
-        end
+    def schedule_status
+      SimpleWorker.service.schedule_status(schedule_id)
+    end
 
-        # Callbacks for developer
-        def before_upload
-
-        end
-
-        def after_upload
-
-        end
-
-        def before_run
-
-        end
-
-        def after_run
-
-        end
-
-        private
-
-        def upload_if_needed
-
-            before_upload
-
-            puts 'upload_if_needed'
-            # Todo, watch for this file changing or something so we can reupload
-            unless uploaded?
-                subclass = self.class
-                rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
-                puts 'rfile=' + rfile.inspect
-                puts 'self.class.name=' + subclass.name
-                merged = self.class.instance_variable_get(:@merged)
-                puts 'merged1=' + merged.inspect
-                superclass = subclass
-                # Also get merged from subclasses up to SimpleWorker::Base
-                while (superclass = superclass.superclass)
-                    puts 'superclass=' + superclass.name
-                    break if superclass.name == SimpleWorker::Base.name
-                    super_merged = superclass.instance_variable_get(:@merged)
-#                     puts 'merging caller file: ' + superclass.instance_variable_get(:@caller_file).inspect
-                    super_merged << superclass.instance_variable_get(:@caller_file)
-                    merged = super_merged + merged
-                    puts 'merged with superclass=' + merged.inspect
-
-                end
-                SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged)
-                self.class.instance_variable_set(:@uploaded, true)
-            else
-                puts 'already uploaded for ' + self.class.name
-            end
-            puts 'uploading merged workers'
-            self.class.instance_variable_get(:@merged_workers).each do |mw|
-                # to support merges in the secondary worker, we should instantiate it here, then call "upload"
-                puts 'instantiating and uploading ' + mw[1]
-                Kernel.const_get(mw[1]).new.upload
-#                    SimpleWorker.service.upload(mw[0], mw[1])
-            end
-
-            after_upload
-        end
-
-        def sw_get_data
-            data = {}
-            self.instance_variables.each do |iv|
-                data[iv] = instance_variable_get(iv)
-            end
-            return data
-        end
-
+    # Callbacks for developer
+    def before_upload
 
     end
+
+    def after_upload
+
+    end
+
+    def before_run
+
+    end
+
+    def after_run
+
+    end
+
+    private
+
+    def upload_if_needed
+
+      before_upload
+
+      puts 'upload_if_needed ' + self.class.name
+      # Todo, watch for this file changing or something so we can reupload
+      unless uploaded?
+        subclass = self.class
+        rfile    = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
+        puts 'rfile=' + rfile.inspect
+        puts 'self.class.name=' + subclass.name
+        merged = self.class.instance_variable_get(:@merged)
+        puts 'merged1=' + merged.inspect
+        superclass = subclass
+        # Also get merged from subclasses up to SimpleWorker::Base
+        while (superclass = superclass.superclass)
+          puts 'superclass=' + superclass.name
+          break if superclass.name == SimpleWorker::Base.name
+          super_merged = superclass.instance_variable_get(:@merged)
+#                     puts 'merging caller file: ' + superclass.instance_variable_get(:@caller_file).inspect
+          super_merged << superclass.instance_variable_get(:@caller_file)
+          merged = super_merged + merged
+          puts 'merged with superclass=' + merged.inspect
+
+        end
+        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged)
+        self.class.instance_variable_set(:@uploaded, true)
+      else
+        puts 'already uploaded for ' + self.class.name
+      end
+      merged_workers = self.class.instance_variable_get(:@merged_workers)
+      puts 'uploading merged workers ' + merged_workers.inspect
+      merged_workers.each do |mw|
+        # to support merges in the secondary worker, we should instantiate it here, then call "upload"
+        puts 'instantiating and uploading ' + mw[1]
+        Kernel.const_get(mw[1]).new.upload
+#                    SimpleWorker.service.upload(mw[0], mw[1])
+      end
+
+      after_upload
+    end
+
+    def sw_get_data
+      data = {}
+      self.instance_variables.each do |iv|
+        data[iv] = instance_variable_get(iv)
+      end
+      return data
+    end
+
+
+  end
 end

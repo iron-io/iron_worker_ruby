@@ -15,7 +15,7 @@ module SimpleWorker
     #    - :callback_url
     #    - :merge => array of files to merge in with this file
     def upload(filename, class_name, options={})
-
+      puts "Uploading #{class_name}"
       # check whether it should upload again
       tmp          = Dir.tmpdir()
       md5file      = "simple_worker_#{class_name.gsub("::", ".")}.md5"
@@ -29,23 +29,27 @@ module SimpleWorker
 
 #            sys.classes[subclass].__file__
 #            puts '__FILE__=' + Base.subclass.__file__.to_s
-      md5 = Digest::MD5.hexdigest(File.read(filename))
+      md5      = Digest::MD5.hexdigest(File.read(filename))
 #            puts "new md5=" + md5
 
+      new_code = false
       if md5 != existing_md5
-        puts "#{class_name}: new code, so uploading"
+        puts "#{class_name}: new code, uploading"
         File.open(f, 'w') { |f| f.write(md5) }
+        new_code = true
       else
         puts "#{class_name}: same code, not uploading"
       end
 
-      mystring = nil
-      file     = File.open(filename, "r") do |f|
-        mystring = f.read
+      if new_code
+        mystring = nil
+        file     = File.open(filename, "r") do |f|
+          mystring = f.read
+        end
+        options  = {"code"=>mystring, "class_name"=>class_name}
+        ret      = post("code/put", options)
+        ret
       end
-      options  = {"code"=>mystring, "class_name"=>class_name}
-      ret      = post("code/put", options)
-      ret
     end
 
     def build_merged_file(filename, merge)
@@ -71,7 +75,8 @@ module SimpleWorker
 
     # class_name: The class name of a previously upload class, eg: MySuperWorker
     # data: Arbitrary hash of your own data that your task will need to run.
-    def queue(class_name, data={})
+    def queue(class_name, data={}, config_data={})
+      puts "Queuing #{class_name}"
       if !data.is_a?(Array)
         data = [data]
       end
@@ -107,6 +112,7 @@ module SimpleWorker
     #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
     #
     def schedule(class_name, data, schedule)
+      puts "Scheduling #{class_name}"
       raise "Schedule must be a hash." if !schedule.is_a? Hash
 #            if !data.is_a?(Array)
 #                data = [data]
