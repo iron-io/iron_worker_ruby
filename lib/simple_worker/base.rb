@@ -15,7 +15,7 @@ module SimpleWorker
 
       def reset!
         @merged         = []
-        # @merged         = $models||[]
+        @merged         += SimpleWorker.config.models if SimpleWorker.config.models
         @merged_workers = []
       end
 
@@ -208,7 +208,6 @@ module SimpleWorker
           super_merged << superclass.instance_variable_get(:@caller_file)
           merged = super_merged + merged
           puts 'merged with superclass=' + merged.inspect
-
         end
         SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged)
         self.class.instance_variable_set(:@uploaded, true)

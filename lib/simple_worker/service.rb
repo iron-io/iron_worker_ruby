@@ -55,6 +55,7 @@ module SimpleWorker
     def build_merged_file(filename, merge)
       merge = merge.dup
       merge << filename
+      merge.uniq!
       fname2 = File.join(Dir.tmpdir(), File.basename(filename))
 #            puts 'fname2=' + fname2
 #            puts 'merged_file_array=' + merge.inspect
