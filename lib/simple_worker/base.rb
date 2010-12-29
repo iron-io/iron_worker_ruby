@@ -15,7 +15,6 @@ module SimpleWorker
 
       def reset!
         @merged         = []
-        @merged         += SimpleWorker.config.models if SimpleWorker.config.models
         @merged_workers = []
       end
 
@@ -125,9 +124,7 @@ module SimpleWorker
       set_auto_attributes
       upload_if_needed
 
-      config_data = {}
-      config_data['database'] = SimpleWorker.config.database if SimpleWorker.config.database
-      response     = SimpleWorker.service.queue(self.class.name, sw_get_data, config_data)
+      response     = SimpleWorker.service.queue(self.class.name, sw_get_data)
 #            puts 'queue response=' + response.inspect
       @task_set_id = response["task_set_id"]
       @task_id     = response["tasks"][0]["task_id"]
@@ -192,12 +189,13 @@ module SimpleWorker
       puts 'upload_if_needed ' + self.class.name
       # Todo, watch for this file changing or something so we can reupload
       unless uploaded?
-        subclass = self.class
-        rfile    = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
-        puts 'rfile=' + rfile.inspect
-        puts 'self.class.name=' + subclass.name
         merged = self.class.instance_variable_get(:@merged)
         puts 'merged1=' + merged.inspect
+
+        subclass = self.class
+        rfile    = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
+        puts 'subclass file=' + rfile.inspect
+        puts 'subclass.name=' + subclass.name
         superclass = subclass
         # Also get merged from subclasses up to SimpleWorker::Base
         while (superclass = superclass.superclass)
@@ -209,13 +207,14 @@ module SimpleWorker
           merged = super_merged + merged
           puts 'merged with superclass=' + merged.inspect
         end
+        merged += SimpleWorker.config.models if SimpleWorker.config.models
         SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged)
         self.class.instance_variable_set(:@uploaded, true)
       else
         puts 'already uploaded for ' + self.class.name
       end
       merged_workers = self.class.instance_variable_get(:@merged_workers)
-      puts 'uploading merged workers ' + merged_workers.inspect
+      puts 'now uploading merged WORKERS ' + merged_workers.inspect
       merged_workers.each do |mw|
         # to support merges in the secondary worker, we should instantiate it here, then call "upload"
         puts 'instantiating and uploading ' + mw[1]
@@ -231,6 +230,10 @@ module SimpleWorker
       self.instance_variables.each do |iv|
         data[iv] = instance_variable_get(iv)
       end
+
+      config_data = {}
+      config_data['database'] = SimpleWorker.config.database if SimpleWorker.config.database
+      data[:sw_config] = config_data
       return data
     end
 

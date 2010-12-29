@@ -61,6 +61,7 @@ module SimpleWorker
 #            puts 'merged_file_array=' + merge.inspect
       File.open(fname2, "w") do |f|
         merge.each do |m|
+          puts "merging #{m} into #{filename}"
           f.write File.open(m, 'r') { |mo| mo.read }
           f.write "\n\n"
         end
@@ -76,11 +77,12 @@ module SimpleWorker
 
     # class_name: The class name of a previously upload class, eg: MySuperWorker
     # data: Arbitrary hash of your own data that your task will need to run.
-    def queue(class_name, data={}, config_data={})
+    def queue(class_name, data={})
       puts "Queuing #{class_name}"
       if !data.is_a?(Array)
         data = [data]
       end
+      p data
       hash_to_send               = {}
       hash_to_send["payload"]    = data
       hash_to_send["class_name"] = class_name

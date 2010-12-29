@@ -1,7 +1,9 @@
-Using Simple Worker
-
 Getting Started
 ===============
+
+[Sign up for a SimpleWorker account][1], it's free to try!
+
+[1]: http://www.simpleworker.com/
 
 Configure SimpleWorker
 ----------------------
@@ -68,9 +70,43 @@ action in your application. This is almost the same as queuing your worker.
     worker.body = "This is the body"
     **worker.schedule(:start_at=>1.hours.since)**
 
+Check Status
+------------
+
+If you still have access to the worker object, just call:
+
+    worker.status
+
+If you only have the job ID, call:
+
+    SimpleWorker.status(job_id)
+
+This will return a hash like:
+
+     {"task_id"=>"ece460ce-12d8-11e0-8e15-12313b0440c6",
+     "status"=>"running",
+     "msg"=>nil,
+     "start_time"=>"2010-12-28T23:19:36+00:00",
+     "end_time"=>nil,
+     "duration"=>nil,
+     "progress"=>{"percent"=>25}}
+
+TODO: How to access log.
+
+Logging
+-------
+
+    log "Starting to do something..."
 
 
-Schedule your Worker Recurring
+Setting Progress
+----------------
+
+    set_progress(:percent => progress, :message => "Server running. Trying to connect...")
+
+
+
+Schedule a Recurring Job - CRON
 ------------------------------
 
 The alternative is when you want to user it like Cron. In this case you'll probably
@@ -80,6 +116,7 @@ app starts or anything so best to keep it external.
 Create a file called 'schedule_email_worker.rb' and add this:
 
     require 'simple_worker'
+    require_relative 'email_worker'
 
     worker = EmailWorker.new
     worker.to = current_user.email
@@ -92,16 +129,59 @@ Now run it and your worker will be scheduled to run every hour.
 SimpleWorker on Rails
 ---------------------
 
-SimpleWorker only supports Rails 3+.
+Rails 2.X:
 
-Setup:
+    config.gem 'simple_worker'
 
-- Make a workers directory at RAILS_ROOT/app/workers.
-- In application.rb, uncomment config.autoload_paths and put:
+Rails 3.X:
 
-    config.autoload_paths += %W(#{config.paths.app}/workers)
+    gem 'simple_worker'
 
-Now you can use your workers like their part of your app!
+Now you can use your workers like they're part of your app!  We recommend putting your worker classes in
+/app/workers path.
+
+Configuring a Database Connection
+---------------------------------
+
+Although you could easily do this in your worker, this makes it a bit more convenient and more importantly
+it will create the connection for you. If you are using ActiveRecord, you would add the following to your
+SimpleWorker config:
+
+    config.database = {
+      :adapter => "mysql2",
+      :host => "localhost",
+      :database => "appdb",
+      :username => "appuser",
+      :password => "secret"
+    }
+
+Then before you job is run, SimpleWorker will establish the ActiveRecord connection.
+
+Including/Merging other Ruby Classes
+------------------------------------
+
+If you are using the Rails setup above, you can probably skip this as your models will automatically be merged.
+
+    class AvgWorker < SimpleWorker::Base
+
+        attr_accessor :aws_access_key,
+                      :aws_secret_key,
+                      :s3_suffix
+
+        merge File.join(File.dirname(__FILE__), "..", "app", "models", "user.rb")
+        merge File.join(File.dirname(__FILE__), "..", "app", "models", "account")
+
+Or simpler yet, try using relative paths:
+
+    merge "../app/models/user"
+    merge "../app/models/account.rb"
+
+
+Bringing in other Workers
+---------------------
+
+merge_worker
+TODO
 
 
 Configuration Options
@@ -118,7 +198,7 @@ Eg:
     config.global_attributes[:db_user] = "sa"
     config.global_attributes[:db_pass] = "pass"
 
-Then in your worker, you must have:
+Then in your worker, you would have the attributes defined:
 
     attr_accessor :db_user, :db_pass
 

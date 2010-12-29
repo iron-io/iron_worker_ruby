@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder"]
-  s.date = %q{2010-12-28}
+  s.date = %q{2010-12-29}
   s.description = %q{I could tell you, but then I'd have to...}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -20,7 +20,8 @@ Gem::Specification.new do |s|
     "lib/simple_worker/base.rb",
     "lib/simple_worker/config.rb",
     "lib/simple_worker/service.rb",
-    "lib/simple_worker/used_in_worker.rb"
+    "lib/simple_worker/used_in_worker.rb",
+    "rails/init.rb"
   ]
   s.homepage = %q{http://github.com/appoxy/simple_worker}
   s.require_paths = ["lib"]

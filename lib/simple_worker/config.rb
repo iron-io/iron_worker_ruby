@@ -6,6 +6,9 @@ module SimpleWorker
   #
   # config.global_attributes allows you to specify attributes that will automatically be set on every worker,
   #    this is good for database connection information or things that will be used across the board.
+  #
+  # config.database configures a database connection. If specified like ActiveRecord, SimpleWorker will automatically establish a connection
+  # for you before running your worker.
   class Config
     attr_accessor :access_key,
                   :secret_key,
@@ -18,15 +21,6 @@ module SimpleWorker
       @global_attributes = {}
     end
 
-    # Configure a database, if specified like ActiveRecord, SimpleWorker will automatically establish a connection
-    # for you before running your worker.
-    def database(options)
-      @database = options
-    end
-
-    def database
-      @database
-    end
   end
 
 end
