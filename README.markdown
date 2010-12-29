@@ -98,12 +98,14 @@ Logging
 
     log "Starting to do something..."
 
+The log will be available for viewing via the SimpleWorker UI or via log in the API.
 
 Setting Progress
 ----------------
 
-    set_progress(:percent => progress, :message => "Server running. Trying to connect...")
+    set_progress(:percent => 25, :message => "We are a quarter of the way there!")
 
+You can actually put anything in this hash and it will be returned with a call to status.
 
 
 Schedule a Recurring Job - CRON

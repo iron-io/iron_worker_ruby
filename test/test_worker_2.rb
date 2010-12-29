@@ -5,7 +5,7 @@ rescue Exception => ex
     require 'simple_worker'
 end
 
-# Bump for new checksum.sdf
+# Bump for new checksum.sdf adsfjlaksdjf dasfasdfadsf
 class TestWorker2 < SimpleWorker::Base
 
     merge File.join(File.dirname(__FILE__), 'models', 'model_1.rb')

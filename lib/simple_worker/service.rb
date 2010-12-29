@@ -1,3 +1,5 @@
+require 'base64'
+
 module SimpleWorker
 
   class Service < Appoxy::Api::Client
@@ -46,6 +48,8 @@ module SimpleWorker
         file     = File.open(filename, "r") do |f|
           mystring = f.read
         end
+#        mystring = Base64.encode64(mystring)
+#        puts 'code=' + mystring
         options  = {"code"=>mystring, "class_name"=>class_name}
         ret      = post("code/put", options)
         ret
@@ -60,6 +64,11 @@ module SimpleWorker
 #            puts 'fname2=' + fname2
 #            puts 'merged_file_array=' + merge.inspect
       File.open(fname2, "w") do |f|
+         if SimpleWorker.config.extra_requires
+           SimpleWorker.config.extra_requires.each do |r|
+             f.write "require '#{r}'\n"
+           end
+         end
         merge.each do |m|
           puts "merging #{m} into #{filename}"
           f.write File.open(m, 'r') { |mo| mo.read }

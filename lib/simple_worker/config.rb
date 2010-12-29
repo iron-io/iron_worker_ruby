@@ -15,10 +15,12 @@ module SimpleWorker
                   :host,
                   :global_attributes,
                   :models,
-                  :database
+                  :database,
+                  :extra_requires
 
     def initialize
       @global_attributes = {}
+      @extra_requires = []
     end
 
   end

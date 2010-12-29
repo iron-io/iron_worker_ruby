@@ -21,8 +21,14 @@ class SimpleWorkerTests < TestBase
 
     # queue up a task
     puts 'queuing ' + tw.inspect
-    response_hash_single = tw.queue
 
+    50.times do |i|
+      begin
+        response_hash_single = tw.queue
+      rescue => ex
+          puts ex.message
+      end
+    end
 
     puts 'response_hash=' + response_hash_single.inspect
     puts 'task_set_id=' + tw.task_set_id
