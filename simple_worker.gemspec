@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
     "README.markdown"
   ]
   s.files = [
+    "lib/railtie.rb",
     "lib/simple_worker.rb",
     "lib/simple_worker/base.rb",
     "lib/simple_worker/config.rb",
