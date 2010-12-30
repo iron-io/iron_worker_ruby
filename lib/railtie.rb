@@ -14,7 +14,7 @@ module SimpleWorker
         path = File.join(Rails.root, 'app/models/*.rb')
         puts 'path=' + path
         c2.models = Dir.glob(path)
-        config.extra_requires += ['active_support/core_ext', 'active_record', 'action_mailer']
+        c2.extra_requires += ['active_support/core_ext', 'active_record', 'action_mailer']
         puts 'config.models=' + c2.models.inspect
       end
 
