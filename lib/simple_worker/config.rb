@@ -23,6 +23,14 @@ module SimpleWorker
       @extra_requires = []
     end
 
+    def get_atts_to_send
+      config_data = {}
+      config_data['database'] = database if database
+      config_data['global_attributes'] = global_attributes if global_attributes
+      config_data['host'] = host if host
+      config_data
+    end
+
   end
 
 end

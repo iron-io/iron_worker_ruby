@@ -231,8 +231,7 @@ module SimpleWorker
         data[iv] = instance_variable_get(iv)
       end
 
-      config_data = {}
-      config_data['database'] = SimpleWorker.config.database if SimpleWorker.config.database
+      config_data = SimpleWorker.config.get_atts_to_send
       data[:sw_config] = config_data
       return data
     end
