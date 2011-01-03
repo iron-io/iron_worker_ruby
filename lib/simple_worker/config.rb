@@ -25,9 +25,9 @@ module SimpleWorker
 
     def get_atts_to_send
       config_data = {}
-      config_data['database'] = database if database
-      config_data['global_attributes'] = global_attributes if global_attributes
-      config_data['host'] = host if host
+      config_data['database'] = self.database if self.database
+      config_data['global_attributes'] = self.global_attributes if self.global_attributes
+      config_data['host'] = self.host if self.host
       config_data
     end
 

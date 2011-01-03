@@ -27,7 +27,7 @@ module SimpleWorker
         existing_md5 = IO.read(f)
       end
 
-      filename = build_merged_file(filename, options[:merge]) if options[:merge]
+      filename = build_merged_file(filename, options[:merge], options[:unmerge]) if options[:merge]
 
 #            sys.classes[subclass].__file__
 #            puts '__FILE__=' + Base.subclass.__file__.to_s
@@ -56,10 +56,17 @@ module SimpleWorker
       end
     end
 
-    def build_merged_file(filename, merge)
+    def build_merged_file(filename, merge, unmerge)
       merge = merge.dup
       merge << filename
       merge.uniq!
+      if unmerge
+        unmerge.each do |x|
+          deleted = merge.delete x
+          puts "Unmerging #{x}. Success? #{deleted}"
+        end
+      end
+
       fname2 = File.join(Dir.tmpdir(), File.basename(filename))
 #            puts 'fname2=' + fname2
 #            puts 'merged_file_array=' + merge.inspect

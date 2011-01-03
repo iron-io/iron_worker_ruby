@@ -45,10 +45,12 @@ Let's say someone does something in your app and you want to send an email about
     worker.to = current_user.email
     worker.subject = "Here is your mail!"
     worker.body = "This is the body"
-    **worker.run**
+    worker.run_local
 
-Queue up your Worker
---------------------
+Once you've got it working locally, the next step is to run it on the SimpleWorker cloud.
+
+Queue up your Worker on the SimpleWorker Cloud
+----------------------------------------------
 
 Let's say someone does something in your app and you want to send an email about it.
 
@@ -56,7 +58,9 @@ Let's say someone does something in your app and you want to send an email about
     worker.to = current_user.email
     worker.subject = "Here is your mail!"
     worker.body = "This is the body"
-    **worker.queue**
+    worker.queue
+
+This will send it off to the SimpleWorker cloud.
 
 Schedule your Worker
 --------------------
@@ -68,7 +72,7 @@ action in your application. This is almost the same as queuing your worker.
     worker.to = current_user.email
     worker.subject = "Here is your mail!"
     worker.body = "This is the body"
-    **worker.schedule(:start_at=>1.hours.since)**
+    worker.schedule(:start_at=>1.hours.since)
 
 Check Status
 ------------
@@ -79,7 +83,7 @@ If you still have access to the worker object, just call:
 
 If you only have the job ID, call:
 
-    SimpleWorker.status(job_id)
+    SimpleWorker.service.status(job_id)
 
 This will return a hash like:
 
@@ -91,22 +95,27 @@ This will return a hash like:
      "duration"=>nil,
      "progress"=>{"percent"=>25}}
 
-TODO: How to access log.
 
 Logging
 -------
 
+In your worker, just call the log method with the string you want logged:
+
     log "Starting to do something..."
 
-The log will be available for viewing via the SimpleWorker UI or via log in the API.
+The log will be available for viewing via the SimpleWorker UI or via log in the API:
+
+    SimpleWorker.service.log(job_id)
 
 Setting Progress
 ----------------
 
+This is just a way to let your users know where the job is at if required.
+
     set_progress(:percent => 25, :message => "We are a quarter of the way there!")
 
-You can actually put anything in this hash and it will be returned with a call to status.
-
+You can actually put anything in this hash and it will be returned with a call to status. We recommend using
+the format above for consistency and to get some additional features where we look for these values.
 
 Schedule a Recurring Job - CRON
 ------------------------------

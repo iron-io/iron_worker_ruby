@@ -12,10 +12,12 @@ module SimpleWorker
       attr_accessor :subclass, :caller_file
       @merged         = []
       @merged_workers = []
+      @unmerged       = []
 
       def reset!
         @merged         = []
         @merged_workers = []
+        @unmerged       = []
       end
 
       def inherited(subclass)
@@ -35,30 +37,44 @@ module SimpleWorker
         super
       end
 
+      def check_for_file(f)
+        f = f.to_str
+        unless ends_with?(f, ".rb")
+          f << ".rb"
+        end
+        exists = false
+        if File.exist? f
+          exists = true
+        else
+          # try relative
+          f2 = File.join(File.dirname(caller[0]), f)
+          if File.exist? f2
+            exists = true
+            f      = f2
+          end
+        end
+        unless exists
+          raise "File not found: " + f
+        end
+        require f
+        f
+      end
+
       # merges the specified files.
       # todo: don't allow multiple files per merge, just one like require
       def merge(*files)
         files.each do |f|
-          f = f.to_str
-          unless ends_with?(f, ".rb")
-            f << ".rb"
-          end
-          exists = false
-          if File.exist? f
-            exists = true
-          else
-            # try relative
-            f2 = File.join(File.dirname(caller[0]), f)
-            if File.exist? f2
-              exists = true
-              f = f2
-            end
-          end
-          unless exists
-            raise "File not found: " + f
-          end
-          require f
+          f = check_for_file(f)
           @merged << File.expand_path(f)
+        end
+      end
+
+      # Opposite of merge, this will omit the files you specify from being merged in. Useful in Rails apps
+      # where a lot of things are auto-merged by default like your models.
+      def unmerge(*files)
+        files.each do |f|
+          f = check_for_file(f)
+          @unmerged << File.expand_path(f)
         end
       end
 
@@ -189,37 +205,40 @@ module SimpleWorker
       puts 'upload_if_needed ' + self.class.name
       # Todo, watch for this file changing or something so we can reupload
       unless uploaded?
-        merged = self.class.instance_variable_get(:@merged)
-        puts 'merged1=' + merged.inspect
+        merged     = self.class.instance_variable_get(:@merged)
+        unmerged     = self.class.instance_variable_get(:@unmerged)
+#        puts 'merged1=' + merged.inspect
 
-        subclass = self.class
-        rfile    = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
-        puts 'subclass file=' + rfile.inspect
-        puts 'subclass.name=' + subclass.name
+        subclass   = self.class
+        rfile      = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
+#        puts 'subclass file=' + rfile.inspect
+#        puts 'subclass.name=' + subclass.name
         superclass = subclass
         # Also get merged from subclasses up to SimpleWorker::Base
         while (superclass = superclass.superclass)
-          puts 'superclass=' + superclass.name
+#          puts 'superclass=' + superclass.name
           break if superclass.name == SimpleWorker::Base.name
           super_merged = superclass.instance_variable_get(:@merged)
 #                     puts 'merging caller file: ' + superclass.instance_variable_get(:@caller_file).inspect
           super_merged << superclass.instance_variable_get(:@caller_file)
           merged = super_merged + merged
-          puts 'merged with superclass=' + merged.inspect
+#          puts 'merged with superclass=' + merged.inspect
         end
         merged += SimpleWorker.config.models if SimpleWorker.config.models
-        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged)
+        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged)
         self.class.instance_variable_set(:@uploaded, true)
       else
         puts 'already uploaded for ' + self.class.name
       end
       merged_workers = self.class.instance_variable_get(:@merged_workers)
-      puts 'now uploading merged WORKERS ' + merged_workers.inspect
-      merged_workers.each do |mw|
-        # to support merges in the secondary worker, we should instantiate it here, then call "upload"
-        puts 'instantiating and uploading ' + mw[1]
-        Kernel.const_get(mw[1]).new.upload
+      if merged_workers.size > 0
+        puts 'now uploading merged workers ' + merged_workers.inspect
+        merged_workers.each do |mw|
+          # to support merges in the secondary worker, we should instantiate it here, then call "upload"
+          puts 'instantiating and uploading ' + mw[1]
+          Kernel.const_get(mw[1]).new.upload
 #                    SimpleWorker.service.upload(mw[0], mw[1])
+        end
       end
 
       after_upload
@@ -231,7 +250,7 @@ module SimpleWorker
         data[iv] = instance_variable_get(iv)
       end
 
-      config_data = SimpleWorker.config.get_atts_to_send
+      config_data      = SimpleWorker.config.get_atts_to_send
       data[:sw_config] = config_data
       return data
     end

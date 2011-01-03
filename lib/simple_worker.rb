@@ -17,7 +17,11 @@ module SimpleWorker
       yield(config)
       SimpleWorker.service = Service.new(config.access_key, config.secret_key, :config=>config)
     end
+
+ 
   end
+
+
 
 end
 
