@@ -9,6 +9,7 @@ end
 class TestWorker2 < SimpleWorker::Base
 
     merge File.join(File.dirname(__FILE__), 'models', 'model_1.rb')
+    unmerge 'models/model_2.rb'
     merge_worker File.join(File.dirname(__FILE__), 'second_worker.rb'), 'SecondWorker'
 
     attr_accessor :s3_key, :times, :x

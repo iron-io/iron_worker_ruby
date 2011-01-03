@@ -56,6 +56,7 @@ module SimpleWorker
         unless exists
           raise "File not found: " + f
         end
+        f = File.expand_path(f)
         require f
         f
       end
@@ -65,7 +66,7 @@ module SimpleWorker
       def merge(*files)
         files.each do |f|
           f = check_for_file(f)
-          @merged << File.expand_path(f)
+          @merged << f
         end
       end
 
@@ -74,7 +75,7 @@ module SimpleWorker
       def unmerge(*files)
         files.each do |f|
           f = check_for_file(f)
-          @unmerged << File.expand_path(f)
+          @unmerged << f
         end
       end
 
