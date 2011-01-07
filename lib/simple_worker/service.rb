@@ -59,7 +59,10 @@ module SimpleWorker
     def build_merged_file(filename, merge, unmerge)
       merge = merge.dup
       merge << filename
+      #puts "merge before uniq! " + merge.inspect
       merge.uniq!
+     # puts "merge after uniq! " + merge.inspect
+
       if unmerge
         unmerge.each do |x|
           deleted = merge.delete x

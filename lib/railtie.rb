@@ -5,7 +5,7 @@ require 'rails'
 
 module SimpleWorker
   class Railtie < Rails::Railtie
-    railtie_name :simple_worker
+#    railtie_name :simple_worker deprecated
 
     initializer "simple_worker.configure_rails_initialization" do |app|
       puts 'railtie'

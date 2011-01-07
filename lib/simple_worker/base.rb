@@ -47,7 +47,9 @@ module SimpleWorker
           exists = true
         else
           # try relative
-          f2 = File.join(File.dirname(caller[0]), f)
+#          p caller
+          f2 = File.join(File.dirname(caller[3]), f)
+          puts 'f2=' + f2
           if File.exist? f2
             exists = true
             f      = f2
@@ -97,7 +99,7 @@ module SimpleWorker
     end
 
     def user_dir
-      "."
+      "./"
     end
 
     def set_progress(hash)

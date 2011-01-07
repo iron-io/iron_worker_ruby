@@ -187,6 +187,9 @@ Or simpler yet, try using relative paths:
     merge "../app/models/user"
     merge "../app/models/account.rb"
 
+The opposite can be done as well with "unmerge" and can be useful when using Rails to exclude classes that are automatically
+merged.
+
 
 Bringing in other Workers
 ---------------------
