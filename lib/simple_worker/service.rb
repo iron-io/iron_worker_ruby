@@ -20,7 +20,7 @@ module SimpleWorker
       puts "Uploading #{class_name}"
       # check whether it should upload again
       tmp          = Dir.tmpdir()
-      md5file      = "simple_worker_#{class_name.gsub("::", ".")}.md5"
+      md5file      = "simple_worker_#{class_name.gsub("::", ".")}_#{access_key[0,8]}.md5"
       existing_md5 = nil
       f            = File.join(tmp, md5file)
       if File.exists?(f)
