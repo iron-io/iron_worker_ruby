@@ -5,6 +5,11 @@ Getting Started
 
 [1]: http://www.simpleworker.com/
 
+Install SimpleWorker Gem
+------------------------
+
+    gem install simple_worker
+
 Configure SimpleWorker
 ----------------------
 
