@@ -2,8 +2,8 @@ begin
     require 'jeweler'
     Jeweler::Tasks.new do |gemspec|
         gemspec.name = "simple_worker"
-        gemspec.summary = "Classified"
-        gemspec.description = "I could tell you, but then I'd have to..."
+        gemspec.summary = "The official SimpleWorker gem for http://www.simpleworker.com"
+        gemspec.description = "The official SimpleWorker gem for http://www.simpleworker.com"
         gemspec.email = "travis@appoxy.com"
         gemspec.homepage = "http://github.com/appoxy/simple_worker"
         gemspec.authors = ["Travis Reeder"]
