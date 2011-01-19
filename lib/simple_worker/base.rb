@@ -126,6 +126,7 @@ module SimpleWorker
     end
 
     def set_global_attributes
+      return unless SimpleWorker.config
       ga = SimpleWorker.config.global_attributes
       if ga && ga.size > 0
         ga.each_pair do |k, v|

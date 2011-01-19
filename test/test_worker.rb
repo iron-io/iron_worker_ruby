@@ -9,12 +9,10 @@ class TestWorker < SimpleWorker::Base
 
     attr_accessor :s3_key, :times
 
-    def run(data=nil)
-        log 'running the runner for leroy '.upcase + ' with data: ' + data.inspect
-
+    def run
+        log 'running the test worker for moi '.upcase
         log 's3_key instance_variable = ' + self.s3_key.to_s
 
-        @times = data["times"].to_i
         @times.times do |i|
             log 'running at ' + i.to_s
             sleep 1
@@ -26,12 +24,6 @@ class TestWorker < SimpleWorker::Base
         log 'SET COMPLETE YAY!' + params[:task_set_id]
     end
 
-    def progress
-        if @count
-            return @count / @times
-        end
-        return 0.0
-    end
 
 end
 
