@@ -8,14 +8,13 @@ module SimpleWorker
 #    railtie_name :simple_worker deprecated
 
     initializer "simple_worker.configure_rails_initialization" do |app|
-      puts 'railtie'
-      puts "Initializing list of Rails models..."
+      puts "Initializing SimpleWorker for Rails 3..."
       SimpleWorker.configure do |c2|
         path = File.join(Rails.root, 'app/models/*.rb')
-        puts 'path=' + path
+#        puts 'path=' + path
         c2.models = Dir.glob(path)
         c2.extra_requires += ['active_support/core_ext', 'active_record', 'action_mailer']
-        puts 'config.models=' + c2.models.inspect
+#        puts 'config.models=' + c2.models.inspect
       end
 
     end

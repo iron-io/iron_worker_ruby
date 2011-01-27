@@ -26,8 +26,8 @@ module SimpleWorker
 end
 
 if defined?(Rails)
-  puts 'Rails=' + Rails.inspect
-  puts 'vers=' + Rails::VERSION::MAJOR.inspect
+#  puts 'Rails=' + Rails.inspect
+#  puts 'vers=' + Rails::VERSION::MAJOR.inspect
   if Rails::VERSION::MAJOR == 2
     require_relative 'rails2_init.rb'
   else
