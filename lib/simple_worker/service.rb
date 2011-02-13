@@ -96,7 +96,7 @@ module SimpleWorker
 
     # class_name: The class name of a previously upload class, eg: MySuperWorker
     # data: Arbitrary hash of your own data that your task will need to run.
-    def queue(class_name, data={})
+    def queue(class_name, data={}, options={})
       puts "Queuing #{class_name}"
       if !data.is_a?(Array)
         data = [data]
@@ -105,8 +105,10 @@ module SimpleWorker
       hash_to_send               = {}
       hash_to_send["payload"]    = data
       hash_to_send["class_name"] = class_name
+      hash_to_send["priority"] = options[:priority] if options[:priority]
       add_sw_params(hash_to_send)
       if defined?(RAILS_ENV)
+        # todo: move this to global_attributes in railtie
         hash_to_send["rails_env"] = RAILS_ENV
       end
       return queue_raw(class_name, hash_to_send)

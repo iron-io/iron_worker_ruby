@@ -139,12 +139,12 @@ module SimpleWorker
     end
 
     # Will send in all instance_variables.
-    def queue
+    def queue(options={})
 #            puts 'in queue'
       set_auto_attributes
       upload_if_needed
 
-      response     = SimpleWorker.service.queue(self.class.name, sw_get_data)
+      response     = SimpleWorker.service.queue(self.class.name, sw_get_data, options)
 #            puts 'queue response=' + response.inspect
       @task_set_id = response["task_set_id"]
       @task_id     = response["tasks"][0]["task_id"]

@@ -67,6 +67,17 @@ Let's say someone does something in your app and you want to send an email about
 
 This will send it off to the SimpleWorker cloud.
 
+Setting Priority
+----------------------------------------------
+
+Simply define the priority in your queue command.
+
+    worker.queue(:priority=>1)
+
+Default priority is 0 and we currently support priority 0, 1, 2. See [pricing page](http://www.simpleworker.com/pricing)
+for more information on priorites.
+
+
 Schedule your Worker
 --------------------
 
@@ -156,12 +167,15 @@ Rails 3.X:
 Now you can use your workers like they're part of your app!  We recommend putting your worker classes in
 /app/workers path.
 
-Configuring a Database Connection
+Configuring an Database Connection
 ---------------------------------
 
 Although you could easily do this in your worker, this makes it a bit more convenient and more importantly
-it will create the connection for you. If you are using ActiveRecord, you would add the following to your
-SimpleWorker config:
+it will create the connection for you. If you are using Rails 3, you just need to add one line:
+
+    config.database = Rails.configuration.database_configuration[Rails.env]
+
+For non Rails 3, you would add the following to your SimpleWorker config:
 
     config.database = {
       :adapter => "mysql2",
