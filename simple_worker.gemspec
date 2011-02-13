@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_worker}
-  s.version = "0.3.20"
+  s.version = "0.3.21"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder"]
-  s.date = %q{2011-01-07}
-  s.description = %q{I could tell you, but then I'd have to...}
+  s.date = %q{2011-02-13}
+  s.description = %q{The official SimpleWorker gem for http://www.simpleworker.com}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
     "README.markdown"
@@ -27,8 +27,8 @@ Gem::Specification.new do |s|
   ]
   s.homepage = %q{http://github.com/appoxy/simple_worker}
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.7}
-  s.summary = %q{Classified}
+  s.rubygems_version = %q{1.5.1}
+  s.summary = %q{The official SimpleWorker gem for http://www.simpleworker.com}
   s.test_files = [
     "test/models/model_1.rb",
     "test/models/model_2.rb",
@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
     "test/second_worker.rb",
     "test/test_base.rb",
     "test/test_inheritance.rb",
+    "test/test_no_config.rb",
     "test/test_simple_worker.rb",
     "test/test_worker.rb",
     "test/test_worker_2.rb",
@@ -44,7 +45,6 @@ Gem::Specification.new do |s|
   ]
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
