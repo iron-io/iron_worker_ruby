@@ -87,7 +87,7 @@ module SimpleWorker
       end
 
       def merge_worker(file, class_name)
-        puts 'merge_worker in ' + self.name
+#        puts 'merge_worker in ' + self.name
         merge(file)
         @merged_workers << [File.expand_path(file), class_name]
       end

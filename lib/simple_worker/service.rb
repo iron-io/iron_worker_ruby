@@ -66,7 +66,7 @@ module SimpleWorker
       if unmerge
         unmerge.each do |x|
           deleted = merge.delete x
-          puts "Unmerging #{x}. Success? #{deleted}"
+#          puts "Unmerging #{x}. Success? #{deleted}"
         end
       end
 
@@ -80,7 +80,7 @@ module SimpleWorker
            end
          end
         merge.each do |m|
-          puts "merging #{m} into #{filename}"
+#          puts "merging #{m} into #{filename}"
           f.write File.open(m, 'r') { |mo| mo.read }
           f.write "\n\n"
         end
