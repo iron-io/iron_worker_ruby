@@ -165,7 +165,7 @@ Rails 3.X:
     gem 'simple_worker'
 
 Now you can use your workers like they're part of your app!  We recommend putting your worker classes in
-/app/workers path.
+/app/workers path.  
 
 Configuring a Database Connection
 ---------------------------------
