@@ -167,7 +167,7 @@ Rails 3.X:
 Now you can use your workers like they're part of your app!  We recommend putting your worker classes in
 /app/workers path.
 
-Configuring an Database Connection
+Configuring a Database Connection
 ---------------------------------
 
 Although you could easily do this in your worker, this makes it a bit more convenient and more importantly
