@@ -1,5 +1,6 @@
 require 'base64'
 require 'logger'
+require 'appoxy_api'
 
 module SimpleWorker
 
