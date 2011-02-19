@@ -1,9 +1,11 @@
+=begin
 begin
     require File.join(File.dirname(__FILE__), '../lib/simple_worker')
 rescue Exception => ex
     puts ex.message
     require 'simple_worker'
 end
+=end
 
 # Bump for new checksum.sdf adsfjlaksdjf dasfasdfadsf
 class TestWorker2 < SimpleWorker::Base

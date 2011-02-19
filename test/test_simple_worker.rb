@@ -22,7 +22,8 @@ class SimpleWorkerTests < TestBase
     # queue up a task
     puts 'queuing ' + tw.inspect
 
-    50.times do |i|
+    response_hash_single = nil
+    5.times do |i|
       begin
         response_hash_single = tw.queue
       rescue => ex
@@ -31,7 +32,6 @@ class SimpleWorkerTests < TestBase
     end
 
     puts 'response_hash=' + response_hash_single.inspect
-    puts 'task_set_id=' + tw.task_set_id
     puts 'task_id=' + tw.task_id
     10.times do |i|
       puts "status #{i}: " + tw.status.inspect

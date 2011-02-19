@@ -3,7 +3,7 @@ require 'yaml'
 begin
   require File.join(File.dirname(__FILE__), '../lib/simple_worker')
 rescue Exception => ex
-  puts ex.message
+  puts "Could NOT load current simple_worker: " + ex.message
   require 'simple_worker'
 end
 require_relative "test_worker"

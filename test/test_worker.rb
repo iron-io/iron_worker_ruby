@@ -1,9 +1,9 @@
-begin
-    require File.join(File.dirname(__FILE__), '../lib/simple_worker')
-rescue Exception => ex
-    puts ex.message
-    require 'simple_worker'
-end
+#begin
+#    require File.join(File.dirname(__FILE__), '../lib/simple_worker')
+#rescue Exception => ex
+#    puts ex.message
+#    require 'simple_worker'
+#end
 # Bump for new checksum.
 class TestWorker < SimpleWorker::Base
 

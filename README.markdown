@@ -210,11 +210,13 @@ The opposite can be done as well with "unmerge" and can be useful when using Rai
 merged.
 
 
-Bringing in other Workers
+Merging other Workers
 ---------------------
 
-merge_worker
-TODO
+Merging other workers is a bit different than merging other code like above because they will be
+uploaded separately and treated as distinctly separate workers.
+
+    merge_worker "./other_worker.rb", "OtherWorker"
 
 
 Configuration Options

@@ -10,14 +10,14 @@ module SimpleWorker
 
     class << self
       attr_accessor :subclass, :caller_file
-      @merged         = []
+      @merged = []
       @merged_workers = []
-      @unmerged       = []
+      @unmerged = []
 
       def reset!
-        @merged         = []
+        @merged = []
         @merged_workers = []
-        @unmerged       = []
+        @unmerged = []
       end
 
       def inherited(subclass)
@@ -52,7 +52,7 @@ module SimpleWorker
           puts 'f2=' + f2
           if File.exist? f2
             exists = true
-            f      = f2
+            f = f2
           end
         end
         unless exists
@@ -86,6 +86,11 @@ module SimpleWorker
         s[-suffix.length, suffix.length] == suffix
       end
 
+      # Use this to merge in other workers. These are treated differently the normal merged files because
+      # they will be uploaded separately and treated as distinctly separate workers.
+      #
+      # file: This is the path to the file, just like merge.
+      # class_name: eg: 'MyWorker'. 
       def merge_worker(file, class_name)
 #        puts 'merge_worker in ' + self.name
         merge(file)
@@ -116,9 +121,17 @@ module SimpleWorker
 
     # Call this if you want to run locally and get some extra features from this gem like global attributes.
     def run_local
-#            puts 'run_local'
+      # puts 'run_local'
       set_auto_attributes
-      run
+      begin
+        run
+      rescue => ex
+        if self.respond_to?(:rescue_all)
+          rescue_all(ex)
+        else
+          raise ex
+        end
+      end
     end
 
     def set_auto_attributes
@@ -138,16 +151,20 @@ module SimpleWorker
       end
     end
 
-    # Will send in all instance_variables.
+    # Call this to queue up your job to SimpleWorker cloud.
+    # options:
+    #   :priority => 0,1 or 2. Default is 0.
+    #   :recursive => true/false. Default is false. If you queue up a worker that is the same class as the currently
+    #                 running worker, it will be rejected unless you set this explicitly so we know you meant to do it.
     def queue(options={})
 #            puts 'in queue'
       set_auto_attributes
       upload_if_needed
 
-      response     = SimpleWorker.service.queue(self.class.name, sw_get_data, options)
+      response = SimpleWorker.service.queue(self.class.name, sw_get_data, options)
 #            puts 'queue response=' + response.inspect
-      @task_set_id = response["task_set_id"]
-      @task_id     = response["tasks"][0]["task_id"]
+#      @task_set_id = response["task_set_id"]
+      @task_id = response["task_id"]
       response
     end
 
@@ -173,7 +190,7 @@ module SimpleWorker
       set_global_attributes
       upload_if_needed
 
-      response     = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
+      response = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
 #            puts 'schedule response=' + response.inspect
       @schedule_id = response["schedule_id"]
       response
@@ -206,15 +223,15 @@ module SimpleWorker
 
       before_upload
 
-      puts 'upload_if_needed ' + self.class.name
+#      puts 'upload_if_needed ' + self.class.name
       # Todo, watch for this file changing or something so we can reupload
       unless uploaded?
-        merged     = self.class.instance_variable_get(:@merged)
-        unmerged     = self.class.instance_variable_get(:@unmerged)
+        merged = self.class.instance_variable_get(:@merged)
+        unmerged = self.class.instance_variable_get(:@unmerged)
 #        puts 'merged1=' + merged.inspect
 
-        subclass   = self.class
-        rfile      = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
+        subclass = self.class
+        rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
 #        puts 'subclass file=' + rfile.inspect
 #        puts 'subclass.name=' + subclass.name
         superclass = subclass
@@ -232,14 +249,14 @@ module SimpleWorker
         SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged)
         self.class.instance_variable_set(:@uploaded, true)
       else
-        puts 'already uploaded for ' + self.class.name
+        SimpleWorker.logger.debug 'Already uploaded for ' + self.class.name
       end
       merged_workers = self.class.instance_variable_get(:@merged_workers)
       if merged_workers.size > 0
-        puts 'now uploading merged workers ' + merged_workers.inspect
+#        puts 'now uploading merged workers ' + merged_workers.inspect
         merged_workers.each do |mw|
           # to support merges in the secondary worker, we should instantiate it here, then call "upload"
-          puts 'instantiating and uploading ' + mw[1]
+          SimpleWorker.logger.debug 'Instantiating and uploading ' + mw[1]
           Kernel.const_get(mw[1]).new.upload
 #                    SimpleWorker.service.upload(mw[0], mw[1])
         end
@@ -254,7 +271,7 @@ module SimpleWorker
         data[iv] = instance_variable_get(iv)
       end
 
-      config_data      = SimpleWorker.config.get_atts_to_send
+      config_data = SimpleWorker.config.get_atts_to_send
       data[:sw_config] = config_data
       return data
     end
