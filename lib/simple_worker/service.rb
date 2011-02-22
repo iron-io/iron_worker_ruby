@@ -189,7 +189,7 @@ module SimpleWorker
 
     def log(task_id)
       data = {"task_id"=>task_id}
-      ret  = get("task/log", data)
+      ret  = get("task/log", data, {:parse=>false})
 #            puts 'ret=' + ret.inspect
 #            ret["log"] = Base64.decode64(ret["log"])
       ret
