@@ -1,14 +1,19 @@
+require 'active_record'
 require_relative 'test_base'
+require_relative 'cool_worker'
+require_relative 'cool_model'
+require_relative 'trace_object'
+require_relative 'db_worker'
 
 class SimpleWorkerTests < TestBase
 
 
   def test_new_worker_style
     # Add something to queue, get task ID back
-    tw        = TestWorker2.new
+    tw = TestWorker2.new
     tw.s3_key = "active style runner"
-    tw.times  = 3
-    tw.x      = true
+    tw.times = 3
+    tw.x = true
 
     # schedule up a task
 #        start_at = 10.seconds.since
@@ -27,7 +32,7 @@ class SimpleWorkerTests < TestBase
       begin
         response_hash_single = tw.queue
       rescue => ex
-          puts ex.message
+        puts ex.message
       end
     end
 
@@ -54,6 +59,68 @@ class SimpleWorkerTests < TestBase
     assert_equal 123, worker.x
 
   end
+
+
+  def test_data_passing
+    cool = CoolWorker.new
+    cool.array_of_models = [CoolModel.new(:name=>"name1"), CoolModel.new(:name=>"name2")]
+    cool.queue
+    status = wait_for_task(cool)
+    assert status["status"] == "complete"
+    log = SimpleWorker.service.log(cool.task_id)
+    puts 'log=' + log.inspect
+    assert log.length > 10
+
+  end
+
+  def test_exceptions
+    worker = TestWorker.new
+    worker.queue
+    status = wait_for_task(worker)
+    assert status["status"] == "error"
+    assert status["msg"].present?
+  end
+
+  def test_active_record
+    dbw = DbWorker.new
+    dbw.run_local
+    assert !dbw.ob.nil?
+    assert !dbw.ob.id.nil?
+
+    dbw.queue
+    # would be interesting if the object could update itself on complete. Like it would retrieve new values from
+    # finished job when calling status or something.
+
+    status = wait_for_task(dbw)
+    assert status["status"] == "complete"
+
+
+  end
+
+
+  def wait_for_task(params={})
+    tries = 0
+    status = nil
+    sleep 1
+    while  tries < 60
+      status = status_for(params)
+      puts 'status = ' + status.inspect
+      if status["status"] == "complete" || status["status"] == "error"
+        break
+      end
+      sleep 2
+    end
+    status
+  end
+
+  def status_for(ob)
+    if ob.is_a?(Hash)
+      ob[:schedule_id] ? WORKER.schedule_status(ob[:schedule_id]) : WORKER.status(ob[:task_id])
+    else
+      ob.status
+    end
+  end
+
 
   def test_require_relative_merge
 

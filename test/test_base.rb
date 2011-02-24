@@ -13,25 +13,19 @@ require_relative "test_worker_3"
 class TestBase < Test::Unit::TestCase
 
   def setup
-    @config     = YAML::load(File.open(File.expand_path("~/.test_configs/simple_worker.yml")))
+    @config = YAML::load(File.open(File.expand_path("~/.test_configs/simple_worker.yml")))
     #puts @config.inspect
     @access_key = @config['simple_worker']['access_key']
     @secret_key = @config['simple_worker']['secret_key']
 
     # new style
     SimpleWorker.configure do |config|
-      config.access_key                   = @access_key
-      config.secret_key                   = @secret_key
-#            config.host = "http://localhost:3000/api/"
+      config.access_key = @access_key
+      config.secret_key = @secret_key
+      config.host = @config['simple_worker']['host']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
-      config.database = {
-          :adapter  => "mysql2",
-          :host     => "localhost",
-          :database => "appdb",
-          :username => "appuser",
-          :password => "secret"
-      }
+      config.database = @config['database']
 
     end
   end

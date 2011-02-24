@@ -124,6 +124,7 @@ module SimpleWorker
     def run_local
       # puts 'run_local'
       set_auto_attributes
+      init_database
       begin
         run
       rescue => ex
@@ -131,6 +132,15 @@ module SimpleWorker
           rescue_all(ex)
         else
           raise ex
+        end
+      end
+    end
+
+    def init_database
+      if SimpleWorker.config.database
+        require 'active_record'
+        if !ActiveRecord::Base.connected?
+          ActiveRecord::Base.establish_connection(SimpleWorker.config.database)
         end
       end
     end
