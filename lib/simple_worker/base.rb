@@ -1,6 +1,7 @@
 # This is an abstract module that developers creating works can mixin/include to use the SimpleWorker special functions.
 
 require 'digest/md5'
+require 'base64'
 
 module SimpleWorker
 
@@ -267,9 +268,12 @@ module SimpleWorker
 
     def sw_get_data
       data = {}
+
+      payload = {}
       self.instance_variables.each do |iv|
-        data[iv] = instance_variable_get(iv)
+        payload[iv] = instance_variable_get(iv)
       end
+      data[:attr_encoded] = Base64.encode64(payload.to_json)
 
       config_data = SimpleWorker.config.get_atts_to_send
       data[:sw_config] = config_data
