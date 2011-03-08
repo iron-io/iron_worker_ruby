@@ -88,6 +88,11 @@ module SimpleWorker
              f.write "require '#{r}'\n"
            end
          end
+         if SimpleWorker.config.custom_merged_gems
+          SimpleWorker.config.custom_merged_gems.each do |gem|
+            f.write "add_custom_merged_gem '#{gem}'\n"
+          end
+        end
         merge.each do |m|
 #          puts "merging #{m} into #{filename}"
           f.write File.open(m, 'r') { |mo| mo.read }

@@ -1,5 +1,24 @@
 # This is an abstract module that developers creating works can mixin/include to use the SimpleWorker special functions.
+module Kernel
+  alias_method :old_require, :require
+  @@custom_merged_gems=[]
 
+  def add_custom_merged_gem(gem_name)
+    @@custom_merged_gems<<gem_name.match(/^[a-zA-Z0-9\-_]+/)[0]
+    puts "GEM ADDED #{gem_name}"
+  end
+
+  def require(s)
+    #puts "requiring " + s
+    begin
+      old_require s
+    rescue LoadError =>ex
+      puts "EX:#{ex.inspect}"
+      puts "CUSTOM GEMS" + @@custom_merged_gems.inspect
+      raise if !@@custom_merged_gems.include?(s.match(/^[a-zA-Z0-9\-_]+/)[0])
+    end
+  end
+end
 require 'digest/md5'
 require 'base64'
 
@@ -64,9 +83,20 @@ module SimpleWorker
         f
       end
 
+      # merges the specified gem.
+      def merge_gem(gem_name)
+        add_custom_merged_gem(gem_name)
+        SimpleWorker.config.custom_merged_gems << gem_name if SimpleWorker.config
+        g = GemParser.new
+        files =  g.start gem_name
+        files.each do |file|
+          merge(file)
+        end
+      end
+
       # merges the specified files.
       # todo: don't allow multiple files per merge, just one like require
-      def merge(*files)
+      def merge(* files)
         files.each do |f|
           f = check_for_file(f)
           @merged << f
@@ -75,7 +105,7 @@ module SimpleWorker
 
       # Opposite of merge, this will omit the files you specify from being merged in. Useful in Rails apps
       # where a lot of things are auto-merged by default like your models.
-      def unmerge(*files)
+      def unmerge(* files)
         files.each do |f|
           f = check_for_file(f)
           @unmerged << f
