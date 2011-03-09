@@ -84,11 +84,11 @@ module SimpleWorker
       end
 
       # merges the specified gem.
-      def merge_gem(gem_name)
+      def merge_gem(gem_name,version=nil)
         add_custom_merged_gem(gem_name)
         SimpleWorker.config.custom_merged_gems << gem_name if SimpleWorker.config
         g = GemParser.new
-        files =  g.start gem_name
+        files =  g.start gem_name , version
         files.each do |file|
           merge(file)
         end
