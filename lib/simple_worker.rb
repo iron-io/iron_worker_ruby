@@ -4,7 +4,6 @@ require_relative 'simple_worker/service'
 require_relative 'simple_worker/base'
 require_relative 'simple_worker/config'
 require_relative 'simple_worker/used_in_worker'
-require_relative 'simple_worker/gem_parser'
 
 
 module SimpleWorker

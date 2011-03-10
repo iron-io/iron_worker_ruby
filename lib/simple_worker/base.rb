@@ -1,24 +1,3 @@
-# This is an abstract module that developers creating works can mixin/include to use the SimpleWorker special functions.
-module Kernel
-  alias_method :old_require, :require
-  @@custom_merged_gems=[]
-
-  def add_custom_merged_gem(gem_name)
-    @@custom_merged_gems<<gem_name.match(/^[a-zA-Z0-9\-_]+/)[0]
-    puts "GEM ADDED #{gem_name}"
-  end
-
-  def require(s)
-    #puts "requiring " + s
-    begin
-      old_require s
-    rescue LoadError =>ex
-      puts "EX:#{ex.inspect}"
-      puts "CUSTOM GEMS" + @@custom_merged_gems.inspect
-      raise if !@@custom_merged_gems.include?(s.match(/^[a-zA-Z0-9\-_]+/)[0])
-    end
-  end
-end
 require 'digest/md5'
 require 'base64'
 
@@ -30,14 +9,14 @@ module SimpleWorker
 
     class << self
       attr_accessor :subclass, :caller_file
-      @merged = []
+      @merged         = []
       @merged_workers = []
-      @unmerged = []
+      @unmerged       = []
 
       def reset!
-        @merged = []
+        @merged         = []
         @merged_workers = []
-        @unmerged = []
+        @unmerged       = []
       end
 
       def inherited(subclass)
@@ -60,7 +39,8 @@ module SimpleWorker
       def check_for_file(f)
         f = f.to_str
         unless ends_with?(f, ".rb")
-          f << ".rb"
+          f << "
+          .rb"
         end
         exists = false
         if File.exist? f
@@ -72,7 +52,7 @@ module SimpleWorker
           puts 'f2=' + f2
           if File.exist? f2
             exists = true
-            f = f2
+            f      = f2
           end
         end
         unless exists
@@ -84,14 +64,9 @@ module SimpleWorker
       end
 
       # merges the specified gem.
-      def merge_gem(gem_name,version=nil)
-        add_custom_merged_gem(gem_name)
-        SimpleWorker.config.custom_merged_gems << gem_name if SimpleWorker.config
-        g = GemParser.new
-        files =  g.start gem_name , version
-        files.each do |file|
-          merge(file)
-        end
+      def merge_gem(gem_name, version=nil)
+        SimpleWorker.config.custom_merged_gems << gem_name if SimpleWorker.config        
+        require gem_name
       end
 
       # merges the specified files.
@@ -231,7 +206,7 @@ module SimpleWorker
       set_global_attributes
       upload_if_needed
 
-      response = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
+      response     = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
 #            puts 'schedule response=' + response.inspect
       @schedule_id = response["schedule_id"]
       response
@@ -267,12 +242,12 @@ module SimpleWorker
 #      puts 'upload_if_needed ' + self.class.name
       # Todo, watch for this file changing or something so we can reupload
       unless uploaded?
-        merged = self.class.instance_variable_get(:@merged)
-        unmerged = self.class.instance_variable_get(:@unmerged)
+        merged     = self.class.instance_variable_get(:@merged)
+        unmerged   = self.class.instance_variable_get(:@unmerged)
 #        puts 'merged1=' + merged.inspect
 
-        subclass = self.class
-        rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
+        subclass   = self.class
+        rfile      = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
 #        puts 'subclass file=' + rfile.inspect
 #        puts 'subclass.name=' + subclass.name
         superclass = subclass
@@ -307,7 +282,7 @@ module SimpleWorker
     end
 
     def sw_get_data
-      data = {}
+      data    = {}
 
       payload = {}
       self.instance_variables.each do |iv|
@@ -315,8 +290,8 @@ module SimpleWorker
       end
       data[:attr_encoded] = Base64.encode64(payload.to_json)
 
-      config_data = SimpleWorker.config.get_atts_to_send
-      data[:sw_config] = config_data
+      config_data         = SimpleWorker.config.get_atts_to_send
+      data[:sw_config]    = config_data
       return data
     end
 

@@ -4,7 +4,7 @@ require 'appoxy_api'
 
 module SimpleWorker
 
-  @@logger = Logger.new(STDOUT)
+  @@logger       = Logger.new(STDOUT)
   @@logger.level = Logger::INFO
 
   def self.logger
@@ -29,7 +29,7 @@ module SimpleWorker
 #      puts "Uploading #{class_name}"
       # check whether it should upload again
       tmp          = Dir.tmpdir()
-      md5file      = "simple_worker_#{class_name.gsub("::", ".")}_#{access_key[0,8]}.md5"
+      md5file      = "simple_worker_#{class_name.gsub("::", ".")}_#{access_key[0, 8]}.md5"
       existing_md5 = nil
       f            = File.join(tmp, md5file)
       if File.exists?(f)
@@ -57,7 +57,7 @@ module SimpleWorker
         file     = File.open(filename, "r") do |f|
           mystring = f.read
         end
-#        mystring = Base64.encode64(mystring)
+        mystring = Base64.encode64(mystring)
 #        puts 'code=' + mystring
         options  = {"code"=>mystring, "class_name"=>class_name}
         ret      = post("code/put", options)
@@ -65,12 +65,38 @@ module SimpleWorker
       end
     end
 
+    def get_gem_path(full_gem_name, version=nil)
+      gem_name =(full_gem_name.match(/^[a-zA-Z0-9\-_]+/)[0])
+      puts "Searching #{gem_name}"
+      searcher = Gem::GemPathSearcher.new
+      gems     = searcher.find_all(gem_name)
+      gems.select! { |g| g.version.version==version } if version
+      if !gems.empty?
+        gem = gems.first
+        gem.full_gem_path + "/lib"
+      else
+        nil
+      end
+    end
+
     def build_merged_file(filename, merge, unmerge)
-      merge = merge.dup
-      merge << filename
+      merge    = merge.dup
+      tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
+      File.open(tmp_file, "w") do |f|
+        if SimpleWorker.config.extra_requires
+          SimpleWorker.config.extra_requires.each do |r|
+            f.write "require '#{r}'\n"
+          end
+        end
+        SimpleWorker.config.custom_merged_gems.each do |gem|
+          f.write "$LOAD_PATH <<  File.join(File.dirname(__FILE__), '/gems/#{gem}') \n"
+        end
+        f.write File.open(filename, 'r') { |mo| mo.read }
+      end
+      merge << tmp_file
       #puts "merge before uniq! " + merge.inspect
       merge.uniq!
-     # puts "merge after uniq! " + merge.inspect
+      # puts "merge after uniq! " + merge.inspect
 
       if unmerge
         unmerge.each do |x|
@@ -79,24 +105,25 @@ module SimpleWorker
         end
       end
 
-      fname2 = File.join(Dir.tmpdir(), File.basename(filename))
+      fname2 = tmp_file+".zip"
 #            puts 'fname2=' + fname2
 #            puts 'merged_file_array=' + merge.inspect
-      File.open(fname2, "w") do |f|
-         if SimpleWorker.config.extra_requires
-           SimpleWorker.config.extra_requires.each do |r|
-             f.write "require '#{r}'\n"
-           end
-         end
-         if SimpleWorker.config.custom_merged_gems
+      #File.open(fname2, "w") do |f|
+      File.delete(fname2) if File.exist?(fname2)
+      Zip::ZipFile.open(fname2, 'w') do |f|
+        if SimpleWorker.config.custom_merged_gems
           SimpleWorker.config.custom_merged_gems.each do |gem|
-            f.write "add_custom_merged_gem '#{gem}'\n"
+            path = get_gem_path(gem)
+            if path
+              Dir["#{path}/**/**"].each do |file|
+                f.add('gems/'+"#{gem}/"+ file.sub(path+'/', ''), file)
+              end
+            end
           end
         end
         merge.each do |m|
 #          puts "merging #{m} into #{filename}"
-          f.write File.open(m, 'r') { |mo| mo.read }
-          f.write "\n\n"
+          f.add(File.basename(m), m)
         end
       end
       fname2
@@ -161,7 +188,7 @@ module SimpleWorker
       hash_to_send["class_name"] = class_name
       hash_to_send["schedule"]   = schedule
       add_sw_params(hash_to_send)
-#            puts 'about to send ' + hash_to_send.inspect
+#            puts ' about to send ' + hash_to_send.inspect
       ret = post("scheduler/schedule", hash_to_send)
       ret
     end
@@ -195,7 +222,7 @@ module SimpleWorker
     def log(task_id)
       data = {"task_id"=>task_id}
       ret  = get("task/log", data, {:parse=>false})
-#            puts 'ret=' + ret.inspect
+#            puts ' ret=' + ret.inspect
 #            ret["log"] = Base64.decode64(ret["log"])
       ret
     end
