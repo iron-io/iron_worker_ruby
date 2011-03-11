@@ -1,7 +1,7 @@
 require 'base64'
 require 'logger'
 require 'appoxy_api'
-
+require 'zip'
 module SimpleWorker
 
   @@logger       = Logger.new(STDOUT)
@@ -53,14 +53,14 @@ module SimpleWorker
       end
 
       if new_code
-        mystring = nil
-        file     = File.open(filename, "r") do |f|
-          mystring = f.read
-        end
-        mystring = Base64.encode64(mystring)
+#        mystring = nil
+#        file     = File.open(filename, "r") do |f|
+#          mystring = f.read
+#        end
+#        mystring = Base64.encode64(mystring)
 #        puts 'code=' + mystring
-        options  = {"code"=>mystring, "class_name"=>class_name}
-        ret      = post("code/put", options)
+        options  = {"class_name"=>class_name, }
+        ret      = post_file("code/put", File.new(filename), options)
         ret
       end
     end
@@ -106,6 +106,7 @@ module SimpleWorker
 #            puts 'merged_file_array=' + merge.inspect
       #File.open(fname2, "w") do |f|
       File.delete(fname2) if File.exist?(fname2)
+
       Zip::ZipFile.open(fname2, 'w') do |f|
         if SimpleWorker.config.custom_merged_gems
           SimpleWorker.config.custom_merged_gems.each do |gem|
