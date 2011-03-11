@@ -80,7 +80,14 @@ module SimpleWorker
     end
 
     def build_merged_file(filename, merge, unmerge)
-      merge    = merge.dup
+      merge = merge.dup
+      if unmerge
+        unmerge.each do |x|
+          deleted = merge.delete x
+#          puts "Unmerging #{x}. Success? #{deleted}"
+        end
+      end
+      merge.uniq!
       tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
       File.open(tmp_file, "w") do |f|
         if SimpleWorker.config.extra_requires
@@ -88,22 +95,11 @@ module SimpleWorker
             f.write "require '#{r}'\n"
           end
         end
-        SimpleWorker.config.custom_merged_gems.each do |gem|
-          f.write "$LOAD_PATH <<  File.join(File.dirname(__FILE__), '/gems/#{gem}') \n"
-        end
         f.write File.open(filename, 'r') { |mo| mo.read }
       end
       merge << tmp_file
-      #puts "merge before uniq! " + merge.inspect
-      merge.uniq!
+      #puts "merge before uniq! " + merge.inspect      
       # puts "merge after uniq! " + merge.inspect
-
-      if unmerge
-        unmerge.each do |x|
-          deleted = merge.delete x
-#          puts "Unmerging #{x}. Success? #{deleted}"
-        end
-      end
 
       fname2 = tmp_file+".zip"
 #            puts 'fname2=' + fname2
