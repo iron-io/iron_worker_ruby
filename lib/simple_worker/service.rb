@@ -70,7 +70,7 @@ module SimpleWorker
       puts "Searching #{gem_name}"
       searcher = Gem::GemPathSearcher.new
       gems     = searcher.find_all(gem_name)
-      gems.select! { |g| g.version.version==version } if version
+      gems = gems.select { |g| g.version.version==version } if version
       if !gems.empty?
         gem = gems.first
         gem.full_gem_path + "/lib"
@@ -110,10 +110,11 @@ module SimpleWorker
       Zip::ZipFile.open(fname2, 'w') do |f|
         if SimpleWorker.config.custom_merged_gems
           SimpleWorker.config.custom_merged_gems.each do |gem|
-            path = get_gem_path(gem)
+            path = get_gem_path(gem[:name], gem[:version])
             if path
+              puts "Collecting gem #{path}"
               Dir["#{path}/**/**"].each do |file|
-                f.add('gems/'+"#{gem}/"+ file.sub(path+'/', ''), file)
+                f.add('gems/'+"#{gem["name"]}/"+ file.sub(path+'/', ''), file)
               end
             end
           end

@@ -65,7 +65,7 @@ module SimpleWorker
 
       # merges the specified gem.
       def merge_gem(gem_name, version=nil)
-        SimpleWorker.config.custom_merged_gems << gem_name if SimpleWorker.config        
+        SimpleWorker.config.custom_merged_gems << {:name=>gem_name, :version=>version} if SimpleWorker.config
         require gem_name
       end
 
