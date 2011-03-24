@@ -9,14 +9,16 @@ module SimpleWorker
 
     class << self
       attr_accessor :subclass, :caller_file
-      @merged         = []
+      @merged = []
       @merged_workers = []
-      @unmerged       = []
+      @merged_gems = []
+      @unmerged = []
 
       def reset!
-        @merged         = []
+        @merged = []
         @merged_workers = []
-        @unmerged       = []
+        @merged_gems = []
+        @unmerged = []
       end
 
       def inherited(subclass)
@@ -39,8 +41,7 @@ module SimpleWorker
       def check_for_file(f)
         f = f.to_str
         unless ends_with?(f, ".rb")
-          f << "
-          .rb"
+          f << ".rb"
         end
         exists = false
         if File.exist? f
@@ -52,7 +53,7 @@ module SimpleWorker
           puts 'f2=' + f2
           if File.exist? f2
             exists = true
-            f      = f2
+            f = f2
           end
         end
         unless exists
@@ -65,13 +66,13 @@ module SimpleWorker
 
       # merges the specified gem.
       def merge_gem(gem_name, version=nil)
-        SimpleWorker.config.custom_merged_gems << {:name=>gem_name, :version=>version} if SimpleWorker.config
+        @merged_gems << {:name=>gem_name, :version=>version}
         require gem_name
       end
 
       # merges the specified files.
       # todo: don't allow multiple files per merge, just one like require
-      def merge(* files)
+      def merge(*files)
         files.each do |f|
           f = check_for_file(f)
           @merged << f
@@ -80,7 +81,7 @@ module SimpleWorker
 
       # Opposite of merge, this will omit the files you specify from being merged in. Useful in Rails apps
       # where a lot of things are auto-merged by default like your models.
-      def unmerge(* files)
+      def unmerge(*files)
         files.each do |f|
           f = check_for_file(f)
           @unmerged << f
@@ -206,7 +207,7 @@ module SimpleWorker
       set_global_attributes
       upload_if_needed
 
-      response     = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
+      response = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
 #            puts 'schedule response=' + response.inspect
       @schedule_id = response["schedule_id"]
       response
@@ -240,14 +241,15 @@ module SimpleWorker
       before_upload
 
 #      puts 'upload_if_needed ' + self.class.name
-      # Todo, watch for this file changing or something so we can reupload
+      # Todo, watch for this file changing or something so we can reupload (if in dev env)
       unless uploaded?
-        merged     = self.class.instance_variable_get(:@merged)
-        unmerged   = self.class.instance_variable_get(:@unmerged)
+        merged = self.class.instance_variable_get(:@merged)
+        unmerged = self.class.instance_variable_get(:@unmerged)
+        merged_gems = self.class.instance_variable_get(:@merged_gems)
 #        puts 'merged1=' + merged.inspect
 
-        subclass   = self.class
-        rfile      = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
+        subclass = self.class
+        rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
 #        puts 'subclass file=' + rfile.inspect
 #        puts 'subclass.name=' + subclass.name
         superclass = subclass
@@ -262,7 +264,7 @@ module SimpleWorker
 #          puts 'merged with superclass=' + merged.inspect
         end
         merged += SimpleWorker.config.models if SimpleWorker.config.models
-        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged)
+        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems)
         self.class.instance_variable_set(:@uploaded, true)
       else
         SimpleWorker.logger.debug 'Already uploaded for ' + self.class.name
@@ -282,7 +284,7 @@ module SimpleWorker
     end
 
     def sw_get_data
-      data    = {}
+      data = {}
 
       payload = {}
       self.instance_variables.each do |iv|
@@ -290,8 +292,8 @@ module SimpleWorker
       end
       data[:attr_encoded] = Base64.encode64(payload.to_json)
 
-      config_data         = SimpleWorker.config.get_atts_to_send
-      data[:sw_config]    = config_data
+      config_data = SimpleWorker.config.get_atts_to_send
+      data[:sw_config] = config_data
       return data
     end
 

@@ -11,6 +11,10 @@ module SimpleWorker
     @@logger
   end
 
+  def self.api_version
+    3
+  end
+
   class Service < Appoxy::Api::Client
 
     attr_accessor :config
@@ -35,14 +39,8 @@ module SimpleWorker
       if File.exists?(f)
         existing_md5 = IO.read(f)
       end
-
-      filename = build_merged_file(filename, options[:merge], options[:unmerge]) if options[:merge]
-
-#            sys.classes[subclass].__file__
-#            puts '__FILE__=' + Base.subclass.__file__.to_s
+      # Check for code changes.
       md5      = Digest::MD5.hexdigest(File.read(filename))
-#            puts "new md5=" + md5
-
       new_code = false
       if md5 != existing_md5
         SimpleWorker.logger.info "Uploading #{class_name}, code modified."
@@ -51,6 +49,15 @@ module SimpleWorker
       else
 #        puts "#{class_name}: same code, not uploading"
       end
+
+
+      filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems])
+
+#            sys.classes[subclass].__file__
+#            puts '__FILE__=' + Base.subclass.__file__.to_s
+#            puts "new md5=" + md5
+
+
 
       if new_code
 #        mystring = nil
@@ -79,7 +86,10 @@ module SimpleWorker
       end
     end
 
-    def build_merged_file(filename, merge, unmerge)
+    def build_merged_file(filename, merge, unmerge, merged_gems)
+#      unless (merge && merge.size > 0) || (merged_gems && merged_gems.size > 0)
+#        return filename
+#      end
       merge = merge.dup
       if unmerge
         unmerge.each do |x|
@@ -101,15 +111,15 @@ module SimpleWorker
       #puts "merge before uniq! " + merge.inspect      
       # puts "merge after uniq! " + merge.inspect
 
-      fname2 = tmp_file+".zip"
+      fname2 = tmp_file + ".zip"
 #            puts 'fname2=' + fname2
 #            puts 'merged_file_array=' + merge.inspect
       #File.open(fname2, "w") do |f|
       File.delete(fname2) if File.exist?(fname2)
 
       Zip::ZipFile.open(fname2, 'w') do |f|
-        if SimpleWorker.config.custom_merged_gems
-          SimpleWorker.config.custom_merged_gems.each do |gem|
+        if merged_gems
+          merged_gems.each do |gem|
             path = get_gem_path(gem[:name], gem[:version])
             if path
               puts "Collecting gem #{path}"
@@ -131,12 +141,20 @@ module SimpleWorker
       # todo: remove secret key??  Can use worker service from within a worker without it now
       hash_to_send["sw_access_key"] = self.access_key
       hash_to_send["sw_secret_key"] = self.secret_key
+      hash_to_send["api_version"]    = SimpleWorker.api_version
+    end
+
+    def check_config
+      if self.config.nil? || self.config.access_key.nil?
+        raise "Invalid SimpleWorker configuration, no access key specified."
+      end
     end
 
     # class_name: The class name of a previously upload class, eg: MySuperWorker
     # data: Arbitrary hash of your own data that your task will need to run.
     def queue(class_name, data={}, options={})
       puts "Queuing #{class_name}..."
+      check_config
       if !data.is_a?(Array)
         data = [data]
       end

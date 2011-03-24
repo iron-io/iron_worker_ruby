@@ -16,13 +16,11 @@ module SimpleWorker
                   :global_attributes,
                   :models,
                   :database,
-                  :extra_requires,
-                  :custom_merged_gems
+                  :extra_requires
 
     def initialize
       @global_attributes = {}
       @extra_requires = []
-      @custom_merged_gems = []
     end
 
     def get_atts_to_send
