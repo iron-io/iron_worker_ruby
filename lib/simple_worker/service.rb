@@ -126,6 +126,8 @@ module SimpleWorker
               Dir["#{path}/**/**"].each do |file|
                 f.add('gems/'+"#{gem["name"]}/"+ file.sub(path+'/', ''), file)
               end
+            else
+              raise "Gem was not found: #{gem[:name]} #{gem[:version]}"
             end
           end
         end
