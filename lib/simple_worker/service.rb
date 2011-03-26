@@ -90,7 +90,7 @@ module SimpleWorker
 #      unless (merge && merge.size > 0) || (merged_gems && merged_gems.size > 0)
 #        return filename
 #      end
-      merge = merge.dup
+      merge = merge.nil? ? [] : merge.dup
       if unmerge
         unmerge.each do |x|
           deleted = merge.delete x
