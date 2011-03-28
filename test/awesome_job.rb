@@ -1,5 +1,5 @@
 class AwesomeJob < SimpleWorker::Base
-  merge_gem 'dropbox'
+  merge_gem 'dropbox' # , '1.2.3'
   # bumpdsfsdfdsfasdf
 
   def run

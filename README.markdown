@@ -218,6 +218,16 @@ uploaded separately and treated as distinctly separate workers.
 
     merge_worker "./other_worker.rb", "OtherWorker"
 
+Merging Gems
+---------------------
+
+This allows you to use any gem you'd like with SimpleWorker. 
+
+    merge_gem "some_gem"
+    merge_gem "some_gem_with_version", "1.2.3"
+
+[Check here for more info on merge_gem](http://support.simpleworker.com/kb/working-with-simpleworker/merging-gems-into-your-worker).
+
 
 Configuration Options
 ---------------------
