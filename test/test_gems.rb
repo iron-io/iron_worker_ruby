@@ -11,7 +11,7 @@ class TestGems < TestBase
 
     wait_for_task(worker)
 
-    puts 'log=' + worker.log
+    puts 'log=' + worker.get_log
 
   end
 
