@@ -29,4 +29,29 @@ class TestBase < Test::Unit::TestCase
 
     end
   end
+
+  def wait_for_task(params={})
+    tries = 0
+    status = nil
+    sleep 1
+    while  tries < 60
+      status = status_for(params)
+      puts 'status = ' + status.inspect
+      if status["status"] == "complete" || status["status"] == "error"
+        break
+      end
+      sleep 2
+    end
+    status
+  end
+
+  def status_for(ob)
+    if ob.is_a?(Hash)
+      ob[:schedule_id] ? WORKER.schedule_status(ob[:schedule_id]) : WORKER.status(ob[:task_id])
+    else
+      ob.status
+    end
+  end
+
+
 end

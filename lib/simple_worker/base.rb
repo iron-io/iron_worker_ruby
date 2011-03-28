@@ -31,7 +31,7 @@ module SimpleWorker
 #                caller_file = splits[0] + ":" + splits[1]
         caller_file = caller[0][0...(caller[0].index(":in"))]
         caller_file = caller_file[0...(caller_file.rindex(":"))]
-#                puts 'caller_file=' + caller_file
+                puts 'caller_file=' + caller_file
         # don't need these class_variables anymore probably
         subclass.instance_variable_set(:@caller_file, caller_file)
 

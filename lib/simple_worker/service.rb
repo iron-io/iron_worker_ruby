@@ -48,6 +48,7 @@ module SimpleWorker
         new_code = true
       else
 #        puts "#{class_name}: same code, not uploading"
+        return
       end
 
 
@@ -120,14 +121,19 @@ module SimpleWorker
       Zip::ZipFile.open(fname2, 'w') do |f|
         if merged_gems
           merged_gems.each do |gem|
+#            puts 'gem=' + gem.inspect
             path = get_gem_path(gem[:name], gem[:version])
             if path
               puts "Collecting gem #{path}"
               Dir["#{path}/**/**"].each do |file|
-                f.add('gems/'+"#{gem["name"]}/"+ file.sub(path+'/', ''), file)
+#                puts 'gem2=' + gem.inspect
+                zdest = "gems/#{gem[:name]}/#{file.sub(path+'/', '')}"
+#                puts 'gem file=' + file.to_s
+#                puts 'zdest=' + zdest
+                f.add(zdest, file)
               end
             else
-              raise "Gem was not found: #{gem[:name]} #{gem[:version]}"
+              raise "Gem #{gem[:name]} #{gem[:version]} was not found."
             end
           end
         end
