@@ -123,6 +123,10 @@ The log will be available for viewing via the SimpleWorker UI or via log in the 
 
     SimpleWorker.service.log(job_id)
 
+or if you still have a handle to your worker object:
+
+    worker.get_log
+
 Setting Progress
 ----------------
 

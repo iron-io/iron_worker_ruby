@@ -31,7 +31,7 @@ module SimpleWorker
 #                caller_file = splits[0] + ":" + splits[1]
         caller_file = caller[0][0...(caller[0].index(":in"))]
         caller_file = caller_file[0...(caller_file.rindex(":"))]
-#                puts 'caller_file=' + caller_file
+        #        puts 'caller_file=' + caller_file
         # don't need these class_variables anymore probably
         subclass.instance_variable_set(:@caller_file, caller_file)
 
@@ -189,6 +189,25 @@ module SimpleWorker
       SimpleWorker.service.status(task_id)
     end
 
+    # will return after job has completed or errored out.
+    # Returns status.
+    # todo: add a :timeout option
+    def wait_until_complete
+      tries = 0
+      status = nil
+      sleep 1
+      while tries < 100
+        status = self.status
+        puts "Waiting... status=" + status["status"]
+        if status["status"] != "queued" && status["status"] != "running"
+          break
+        end
+        sleep 2
+      end
+      status
+    end
+
+
     def upload
       upload_if_needed
     end
@@ -217,6 +236,7 @@ module SimpleWorker
       SimpleWorker.service.schedule_status(schedule_id)
     end
 
+    # Retrieves the log for this worker from the SimpleWorker service.
     def get_log
       SimpleWorker.service.log(task_id)
     end
@@ -295,6 +315,7 @@ module SimpleWorker
         payload[iv] = instance_variable_get(iv)
       end
       data[:attr_encoded] = Base64.encode64(payload.to_json)
+      data[:file_name] = File.basename(self.class.instance_variable_get(:@caller_file))
 
       config_data = SimpleWorker.config.get_atts_to_send
       data[:sw_config] = config_data
