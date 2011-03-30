@@ -225,7 +225,7 @@ uploaded separately and treated as distinctly separate workers.
 Merging Gems
 ---------------------
 
-This allows you to use any gem you'd like with SimpleWorker. 
+This allows you to use any gem you'd like with SimpleWorker. This uses the same syntax as bundler gem files.
 
     merge_gem "some_gem"
     merge_gem "some_gem_with_version", "1.2.3"

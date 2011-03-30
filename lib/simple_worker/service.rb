@@ -70,18 +70,19 @@ module SimpleWorker
             "class_name"=>class_name,
             "file_name"=> File.basename(filename)
         }
-        puts 'options for upload=' + options.inspect
+        #puts 'options for upload=' + options.inspect
         ret = post_file("code/put", File.new(zip_filename), options)
         ret
       end
     end
 
-    def get_gem_path(full_gem_name, version=nil)
-      gem_name =(full_gem_name.match(/^[a-zA-Z0-9\-_]+/)[0])
-      puts "Searching #{gem_name}"
+    def get_gem_path(gem_info)
+      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
+      puts "Searching for #{gem_name}..."
       searcher = Gem::GemPathSearcher.new
       gems = searcher.find_all(gem_name)
-      gems = gems.select { |g| g.version.version==version } if version
+      # puts 'gems found=' + gems.inspect
+      gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
         gem = gems.first
         gem.full_gem_path + "/lib"
@@ -125,7 +126,7 @@ module SimpleWorker
         if merged_gems
           merged_gems.each do |gem|
 #            puts 'gem=' + gem.inspect
-            path = get_gem_path(gem[:name], gem[:version])
+            path = get_gem_path(gem)
             if path
               puts "Collecting gem #{path}"
               Dir["#{path}/**/**"].each do |file|

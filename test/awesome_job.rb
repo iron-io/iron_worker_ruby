@@ -1,6 +1,8 @@
+
 class AwesomeJob < SimpleWorker::Base
   merge_gem 'dropbox' # , '1.2.3'
   # bumpdsfsdfdsfasdf
+  merge_gem 'mongoid_i18n', :require => 'mongoid/i18n'
 
   def run
     begin

@@ -66,8 +66,14 @@ module SimpleWorker
 
       # merges the specified gem.
       def merge_gem(gem_name, version=nil)
-        @merged_gems << {:name=>gem_name, :version=>version}
-        require gem_name
+        gem_info = {:name=>gem_name}
+        if version.is_a?(Hash)
+          gem_info.merge!(version)
+        else
+          gem_info[:version] = version
+        end
+        @merged_gems << gem_info
+        require gem_info[:require] || gem_name
       end
 
       # merges the specified files.
