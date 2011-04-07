@@ -59,7 +59,7 @@ module SimpleWorker
       end
 
 
-      zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems])
+      zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:merged_mailers])
 
 #            sys.classes[subclass].__file__
 #            puts '__FILE__=' + Base.subclass.__file__.to_s
@@ -98,7 +98,7 @@ module SimpleWorker
       end
     end
 
-    def build_merged_file(filename, merge, unmerge, merged_gems)
+    def build_merged_file(filename, merge, unmerge, merged_gems,merged_mailers)
 #      unless (merge && merge.size > 0) || (merged_gems && merged_gems.size > 0)
 #        return filename
 #      end
@@ -116,6 +116,10 @@ module SimpleWorker
           SimpleWorker.config.extra_requires.each do |r|
             f.write "require '#{r}'\n"
           end
+        end
+        if merged_mailers
+          f.write "require 'action_mailer'\n"
+          f.write "ActionMailer::Base.prepend_view_path('templates')\n"
         end
         f.write File.open(filename, 'r') { |mo| mo.read }
       end
@@ -151,6 +155,15 @@ module SimpleWorker
         merge.each do |m|
 #          puts "merging #{m} into #{filename}"
           f.add(File.basename(m), m)
+        end
+        merged_mailers.each do |mailer|
+          puts "Collecting mailer #{mailer[:name]}"
+          f.add(File.basename(mailer[:filename]), mailer[:filename])
+          path = mailer[:path_to_templates]
+          Dir["#{path}/**/**"].each do |file|
+            zdest = "templates/#{mailer[:name]}/#{file.sub(path+'/', '')}"
+            f.add(zdest, file)
+          end
         end
       end
       fname2

@@ -12,12 +12,14 @@ module SimpleWorker
       @merged = []
       @merged_workers = []
       @merged_gems = []
+      @merged_mailers = []
       @unmerged = []
 
       def reset!
         @merged = []
         @merged_workers = []
         @merged_gems = []
+        @merged_mailers = []
         @unmerged = []
       end
 
@@ -74,6 +76,14 @@ module SimpleWorker
         end
         @merged_gems << gem_info
         require gem_info[:require] || gem_name
+      end
+
+      #merge action_mailer mailers
+      def merge_mailer(mailer, params={})
+        check_for_file mailer
+        basename = File.basename(mailer, File.extname(mailer))
+        path_to_templates = params[:path_to_templates]||File.join(Rails.root, "app/views/#{basename}")
+        @merged_mailers<<{:name=>basename, :path_to_templates=>path_to_templates, :filename => mailer}.merge!(params)
       end
 
       # merges the specified files.
@@ -276,6 +286,7 @@ module SimpleWorker
         merged = self.class.instance_variable_get(:@merged)
         unmerged = self.class.instance_variable_get(:@unmerged)
         merged_gems = self.class.instance_variable_get(:@merged_gems)
+        merged_mailers = self.class.instance_variable_get(:@merged_mailers)
 #        puts 'merged1=' + merged.inspect
 
         subclass = self.class
@@ -294,7 +305,7 @@ module SimpleWorker
 #          puts 'merged with superclass=' + merged.inspect
         end
         merged += SimpleWorker.config.models if SimpleWorker.config.models
-        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems)
+        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers)
         self.class.instance_variable_set(:@uploaded, true)
       else
         SimpleWorker.logger.debug 'Already uploaded for ' + self.class.name
