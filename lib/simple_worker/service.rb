@@ -83,47 +83,18 @@ module SimpleWorker
       end
     end
 
-    def git(command)
-      out = %x{git #{command}}
-      if $?.exitstatus != 0
-        msg = "Git error: " +
-            "command `git #{command}` in directory #{Dir.pwd} has failed.\n" +
-            "Cannot complete checkout."
-        raise GitError, msg
-      end
-      out
-    end
-
     def get_gem_path(gem_info)
       gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
       puts "Searching for #{gem_name}..."
-      git_path = gem_info[:git]
-      unless git_path
-        searcher = Gem::GemPathSearcher.new
-        gems     = searcher.find_all(gem_name)
-        # puts 'gems found=' + gems.inspect
-        gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
-        if !gems.empty?
-          gem = gems.first
-          gem.full_gem_path + "/lib"
-        else
-          nil
-        end
+      searcher = Gem::GemPathSearcher.new
+      gems = searcher.find_all(gem_name)
+      # puts 'gems found=' + gems.inspect
+      gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
+      if !gems.empty?
+        gem = gems.first
+        gem.full_gem_path + "/lib"
       else
-        puts "Checkout gem from sources #{git_path}"
-        gem_path = File.join(Dir.tmpdir(), File.basename(gem_name))
-        puts "Dir to checkout #{gem_path}"
-        unless File.exist?(gem_path)
-          FileUtils.mkdir_p(gem_path)
-          FileUtils.rm_rf(gem_path)
-          git %|clone --no-checkout "#{git_path}" #{gem_path}|
-        end
-        Dir.chdir(gem_path) do
-          puts "Fetching"
-          git %|fetch --force --quiet --tags|
-          git %|checkout|
-        end
-        gem_path + "/lib"
+        nil
       end
     end
 
