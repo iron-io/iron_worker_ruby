@@ -15,12 +15,15 @@ module SimpleWorker
                   :host,
                   :global_attributes,
                   :models,
+                  :mailers,
+                  :gems,
                   :database,
                   :extra_requires
 
+
     def initialize
       @global_attributes = {}
-      @extra_requires = []
+      @extra_requires    = []
     end
 
     def get_atts_to_send

@@ -9,16 +9,18 @@ module SimpleWorker
 
     class << self
       attr_accessor :subclass, :caller_file
-      @merged = []
+      @merged         = []
       @merged_workers = []
-      @merged_gems = []
-      @unmerged = []
+      @merged_gems    = []
+      @merged_mailers = []
+      @unmerged       = []
 
       def reset!
-        @merged = []
+        @merged         = []
         @merged_workers = []
-        @merged_gems = []
-        @unmerged = []
+        @merged_gems    = []
+        @merged_mailers = []
+        @unmerged       = []
       end
 
       def inherited(subclass)
@@ -53,7 +55,7 @@ module SimpleWorker
           puts 'f2=' + f2
           if File.exist? f2
             exists = true
-            f = f2
+            f      = f2
           end
         end
         unless exists
@@ -66,7 +68,7 @@ module SimpleWorker
 
       # merges the specified gem.
       def merge_gem(gem_name, version=nil)
-        gem_info = {:name=>gem_name}
+        gem_info = {:name=>gem_name, :merge=>true}
         if version.is_a?(Hash)
           gem_info.merge!(version)
         else
@@ -74,6 +76,14 @@ module SimpleWorker
         end
         @merged_gems << gem_info
         require gem_info[:require] || gem_name
+      end
+
+      #merge action_mailer mailers
+      def merge_mailer(mailer, params={})
+        check_for_file mailer
+        basename          = File.basename(mailer, File.extname(mailer))
+        path_to_templates = params[:path_to_templates]||File.join(Rails.root, "app/views/#{basename}")
+        @merged_mailers<<{:name=>basename, :path_to_templates=>path_to_templates, :filename => mailer}.merge!(params)
       end
 
       # merges the specified files.
@@ -199,7 +209,7 @@ module SimpleWorker
     # Returns status.
     # todo: add a :timeout option
     def wait_until_complete
-      tries = 0
+      tries  = 0
       status = nil
       sleep 1
       while tries < 100
@@ -232,7 +242,7 @@ module SimpleWorker
       set_global_attributes
       upload_if_needed
 
-      response = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
+      response     = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
 #            puts 'schedule response=' + response.inspect
       @schedule_id = response["schedule_id"]
       response
@@ -273,16 +283,17 @@ module SimpleWorker
 #      puts 'upload_if_needed ' + self.class.name
       # Todo, watch for this file changing or something so we can reupload (if in dev env)
       unless uploaded?
-        merged = self.class.instance_variable_get(:@merged)
-        unmerged = self.class.instance_variable_get(:@unmerged)
-        merged_gems = self.class.instance_variable_get(:@merged_gems)
+        merged         = self.class.instance_variable_get(:@merged)
+        unmerged       = self.class.instance_variable_get(:@unmerged)
+        merged_gems    = self.class.instance_variable_get(:@merged_gems)
+        merged_mailers = self.class.instance_variable_get(:@merged_mailers)
 #        puts 'merged1=' + merged.inspect
 
-        subclass = self.class
-        rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
+        subclass       = self.class
+        rfile          = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
 #        puts 'subclass file=' + rfile.inspect
 #        puts 'subclass.name=' + subclass.name
-        superclass = subclass
+        superclass     = subclass
         # Also get merged from subclasses up to SimpleWorker::Base
         while (superclass = superclass.superclass)
 #          puts 'superclass=' + superclass.name
@@ -294,7 +305,13 @@ module SimpleWorker
 #          puts 'merged with superclass=' + merged.inspect
         end
         merged += SimpleWorker.config.models if SimpleWorker.config.models
-        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems)
+        merged_mailers += SimpleWorker.config.mailers if SimpleWorker.config.mailers
+        if SimpleWorker.config.gems
+          SimpleWorker.config.gems.each do |gem|
+            merged_gems<<gem if gem[:merge]
+          end
+        end
+        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers)
         self.class.instance_variable_set(:@uploaded, true)
       else
         SimpleWorker.logger.debug 'Already uploaded for ' + self.class.name
@@ -314,17 +331,17 @@ module SimpleWorker
     end
 
     def sw_get_data
-      data = {}
+      data    = {}
 
       payload = {}
       self.instance_variables.each do |iv|
         payload[iv] = instance_variable_get(iv)
       end
       data[:attr_encoded] = Base64.encode64(payload.to_json)
-      data[:file_name] = File.basename(self.class.instance_variable_get(:@caller_file))
+      data[:file_name]    = File.basename(self.class.instance_variable_get(:@caller_file))
 
-      config_data = SimpleWorker.config.get_atts_to_send
-      data[:sw_config] = config_data
+      config_data         = SimpleWorker.config.get_atts_to_send
+      data[:sw_config]    = config_data
       return data
     end
 
