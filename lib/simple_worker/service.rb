@@ -1,7 +1,7 @@
 require 'base64'
 require 'logger'
 require 'appoxy_api'
-
+require 'zip'
 module SimpleWorker
 
   @@logger = Logger.new(STDOUT)
@@ -11,13 +11,24 @@ module SimpleWorker
     @@logger
   end
 
+  def self.api_version
+    3
+  end
+
   class Service < Appoxy::Api::Client
 
     attr_accessor :config
 
     def initialize(access_key, secret_key, options={})
       SimpleWorker.logger.info 'Starting SimpleWorker::Service...'
-      self.config = options[:config] if options[:config]
+      if options[:config]
+        self.config = options[:config]
+      else
+        c = SimpleWorker::Config.new unless self.config
+        c.access_key = access_key
+        c.secret_key = secret_key
+        self.config = c
+      end
       super("http://api.simpleworker.com/api/", access_key, secret_key, options)
       self.host = self.config.host if self.config && self.config.host
     end
@@ -28,21 +39,15 @@ module SimpleWorker
     def upload(filename, class_name, options={})
 #      puts "Uploading #{class_name}"
       # check whether it should upload again
-      tmp          = Dir.tmpdir()
-      md5file      = "simple_worker_#{class_name.gsub("::", ".")}_#{access_key[0,8]}.md5"
+      tmp = Dir.tmpdir()
+      md5file = "simple_worker_#{class_name.gsub("::", ".")}_#{access_key[0, 8]}.md5"
       existing_md5 = nil
-      f            = File.join(tmp, md5file)
+      f = File.join(tmp, md5file)
       if File.exists?(f)
         existing_md5 = IO.read(f)
       end
-
-      filename = build_merged_file(filename, options[:merge], options[:unmerge]) if options[:merge]
-
-#            sys.classes[subclass].__file__
-#            puts '__FILE__=' + Base.subclass.__file__.to_s
-      md5      = Digest::MD5.hexdigest(File.read(filename))
-#            puts "new md5=" + md5
-
+      # Check for code changes.
+      md5 = Digest::MD5.hexdigest(File.read(filename))
       new_code = false
       if md5 != existing_md5
         SimpleWorker.logger.info "Uploading #{class_name}, code modified."
@@ -50,48 +55,102 @@ module SimpleWorker
         new_code = true
       else
 #        puts "#{class_name}: same code, not uploading"
+        return
       end
 
+
+      zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems])
+
+#            sys.classes[subclass].__file__
+#            puts '__FILE__=' + Base.subclass.__file__.to_s
+#            puts "new md5=" + md5
+
+
       if new_code
-        mystring = nil
-        file     = File.open(filename, "r") do |f|
-          mystring = f.read
-        end
+#        mystring = nil
+#        file     = File.open(filename, "r") do |f|
+#          mystring = f.read
+#        end
 #        mystring = Base64.encode64(mystring)
 #        puts 'code=' + mystring
-        options  = {"code"=>mystring, "class_name"=>class_name}
-        ret      = post("code/put", options)
+        options = {
+            "class_name"=>class_name,
+            "file_name"=> File.basename(filename)
+        }
+        #puts 'options for upload=' + options.inspect
+        ret = post_file("code/put", File.new(zip_filename), options)
         ret
       end
     end
 
-    def build_merged_file(filename, merge, unmerge)
-      merge = merge.dup
-      merge << filename
-      #puts "merge before uniq! " + merge.inspect
-      merge.uniq!
-     # puts "merge after uniq! " + merge.inspect
+    def get_gem_path(gem_info)
+      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
+      puts "Searching for #{gem_name}..."
+      searcher = Gem::GemPathSearcher.new
+      gems = searcher.find_all(gem_name)
+      # puts 'gems found=' + gems.inspect
+      gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
+      if !gems.empty?
+        gem = gems.first
+        gem.full_gem_path + "/lib"
+      else
+        nil
+      end
+    end
 
+    def build_merged_file(filename, merge, unmerge, merged_gems)
+#      unless (merge && merge.size > 0) || (merged_gems && merged_gems.size > 0)
+#        return filename
+#      end
+      merge = merge.nil? ? [] : merge.dup
       if unmerge
         unmerge.each do |x|
           deleted = merge.delete x
 #          puts "Unmerging #{x}. Success? #{deleted}"
         end
       end
+      merge.uniq!
+      tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
+      File.open(tmp_file, "w") do |f|
+        if SimpleWorker.config.extra_requires
+          SimpleWorker.config.extra_requires.each do |r|
+            f.write "require '#{r}'\n"
+          end
+        end
+        f.write File.open(filename, 'r') { |mo| mo.read }
+      end
+      merge << tmp_file
+      #puts "merge before uniq! " + merge.inspect      
+      # puts "merge after uniq! " + merge.inspect
 
-      fname2 = File.join(Dir.tmpdir(), File.basename(filename))
+      fname2 = tmp_file + ".zip"
 #            puts 'fname2=' + fname2
 #            puts 'merged_file_array=' + merge.inspect
-      File.open(fname2, "w") do |f|
-         if SimpleWorker.config.extra_requires
-           SimpleWorker.config.extra_requires.each do |r|
-             f.write "require '#{r}'\n"
-           end
-         end
+      #File.open(fname2, "w") do |f|
+      File.delete(fname2) if File.exist?(fname2)
+
+      Zip::ZipFile.open(fname2, 'w') do |f|
+        if merged_gems
+          merged_gems.each do |gem|
+#            puts 'gem=' + gem.inspect
+            path = get_gem_path(gem)
+            if path
+              puts "Collecting gem #{path}"
+              Dir["#{path}/**/**"].each do |file|
+#                puts 'gem2=' + gem.inspect
+                zdest = "gems/#{gem[:name]}/#{file.sub(path+'/', '')}"
+#                puts 'gem file=' + file.to_s
+#                puts 'zdest=' + zdest
+                f.add(zdest, file)
+              end
+            else
+              raise "Gem #{gem[:name]} #{gem[:version]} was not found."
+            end
+          end
+        end
         merge.each do |m|
 #          puts "merging #{m} into #{filename}"
-          f.write File.open(m, 'r') { |mo| mo.read }
-          f.write "\n\n"
+          f.add(File.basename(m), m)
         end
       end
       fname2
@@ -101,18 +160,26 @@ module SimpleWorker
       # todo: remove secret key??  Can use worker service from within a worker without it now
       hash_to_send["sw_access_key"] = self.access_key
       hash_to_send["sw_secret_key"] = self.secret_key
+      hash_to_send["api_version"] = SimpleWorker.api_version
+    end
+
+    def check_config
+      if self.config.nil? || self.config.access_key.nil?
+        raise "Invalid SimpleWorker configuration, no access key specified."
+      end
     end
 
     # class_name: The class name of a previously upload class, eg: MySuperWorker
     # data: Arbitrary hash of your own data that your task will need to run.
     def queue(class_name, data={}, options={})
       puts "Queuing #{class_name}..."
+      check_config
       if !data.is_a?(Array)
         data = [data]
       end
 #      p data
-      hash_to_send               = {}
-      hash_to_send["payload"]    = data
+      hash_to_send = {}
+      hash_to_send["payload"] = data
       hash_to_send["class_name"] = class_name
       hash_to_send["priority"] = options[:priority] if options[:priority]
       hash_to_send["options"] = options
@@ -126,14 +193,13 @@ module SimpleWorker
     end
 
     def queue_raw(class_name, data={})
-      params                     = nil
-      hash_to_send               = data
+      params = nil
+      hash_to_send = data
       hash_to_send["class_name"] = class_name
-      ret                        = post("queue/add", hash_to_send)
+      ret = post("queue/add", hash_to_send)
       ret
 
     end
-
 
     #
     # schedule: hash of scheduling options that can include:
@@ -151,46 +217,46 @@ module SimpleWorker
 #            if !data.is_a?(Array)
 #                data = [data]
 #            end
-      hash_to_send               = {}
-      hash_to_send["payload"]    = data
+      hash_to_send = {}
+      hash_to_send["payload"] = data
       hash_to_send["class_name"] = class_name
-      hash_to_send["schedule"]   = schedule
+      hash_to_send["schedule"] = schedule
       add_sw_params(hash_to_send)
-#            puts 'about to send ' + hash_to_send.inspect
+#            puts ' about to send ' + hash_to_send.inspect
       ret = post("scheduler/schedule", hash_to_send)
       ret
     end
 
     def cancel_schedule(scheduled_task_id)
       raise "Must include a schedule id." if scheduled_task_id.blank?
-      hash_to_send                      = {}
+      hash_to_send = {}
       hash_to_send["scheduled_task_id"] = scheduled_task_id
-      ret                               = post("scheduler/cancel", hash_to_send)
+      ret = post("scheduler/cancel", hash_to_send)
       ret
     end
 
     def get_schedules()
       hash_to_send = {}
-      ret          = get("scheduler/list", hash_to_send)
+      ret = get("scheduler/list", hash_to_send)
       ret
     end
 
     def status(task_id)
       data = {"task_id"=>task_id}
-      ret  = get("task/status", data)
+      ret = get("task/status", data)
       ret
     end
 
     def schedule_status(schedule_id)
       data = {"schedule_id"=>schedule_id}
-      ret  = get("scheduler/status", data)
+      ret = get("scheduler/status", data)
       ret
     end
 
     def log(task_id)
       data = {"task_id"=>task_id}
-      ret  = get("task/log", data, {:parse=>false})
-#            puts 'ret=' + ret.inspect
+      ret = get("task/log", data, {:parse=>false})
+#            puts ' ret=' + ret.inspect
 #            ret["log"] = Base64.decode64(ret["log"])
       ret
     end

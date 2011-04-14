@@ -13,11 +13,13 @@ module SimpleWorker
                   :service
 
     def configure()
-      SimpleWorker.config ||= Config.new
       yield(config)
       SimpleWorker.service = Service.new(config.access_key, config.secret_key, :config=>config)
     end
 
+    def config
+      @config ||= Config.new
+    end
  
   end
 

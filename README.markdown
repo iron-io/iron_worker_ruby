@@ -123,6 +123,10 @@ The log will be available for viewing via the SimpleWorker UI or via log in the 
 
     SimpleWorker.service.log(job_id)
 
+or if you still have a handle to your worker object:
+
+    worker.get_log
+
 Setting Progress
 ----------------
 
@@ -217,6 +221,20 @@ Merging other workers is a bit different than merging other code like above beca
 uploaded separately and treated as distinctly separate workers.
 
     merge_worker "./other_worker.rb", "OtherWorker"
+
+Merging Gems
+---------------------
+
+This allows you to use any gem you'd like with SimpleWorker. This uses the same syntax as bundler gem files.
+
+    # merge latest version of the gem
+    merge_gem "some_gem"
+    # or specify specific version
+    merge_gem "some_gem_with_version", "1.2.3"
+    # or if gem has poor naming scheme
+    merge_gem 'mongoid_i18n', :require => 'mongoid/i18n'
+
+[Check here for more info on merge_gem](http://support.simpleworker.com/kb/working-with-simpleworker/merging-gems-into-your-worker).
 
 
 Configuration Options
