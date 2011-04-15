@@ -74,7 +74,7 @@ module SimpleWorker
         else
           gem_info[:version] = version
         end
-        @merged_gems << gem_info
+        @merged_gems << gem_info if !@merged_gems.select { |g| g.name==gem_info[:name] }
         require gem_info[:require] || gem_name
       end
 
@@ -88,7 +88,7 @@ module SimpleWorker
 
       # merges the specified files.
       # todo: don't allow multiple files per merge, just one like require
-      def merge(*files)
+      def merge(* files)
         files.each do |f|
           f = check_for_file(f)
           @merged << f
@@ -97,7 +97,7 @@ module SimpleWorker
 
       # Opposite of merge, this will omit the files you specify from being merged in. Useful in Rails apps
       # where a lot of things are auto-merged by default like your models.
-      def unmerge(*files)
+      def unmerge(* files)
         files.each do |f|
           f = check_for_file(f)
           @unmerged << f
@@ -276,6 +276,37 @@ module SimpleWorker
 
     private
 
+    def get_required_gems
+      gems_in_gemfile = Bundler.environment.dependencies.select { |d| d.groups.include?(:default) }
+      gems =[]
+      gems_in_gemfile.each do |dep|
+        gem_info = {:name=>dep.name, :version=>dep.requirement}
+        gem_info.merge!({:require=>dep.autorequire.join}) if dep.autorequire
+        gem_info[:version] = Bundler.load.specs.find { |g| g.name==gem_info[:name] }.version.to_s
+        gems << gem_info
+      end
+      gems
+    end
+
+    def generate_list_of_gems(installed_gems, required_gems)
+      list_of_gems=[]
+      required_gems.each do |gem|
+        next if gem[:name]=='rails'
+        list_of_gems<<gem.merge!({:merge=>(!installed_gems.find { |g| g["name"]==gem[:name] && g["version"]==gem[:version] })})
+      end
+      puts "LIST OF GEMS - #{list_of_gems.inspect}"
+      list_of_gems
+    end
+
+    def gems_to_merge
+      if Bundler        
+        server_gems = SimpleWorker.service.get_server_gems
+        generate_list_of_gems(server_gems, get_required_gems)
+      else
+        nil
+      end
+    end
+
     def upload_if_needed
 
       before_upload
@@ -304,9 +335,11 @@ module SimpleWorker
           merged = super_merged + merged
 #          puts 'merged with superclass=' + merged.inspect
         end
-        merged += SimpleWorker.config.models if SimpleWorker.config.models
-        merged_mailers += SimpleWorker.config.mailers if SimpleWorker.config.mailers
-        if SimpleWorker.config.gems
+        if SimpleWorker.config.auto_merge
+          puts "Auto merge Enabled"
+          merged += SimpleWorker.config.models if SimpleWorker.config.models
+          merged_mailers += SimpleWorker.config.mailers if SimpleWorker.config.mailers
+          SimpleWorker.config.gems=gems_to_merge
           SimpleWorker.config.gems.each do |gem|
             merged_gems<<gem if gem[:merge]
           end

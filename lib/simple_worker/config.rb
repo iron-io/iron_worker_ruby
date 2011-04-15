@@ -18,7 +18,9 @@ module SimpleWorker
                   :mailers,
                   :gems,
                   :database,
-                  :extra_requires
+                  :extra_requires,
+                  :auto_merge
+
 
 
     def initialize
