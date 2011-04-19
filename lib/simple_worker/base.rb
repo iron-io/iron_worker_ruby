@@ -74,7 +74,8 @@ module SimpleWorker
         else
           gem_info[:version] = version
         end
-        @merged_gems << gem_info if !@merged_gems.select { |g| g.name==gem_info[:name] }
+        @merged_gems << gem_info
+        puts "added merged gem " + gem_info.inspect
         require gem_info[:require] || gem_name
       end
 
@@ -276,35 +277,15 @@ module SimpleWorker
 
     private
 
-    def get_required_gems
-      gems_in_gemfile = Bundler.environment.dependencies.select { |d| d.groups.include?(:default) }
-      gems =[]
-      gems_in_gemfile.each do |dep|
-        gem_info = {:name=>dep.name, :version=>dep.requirement}
-        gem_info.merge!({:require=>dep.autorequire.join}) if dep.autorequire
-        gem_info[:version] = Bundler.load.specs.find { |g| g.name==gem_info[:name] }.version.to_s
-        gems << gem_info
-      end
-      gems
-    end
-
-    def generate_list_of_gems(installed_gems, required_gems)
-      list_of_gems=[]
-      required_gems.each do |gem|
-        next if gem[:name]=='rails'
-        list_of_gems<<gem.merge!({:merge=>(!installed_gems.find { |g| g["name"]==gem[:name] && g["version"]==gem[:version] })})
+    def gems_to_merge(merged_gems)
+      installed_gems = SimpleWorker.config.get_server_gems
+      list_of_gems   =[]
+      merged_gems.each do |gem|
+        gem.merge!({:merge=>(!installed_gems.find { |g| g["name"]==gem[:name] && g["version"]==gem[:version] })})
+        list_of_gems<< gem if (list_of_gems.select { |g| g[:name]==gem[:name] }).empty?
       end
       puts "LIST OF GEMS - #{list_of_gems.inspect}"
       list_of_gems
-    end
-
-    def gems_to_merge
-      if Bundler        
-        server_gems = SimpleWorker.service.get_server_gems
-        generate_list_of_gems(server_gems, get_required_gems)
-      else
-        nil
-      end
     end
 
     def upload_if_needed
@@ -339,11 +320,14 @@ module SimpleWorker
           puts "Auto merge Enabled"
           merged += SimpleWorker.config.models if SimpleWorker.config.models
           merged_mailers += SimpleWorker.config.mailers if SimpleWorker.config.mailers
-          SimpleWorker.config.gems=gems_to_merge
           SimpleWorker.config.gems.each do |gem|
-            merged_gems<<gem if gem[:merge]
+            merged_gems<<gem
           end
         end
+        merged_gems = gems_to_merge(merged_gems)
+        merged_gems.uniq!
+        merged.uniq!
+        merged_mailers.uniq!
         SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers)
         self.class.instance_variable_set(:@uploaded, true)
       else
