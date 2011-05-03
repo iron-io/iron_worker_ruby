@@ -84,17 +84,23 @@ module SimpleWorker
     end
 
     def get_gem_path(gem_info)
-      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
+      gem_name = gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0]
       puts "Searching for #{gem_name}..."
-      searcher = Gem::GemPathSearcher.new
-      gems = searcher.find_all(gem_name)
-      # puts 'gems found=' + gems.inspect
-      gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
-      if !gems.empty?
-        gem = gems.first
-        gem.full_gem_path + "/lib"
+      if defined?(Bundler)
+        if spec = Bundler.setup.specs[gem_name][0]
+          spec.load_paths[0]
+        end
       else
-        nil
+        searcher = Gem::GemPathSearcher.new
+        gems = searcher.find_all(gem_name)
+        # puts 'gems found=' + gems.inspect
+        gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
+        if !gems.empty?
+          gem = gems.first
+          gem.full_gem_path + "/lib"
+        else
+          nil
+        end
       end
     end
 
