@@ -59,7 +59,7 @@ module SimpleWorker
       end
 
 
-      zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems])
+      zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:merged_mailers])
 
 #            sys.classes[subclass].__file__
 #            puts '__FILE__=' + Base.subclass.__file__.to_s
@@ -84,21 +84,27 @@ module SimpleWorker
     end
 
     def get_gem_path(gem_info)
-      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
+      gem_name = gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0]
       puts "Searching for #{gem_name}..."
-      searcher = Gem::GemPathSearcher.new
-      gems = searcher.find_all(gem_name)
-      # puts 'gems found=' + gems.inspect
-      gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
-      if !gems.empty?
-        gem = gems.first
-        gem.full_gem_path + "/lib"
+      if defined?(Bundler)
+        if spec = Bundler.setup.specs[gem_name][0]
+          spec.load_paths[0]
+        end
       else
-        nil
+        searcher = Gem::GemPathSearcher.new
+        gems = searcher.find_all(gem_name)
+        # puts 'gems found=' + gems.inspect
+        gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
+        if !gems.empty?
+          gem = gems.first
+          gem.full_gem_path + "/lib"
+        else
+          nil
+        end
       end
     end
 
-    def build_merged_file(filename, merge, unmerge, merged_gems)
+    def build_merged_file(filename, merge, unmerge, merged_gems,merged_mailers)
 #      unless (merge && merge.size > 0) || (merged_gems && merged_gems.size > 0)
 #        return filename
 #      end
@@ -116,6 +122,10 @@ module SimpleWorker
           SimpleWorker.config.extra_requires.each do |r|
             f.write "require '#{r}'\n"
           end
+        end
+        if merged_mailers
+          f.write "require 'action_mailer'\n"
+          f.write "ActionMailer::Base.prepend_view_path('templates')\n"
         end
         f.write File.open(filename, 'r') { |mo| mo.read }
       end
@@ -151,6 +161,15 @@ module SimpleWorker
         merge.each do |m|
 #          puts "merging #{m} into #{filename}"
           f.add(File.basename(m), m)
+        end
+        merged_mailers.each do |mailer|
+          puts "Collecting mailer #{mailer[:name]}"
+          f.add(File.basename(mailer[:filename]), mailer[:filename])
+          path = mailer[:path_to_templates]
+          Dir["#{path}/**/**"].each do |file|
+            zdest = "templates/#{mailer[:name]}/#{file.sub(path+'/', '')}"
+            f.add(zdest, file)
+          end
         end
       end
       fname2
