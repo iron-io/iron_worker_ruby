@@ -268,6 +268,8 @@ module SimpleWorker
 
     def upload_if_needed
 
+      SimpleWorker.service.check_config
+
       before_upload
 
 #      puts 'upload_if_needed ' + self.class.name
