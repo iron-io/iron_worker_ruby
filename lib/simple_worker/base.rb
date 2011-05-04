@@ -52,7 +52,7 @@ module SimpleWorker
           # try relative
 #          p caller
           f2 = File.join(File.dirname(caller[3]), f)
-          puts 'f2=' + f2
+#          puts 'f2=' + f2
           if File.exist? f2
             exists = true
             f = f2
@@ -82,8 +82,8 @@ module SimpleWorker
       def merge_mailer(mailer, params={})
         check_for_file mailer
         basename = File.basename(mailer, File.extname(mailer))
-        path_to_templates = params[:path_to_templates]||File.join(Rails.root, "app/views/#{basename}")
-        @merged_mailers<<{:name=>basename, :path_to_templates=>path_to_templates, :filename => mailer}.merge!(params)
+        path_to_templates = params[:path_to_templates] || File.join(Rails.root, "app/views/#{basename}")
+        @merged_mailers << {:name=>basename, :path_to_templates=>path_to_templates, :filename => mailer}.merge!(params)
       end
 
       # merges the specified files.

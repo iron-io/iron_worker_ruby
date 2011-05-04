@@ -23,8 +23,6 @@ module SimpleWorker
  
   end
 
-
-
 end
 
 if defined?(Rails)
