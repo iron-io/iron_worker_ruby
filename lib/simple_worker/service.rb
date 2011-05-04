@@ -83,28 +83,28 @@ module SimpleWorker
       end
     end
 
+    def get_server_gems
+      hash = get("gems/list")
+      JSON.parse(hash["gems"])
+    end
+
     def get_gem_path(gem_info)
-      gem_name = gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0]
+      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
       puts "Searching for #{gem_name}..."
-      if defined?(Bundler)
-        if spec = Bundler.setup.specs[gem_name][0]
-          spec.load_paths[0]
-        end
+      searcher = Gem::GemPathSearcher.new
+      gems     = searcher.find_all(gem_name)
+#      gems     = searcher.init_gemspecs.select { |gem| gem.name==gem_name }
+      puts 'gems found=' + gems.inspect
+      gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
+      if !gems.empty?
+        gem = gems.first
+        gem.full_gem_path + "/lib"
       else
-        searcher = Gem::GemPathSearcher.new
-        gems = searcher.find_all(gem_name)
-        # puts 'gems found=' + gems.inspect
-        gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
-        if !gems.empty?
-          gem = gems.first
-          gem.full_gem_path + "/lib"
-        else
-          nil
-        end
+        nil
       end
     end
 
-    def build_merged_file(filename, merge, unmerge, merged_gems,merged_mailers)
+    def build_merged_file(filename, merge, unmerge, merged_gems, merged_mailers)
 #      unless (merge && merge.size > 0) || (merged_gems && merged_gems.size > 0)
 #        return filename
 #      end
@@ -127,6 +127,24 @@ module SimpleWorker
           f.write "require 'action_mailer'\n"
           f.write "ActionMailer::Base.prepend_view_path('templates')\n"
         end
+        if SimpleWorker.config.auto_merge
+          if SimpleWorker.config.gems
+            SimpleWorker.config.gems.each do |gem|
+              f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}')\n" if gem[:merge]
+              f.write "require '#{gem[:require]||gem[:name]}'\n"
+            end
+          end
+          if SimpleWorker.config.models
+            SimpleWorker.config.models.each do |model|
+              f.write "require File.join(File.dirname(__FILE__),'#{File.basename(model)}')\n"
+            end
+          end
+          if SimpleWorker.config.mailers
+            SimpleWorker.config.mailers.each do |mailer|
+              f.write "require File.join(File.dirname(__FILE__),'#{mailer[:name]}')\n"
+            end
+          end
+        end
         f.write File.open(filename, 'r') { |mo| mo.read }
       end
       merge << tmp_file
@@ -138,10 +156,10 @@ module SimpleWorker
 #            puts 'merged_file_array=' + merge.inspect
       #File.open(fname2, "w") do |f|
       File.delete(fname2) if File.exist?(fname2)
-
       Zip::ZipFile.open(fname2, 'w') do |f|
         if merged_gems
           merged_gems.each do |gem|
+            next unless gem[:merge]
 #            puts 'gem=' + gem.inspect
             path = get_gem_path(gem)
             if path
@@ -162,15 +180,20 @@ module SimpleWorker
 #          puts "merging #{m} into #{filename}"
           f.add(File.basename(m), m)
         end
-        merged_mailers.each do |mailer|
-          puts "Collecting mailer #{mailer[:name]}"
-          f.add(File.basename(mailer[:filename]), mailer[:filename])
-          path = mailer[:path_to_templates]
-          Dir["#{path}/**/**"].each do |file|
-            zdest = "templates/#{mailer[:name]}/#{file.sub(path+'/', '')}"
-            f.add(zdest, file)
+        puts "merge models - done"
+        if merged_mailers
+          puts " MERGED MAILERS" + merged_mailers.inspect
+          merged_mailers.each do |mailer|
+            puts "Collecting mailer #{mailer[:name]}"
+            f.add(File.basename(mailer[:filename]), mailer[:filename])
+            path = mailer[:path_to_templates]
+            Dir["#{path}/**/**"].each do |file|
+              zdest = "templates/#{mailer[:name]}/#{file.sub(path+'/', '')}"
+              f.add(zdest, file)
+            end
           end
         end
+        puts "merging templates - done"
       end
       fname2
     end

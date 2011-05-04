@@ -15,12 +15,22 @@ module SimpleWorker
                   :host,
                   :global_attributes,
                   :models,
+                  :mailers,
+                  :gems,
                   :database,
-                  :extra_requires
+                  :extra_requires,
+                  :auto_merge,
+                  :server_gems
+
 
     def initialize
       @global_attributes = {}
-      @extra_requires = []
+      @extra_requires    = []
+    end
+
+    def get_server_gems
+      self.server_gems = SimpleWorker.service.get_server_gems unless self.server_gems
+      self.server_gems
     end
 
     def get_atts_to_send

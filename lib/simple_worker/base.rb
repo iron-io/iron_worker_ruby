@@ -68,7 +68,7 @@ module SimpleWorker
 
       # merges the specified gem.
       def merge_gem(gem_name, version=nil)
-        gem_info = {:name=>gem_name}
+        gem_info = {:name=>gem_name, :merge=>true}
         if version.is_a?(Hash)
           gem_info.merge!(version)
         else
@@ -276,6 +276,17 @@ module SimpleWorker
 
     private
 
+    def gems_to_merge(merged_gems)
+      installed_gems = SimpleWorker.config.get_server_gems
+      list_of_gems   =[]
+      merged_gems.each do |gem|
+        gem.merge!({:merge=>(!installed_gems.find { |g| g["name"]==gem[:name] && g["version"]==gem[:version] })})
+        list_of_gems<< gem if (list_of_gems.select { |g| g[:name]==gem[:name] }).empty?
+      end
+      puts "LIST OF GEMS - #{list_of_gems.inspect}"
+      list_of_gems
+    end
+
     def upload_if_needed
 
       SimpleWorker.service.check_config
@@ -285,9 +296,9 @@ module SimpleWorker
 #      puts 'upload_if_needed ' + self.class.name
       # Todo, watch for this file changing or something so we can reupload (if in dev env)
       unless uploaded?
-        merged = self.class.instance_variable_get(:@merged)
-        unmerged = self.class.instance_variable_get(:@unmerged)
-        merged_gems = self.class.instance_variable_get(:@merged_gems)
+        merged         = self.class.instance_variable_get(:@merged)
+        unmerged       = self.class.instance_variable_get(:@unmerged)
+        merged_gems    = self.class.instance_variable_get(:@merged_gems)
         merged_mailers = self.class.instance_variable_get(:@merged_mailers)
 #        puts 'merged1=' + merged.inspect
 
@@ -306,7 +317,18 @@ module SimpleWorker
           merged = super_merged + merged
 #          puts 'merged with superclass=' + merged.inspect
         end
-        merged += SimpleWorker.config.models if SimpleWorker.config.models
+        if SimpleWorker.config.auto_merge
+          puts "Auto merge Enabled"
+          merged += SimpleWorker.config.models if SimpleWorker.config.models
+          merged_mailers += SimpleWorker.config.mailers if SimpleWorker.config.mailers
+          SimpleWorker.config.gems.each do |gem|
+            merged_gems<<gem
+          end
+        end
+        merged_gems = gems_to_merge(merged_gems)
+        merged_gems.uniq!
+        merged.uniq!
+        merged_mailers.uniq!
         SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers)
         self.class.instance_variable_set(:@uploaded, true)
       else
