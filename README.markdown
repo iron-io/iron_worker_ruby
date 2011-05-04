@@ -111,6 +111,7 @@ This will return a hash like:
      "duration"=>nil,
      "progress"=>{"percent"=>25}}
 
+There is also a convenience method `worker.wait_until_complete` that will wait until the status returned is completed or error.
 
 Logging
 -------
