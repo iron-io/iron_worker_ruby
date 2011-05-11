@@ -202,6 +202,7 @@ module SimpleWorker
     end
 
     def status
+      check_service
       SimpleWorker.service.status(task_id)
     end
 
@@ -209,6 +210,7 @@ module SimpleWorker
     # Returns status.
     # todo: add a :timeout option
     def wait_until_complete
+      check_service
       tries = 0
       status = nil
       sleep 1
@@ -287,8 +289,12 @@ module SimpleWorker
       list_of_gems
     end
 
-    def upload_if_needed
+    def check_service
+      raise "SimpleWorker configuration not set." unless SimpleWorker.service
+    end
 
+    def upload_if_needed
+      check_service
       SimpleWorker.service.check_config
 
       before_upload
