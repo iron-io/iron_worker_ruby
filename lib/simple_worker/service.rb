@@ -272,7 +272,7 @@ module SimpleWorker
     def cancel_schedule(scheduled_task_id)
       raise "Must include a schedule id." if scheduled_task_id.blank?
       hash_to_send = {}
-      hash_to_send["scheduled_task_id"] = scheduled_task_id
+      hash_to_send["schedule_id"] = scheduled_task_id
       ret = post("scheduler/cancel", hash_to_send)
       ret
     end
