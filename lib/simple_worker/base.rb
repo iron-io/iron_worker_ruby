@@ -331,8 +331,10 @@ module SimpleWorker
             merged_gems<<gem
           end
         end
-        merged_gems = gems_to_merge(merged_gems)
-        merged_gems.uniq!
+        unless merged_gems.empty?
+          merged_gems = gems_to_merge(merged_gems)
+          merged_gems.uniq!
+        end
         merged.uniq!
         merged_mailers.uniq!
         SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers)
