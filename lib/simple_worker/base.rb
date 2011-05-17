@@ -203,6 +203,16 @@ module SimpleWorker
 
     def status
       check_service
+      if task_id
+        task_status
+      elsif schedule_id
+        schedule_status
+      else
+        raise "Queue or schedule before check status."
+      end
+    end
+
+    def task_status
       SimpleWorker.service.status(task_id)
     end
 
