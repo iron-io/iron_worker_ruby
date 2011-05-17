@@ -216,6 +216,14 @@ module SimpleWorker
       SimpleWorker.service.status(task_id)
     end
 
+    def is_local?
+      !is_remote?
+    end
+
+    def is_remote?
+      false
+    end
+
     # will return after job has completed or errored out.
     # Returns status.
     # todo: add a :timeout option
