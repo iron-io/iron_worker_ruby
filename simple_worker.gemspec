@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_worker}
-  s.version = "0.5.8"
+  s.version = "0.6.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder"]
-  s.date = %q{2011-03-30}
+  s.date = %q{2011-05-26}
   s.description = %q{The official SimpleWorker gem for http://www.simpleworker.com}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -27,32 +27,10 @@ Gem::Specification.new do |s|
   ]
   s.homepage = %q{http://github.com/appoxy/simple_worker}
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.7}
+  s.rubygems_version = %q{1.7.2}
   s.summary = %q{The official SimpleWorker gem for http://www.simpleworker.com}
-  s.test_files = [
-    "test/awesome_job.rb",
-    "test/cool_model.rb",
-    "test/cool_worker.rb",
-    "test/db_worker.rb",
-    "test/models/model_1.rb",
-    "test/models/model_2.rb",
-    "test/requiring_worker.rb",
-    "test/scheduled_worker.rb",
-    "test/second_worker.rb",
-    "test/test_base.rb",
-    "test/test_gems.rb",
-    "test/test_inheritance.rb",
-    "test/test_no_config.rb",
-    "test/test_simple_worker.rb",
-    "test/test_worker.rb",
-    "test/test_worker_2.rb",
-    "test/test_worker_3.rb",
-    "test/trace_object.rb",
-    "test/zip_vs_gzip.rb"
-  ]
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
