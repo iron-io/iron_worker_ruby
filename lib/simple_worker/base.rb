@@ -297,13 +297,15 @@ module SimpleWorker
     private
 
     def gems_to_merge(merged_gems)
-      installed_gems = SimpleWorker.config.get_server_gems
-      list_of_gems   =[]
-      merged_gems.each do |gem|
-        gem.merge!({:merge=>(!installed_gems.find { |g| g["name"]==gem[:name] && g["version"]==gem[:version] })})
-        list_of_gems<< gem if (list_of_gems.select { |g| g[:name]==gem[:name] }).empty?
+      list_of_gems =[]
+      if merged_gems && merged_gems.size > 0
+        installed_gems = SimpleWorker.config.get_server_gems
+        merged_gems.each do |gem|
+          gem.merge!({:merge=>(!installed_gems.find { |g| g["name"]==gem[:name] && g["version"]==gem[:version] })})
+          list_of_gems<< gem if (list_of_gems.select { |g| g[:name]==gem[:name] }).empty?
+        end
+        SimpleWorker.logger.debug "#{list_of_gems.inspect}"
       end
-      puts "LIST OF GEMS - #{list_of_gems.inspect}"
       list_of_gems
     end
 
@@ -320,9 +322,9 @@ module SimpleWorker
 #      puts 'upload_if_needed ' + self.class.name
       # Todo, watch for this file changing or something so we can reupload (if in dev env)
       unless uploaded?
-        merged         = self.class.instance_variable_get(:@merged)
-        unmerged       = self.class.instance_variable_get(:@unmerged)
-        merged_gems    = self.class.instance_variable_get(:@merged_gems)
+        merged = self.class.instance_variable_get(:@merged)
+        unmerged = self.class.instance_variable_get(:@unmerged)
+        merged_gems = self.class.instance_variable_get(:@merged_gems)
         merged_mailers = self.class.instance_variable_get(:@merged_mailers)
 #        puts 'merged1=' + merged.inspect
 
