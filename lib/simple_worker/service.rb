@@ -157,13 +157,13 @@ module SimpleWorker
       #File.open(fname2, "w") do |f|
       File.delete(fname2) if File.exist?(fname2)
       Zip::ZipFile.open(fname2, 'w') do |f|
-        if merged_gems
+        if merged_gems && merged_gems.size > 0
           merged_gems.each do |gem|
             next unless gem[:merge]
 #            puts 'gem=' + gem.inspect
             path = get_gem_path(gem)
             if path
-              puts "Collecting gem #{path}"
+              SimpleWorker.logger.debug "Collecting gem #{path}"
               Dir["#{path}/**/**"].each do |file|
 #                puts 'gem2=' + gem.inspect
                 zdest = "gems/#{gem[:name]}/#{file.sub(path+'/', '')}"
@@ -180,11 +180,10 @@ module SimpleWorker
 #          puts "merging #{m} into #{filename}"
           f.add(File.basename(m), m)
         end
-        puts "merge models - done"
-        if merged_mailers
-          puts " MERGED MAILERS" + merged_mailers.inspect
+        if merged_mailers && merged_mailers.size > 0
+         # puts " MERGED MAILERS" + merged_mailers.inspect
           merged_mailers.each do |mailer|
-            puts "Collecting mailer #{mailer[:name]}"
+            SimpleWorker.logger.debug "Collecting mailer #{mailer[:name]}"
             f.add(File.basename(mailer[:filename]), mailer[:filename])
             path = mailer[:path_to_templates]
             Dir["#{path}/**/**"].each do |file|
@@ -193,7 +192,6 @@ module SimpleWorker
             end
           end
         end
-        puts "merging templates - done"
       end
       fname2
     end
