@@ -1,5 +1,3 @@
-require 'appoxy_api'
-#require 'active_support/core_ext'
 require_relative 'simple_worker/service'
 require_relative 'simple_worker/base'
 require_relative 'simple_worker/config'

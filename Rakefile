@@ -8,9 +8,8 @@ begin
     gemspec.homepage = "http://github.com/appoxy/simple_worker"
     gemspec.authors = ["Travis Reeder"]
     gemspec.files = FileList['init.rb', 'lib/**/*.rb', 'rails/**/*.rb']
-#        gemspec.add_dependency 'active_support' Causing issues when doing gem update, not sure why?
-    gemspec.add_dependency 'appoxy_api', '>= 0.0.11'
     gemspec.add_dependency 'zip'
+    gemspec.add_dependency 'rest-client'
   end
 
   Jeweler::GemcutterTasks.new
