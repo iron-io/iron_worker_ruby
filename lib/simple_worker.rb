@@ -7,6 +7,9 @@ require_relative 'simple_worker/used_in_worker'
 
 
 module SimpleWorker
+  @@logger = Logger.new(STDOUT)
+  @@logger.level = Logger::INFO
+
 
   class << self
     attr_accessor :config,
@@ -20,7 +23,14 @@ module SimpleWorker
     def config
       @config ||= Config.new
     end
- 
+
+    def logger
+      @@logger
+    end
+
+    def api_version
+      3
+    end
   end
 
 end

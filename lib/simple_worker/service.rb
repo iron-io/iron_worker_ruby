@@ -7,16 +7,7 @@ require 'json'
 
 module SimpleWorker
 
-  @@logger = Logger.new(STDOUT)
-  @@logger.level = Logger::INFO
 
-  def self.logger
-    @@logger
-  end
-
-  def self.api_version
-    3
-  end
 
   module Api
 
