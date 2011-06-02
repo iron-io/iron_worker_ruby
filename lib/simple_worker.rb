@@ -15,7 +15,9 @@ module SimpleWorker
 
     def configure()
       yield(config)
-      SimpleWorker.service ||= Service.new(config.access_key, config.secret_key, :config=>config)
+      if config && config.access_key && config.secret_key
+        SimpleWorker.service ||= Service.new(config.access_key, config.secret_key, :config=>config)
+      end
     end
 
     def config
