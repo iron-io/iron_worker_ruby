@@ -20,6 +20,20 @@ You really just need your access keys.
         config.secret_key = SECRET_KEY
     end
 
+
+Configure SimpleWorker in Rails
+----------------------
+
+If you're using Rails you could set additional config option - "auto_merge=true".
+It will automatically merge all models,mailers,gems and database configuration from your Rails app.
+
+    SimpleWorker.configure do |config|
+        config.access_key = ACCESS_KEY
+        config.secret_key = SECRET_KEY
+        config.auto_merge = true
+    end
+
+
 Write a Worker
 --------------
 
@@ -210,6 +224,11 @@ Or simpler yet, try using relative paths:
 
     merge "../models/user"
     merge "../models/account.rb"
+
+Also you could use wildcards and path in merge_folder
+
+    merge_folder "./foldername/"     #will merge all *.rb files from foldername
+    merge_folder "../lib/**/"        # will merge all *.rb files from lib and all subdirectories
 
 The opposite can be done as well with "unmerge" and can be useful when using Rails to exclude classes that are automatically
 merged.
