@@ -116,7 +116,7 @@ module SimpleWorker
             f.write "require '#{r}'\n"
           end
         end
-        if merged_mailers
+        if merged_mailers && !merged_mailers.empty?
           f.write "require 'action_mailer'\n"
           f.write "ActionMailer::Base.prepend_view_path('templates')\n"
         end
