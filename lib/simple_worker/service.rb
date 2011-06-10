@@ -215,6 +215,10 @@ module SimpleWorker
       end
     end
 
+    def enqueue(class_name, data={}, options={})
+      queue(class_name, data, options)
+    end
+
     # class_name: The class name of a previously upload class, eg: MySuperWorker
     # data: Arbitrary hash of your own data that your task will need to run.
     def queue(class_name, data={}, options={})

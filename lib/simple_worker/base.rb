@@ -195,6 +195,10 @@ module SimpleWorker
       end
     end
 
+    def enqueue(options={})
+      queue(options)
+    end
+
     # Call this to queue up your job to SimpleWorker cloud.
     # options:
     #   :priority => 0,1 or 2. Default is 0.
