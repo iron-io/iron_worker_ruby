@@ -91,7 +91,7 @@ module SimpleWorker
       gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
         gem = gems.first
-        gem.full_gem_path
+        gem.full_gem_path + "/lib"
       else
         nil
       end
@@ -123,7 +123,7 @@ module SimpleWorker
         if SimpleWorker.config.auto_merge
           if SimpleWorker.config.gems
             SimpleWorker.config.gems.each do |gem|
-              f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n" if gem[:merge]
+              f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}')\n" if gem[:merge]
               f.write "require '#{gem[:require]||gem[:name]}'\n"
             end
           end
