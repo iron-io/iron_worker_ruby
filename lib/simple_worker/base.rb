@@ -35,8 +35,8 @@ module SimpleWorker
 #                caller_file = splits[0] + ":" + splits[1]
         caller_file = caller[0][0...(caller[0].index(":in"))]
         caller_file = caller_file[0...(caller_file.rindex(":"))]
-        #        puts 'caller_file=' + caller_file
-        # don't need these class_variables anymore probably
+#        puts 'caller_file=' + caller_file
+# don't need these class_variables anymore probably
         subclass.instance_variable_set(:@caller_file, caller_file)
 
         super
@@ -52,7 +52,7 @@ module SimpleWorker
           exists = true
         else
           # try relative
-#          p caller
+          #          p caller
           f2 = File.join(File.dirname(caller[3]), f)
 #          puts 'f2=' + f2
           if File.exist? f2
@@ -95,8 +95,9 @@ module SimpleWorker
           files<<f
         end
         @merged_folders[path]=files unless files.empty?
-        SimpleWorker.logger.info  "Merged folders! #{@merged_folders.inspect}"
+        SimpleWorker.logger.info "Merged folders! #{@merged_folders.inspect}"
       end
+
       # merges the specified files.
       # todo: don't allow multiple files per merge, just one like require
       def merge(*files)
@@ -328,37 +329,57 @@ module SimpleWorker
       raise "SimpleWorker configuration not set." unless SimpleWorker.service
     end
 
+    def self.extract_superclasses_merges(worker, merged)
+      subclass = worker.class
+      rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
+                                                            #        puts 'subclass file=' + rfile.inspect
+                                                            #        puts 'subclass.name=' + subclass.name
+      superclass = subclass
+                                                            # Also get merged from subclasses up to SimpleWorker::Base
+      while (superclass = superclass.superclass)
+          #puts 'superclass=' + superclass.name
+        break if superclass.name == SimpleWorker::Base.name
+        super_merged = superclass.instance_variable_get(:@merged)
+                     #puts 'merging caller file: ' + superclass.instance_variable_get(:@caller_file).inspect
+        super_merged << superclass.instance_variable_get(:@caller_file)
+        merged = super_merged + merged
+          #puts 'merged with superclass=' + merged.inspect
+      end
+      return merged, rfile, subclass
+    end
+
     def upload_if_needed
       check_service
       SimpleWorker.service.check_config
 
       before_upload
 
+      merged = self.class.instance_variable_get(:@merged)
+
+      # do merged_workers first because we need to get their subclasses and what not too
+      merged_workers = self.class.instance_variable_get(:@merged_workers)
+      if merged_workers && merged_workers.size > 0
+        SimpleWorker.logger.debug 'now uploading merged workers ' + merged_workers.inspect
+        merged_workers.each do |mw|
+          SimpleWorker.logger.debug 'Instantiating and uploading ' + mw[1]
+          mw_instantiated = Kernel.const_get(mw[1]).new
+          mw_instantiated.upload
+
+          merged, rfile, subclass = SimpleWorker::Base.extract_superclasses_merges(mw_instantiated, merged)
+
+        end
+      end
+
 #      puts 'upload_if_needed ' + self.class.name
-      # Todo, watch for this file changing or something so we can reupload (if in dev env)
+# Todo, watch for this file changing or something so we can reupload (if in dev env)
       unless uploaded?
-        merged = self.class.instance_variable_get(:@merged)
         unmerged = self.class.instance_variable_get(:@unmerged)
         merged_gems = self.class.instance_variable_get(:@merged_gems)
         merged_mailers = self.class.instance_variable_get(:@merged_mailers)
         merged_folders = self.class.instance_variable_get(:@merged_folders)
 #        puts 'merged1=' + merged.inspect
 
-        subclass = self.class
-        rfile = subclass.instance_variable_get(:@caller_file) # Base.caller_file # File.expand_path(Base.subclass)
-#        puts 'subclass file=' + rfile.inspect
-#        puts 'subclass.name=' + subclass.name
-        superclass = subclass
-        # Also get merged from subclasses up to SimpleWorker::Base
-        while (superclass = superclass.superclass)
-#          puts 'superclass=' + superclass.name
-          break if superclass.name == SimpleWorker::Base.name
-          super_merged = superclass.instance_variable_get(:@merged)
-#                     puts 'merging caller file: ' + superclass.instance_variable_get(:@caller_file).inspect
-          super_merged << superclass.instance_variable_get(:@caller_file)
-          merged = super_merged + merged
-#          puts 'merged with superclass=' + merged.inspect
-        end
+        merged, rfile, subclass = SimpleWorker::Base.extract_superclasses_merges(self, merged)
         if SimpleWorker.config.auto_merge
           puts "Auto merge Enabled"
           merged += SimpleWorker.config.models if SimpleWorker.config.models
@@ -373,21 +394,12 @@ module SimpleWorker
         end
         merged.uniq!
         merged_mailers.uniq!
-        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers,:merged_folders=>merged_folders)
+        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers, :merged_folders=>merged_folders)
         self.class.instance_variable_set(:@uploaded, true)
       else
         SimpleWorker.logger.debug 'Already uploaded for ' + self.class.name
       end
-      merged_workers = self.class.instance_variable_get(:@merged_workers)
-      if merged_workers.size > 0
-#        puts 'now uploading merged workers ' + merged_workers.inspect
-        merged_workers.each do |mw|
-          # to support merges in the secondary worker, we should instantiate it here, then call "upload"
-          SimpleWorker.logger.debug 'Instantiating and uploading ' + mw[1]
-          Kernel.const_get(mw[1]).new.upload
-#                    SimpleWorker.service.upload(mw[0], mw[1])
-        end
-      end
+
 
       after_upload
     end
