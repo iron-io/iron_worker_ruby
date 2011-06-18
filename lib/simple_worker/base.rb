@@ -348,6 +348,19 @@ module SimpleWorker
       return merged, rfile, subclass
     end
 
+    def self.extract_merged_workers(worker)
+      merged_workers = worker.class.instance_variable_get(:@merged_workers)
+      SimpleWorker.logger.debug  "Looking for merged_workers in #{worker.class.name}: #{merged_workers.inspect}"
+      ret = []
+      if merged_workers && merged_workers.size > 0
+        merged_workers.each do |mw|
+          SimpleWorker.logger.debug  "merged worker found in #{worker.class.name}: #{mw.inspect}"
+          ret << mw[0]
+        end
+      end
+      ret
+    end
+
     def upload_if_needed
       check_service
       SimpleWorker.service.check_config
@@ -366,6 +379,7 @@ module SimpleWorker
           mw_instantiated.upload
 
           merged, rfile, subclass = SimpleWorker::Base.extract_superclasses_merges(mw_instantiated, merged)
+          merged += SimpleWorker::Base.extract_merged_workers(mw_instantiated)
 
         end
       end
