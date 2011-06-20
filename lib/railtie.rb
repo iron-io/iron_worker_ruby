@@ -5,15 +5,15 @@ require 'rails'
 
 module SimpleWorker
   class Railtie < Rails::Railtie
-    #    railtie_name :simple_worker deprecated
 
     initializer "simple_worker.configure_rails_initialization" do |app|
-      puts "Initializing SimpleWorker for Rails 3..."
+      SimpleWorker.logger.info  "Initializing SimpleWorker for Rails 3..."
+      start_time = Time.now
       SimpleWorker.configure do |c2|
         models_path = File.join(Rails.root, 'app/models/*.rb')
         c2.models = Dir.glob(models_path)
         mailers_path = File.join(Rails.root, 'app/mailers/*.rb')
-        c2.mailers =Dir.glob(mailers_path).collect { |m| {:filename=>m, :name => File.basename(m), :path_to_templates=>File.join(Rails.root, "app/views/#{File.basename(m, File.extname(m))}")} }
+        c2.mailers = Dir.glob(mailers_path).collect { |m| {:filename=>m, :name => File.basename(m), :path_to_templates=>File.join(Rails.root, "app/views/#{File.basename(m, File.extname(m))}")} }
         c2.extra_requires += ['active_support/core_ext', 'active_record', 'action_mailer']
         c2.database = Rails.configuration.database_configuration[Rails.env]
         c2.gems = get_required_gems if defined?(Bundler)
@@ -22,13 +22,16 @@ module SimpleWorker
         SimpleWorker.logger.debug "DATABASE " + c2.database.inspect
         SimpleWorker.logger.debug "GEMS " + c2.gems.inspect
       end
+      end_time = Time.now
+      SimpleWorker.logger.info "SimpleWorker initialized. Duration: #{((end_time.to_f-start_time.to_f) * 1000.0).to_i} ms"
+
     end
 
     def get_required_gems
       gems_in_gemfile = Bundler.environment.dependencies.select { |d| d.groups.include?(:default) }
       gems =[]
       specs = Bundler.load.specs
-      puts 'specs=' + specs.inspect
+      SimpleWorker.logger.debug 'Bundler specs=' + specs.inspect
       gems_in_gemfile.each do |dep|
         next if dep.name=='rails' #monkey patch
         gem_info = {:name=>dep.name, :version=>dep.requirement}
