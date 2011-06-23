@@ -97,7 +97,7 @@ module SimpleWorker
       end
     end
 
-    def build_merged_file(filename, merge, unmerge, merged_gems, merged_mailers,merged_folders)
+    def build_merged_file(filename, merge, unmerge, merged_gems, merged_mailers, merged_folders)
 #      unless (merge && merge.size > 0) || (merged_gems && merged_gems.size > 0)
 #        return filename
 #      end
@@ -157,7 +157,7 @@ module SimpleWorker
             path = get_gem_path(gem)
             if path
               SimpleWorker.logger.debug "Collecting gem #{path}"
-              Dir["#{path}/**/**"].each do |file|
+              Dir["#{path}/lib/**/**", "#{path}/**"].each do |file|
 #                puts 'gem2=' + gem.inspect
                 zdest = "gems/#{gem[:name]}/#{file.sub(path+'/', '')}"
 #                puts 'gem file=' + file.to_s
@@ -168,13 +168,13 @@ module SimpleWorker
               raise "Gem #{gem[:name]} #{gem[:version]} was not found."
             end
           end
-          end
+        end
         if merged_folders && merged_folders.size > 0
           merged_folders.each do |folder, files|
             SimpleWorker.logger.debug "Collecting folder #{folder}"
             if files and files.size>0
               files.each do |file|
-                zdest = "#{Digest::MD5.hexdigest(folder)}/#{file.sub(':','_').sub('/','_')}"
+                zdest = "#{Digest::MD5.hexdigest(folder)}/#{file.sub(':', '_').sub('/', '_')}"
                 puts 'put file to=' + zdest
                 f.add(zdest, file)
               end
