@@ -444,8 +444,8 @@ module SimpleWorker
       if defined?(Rails)
         data[:rails] = {}
         data[:rails]['env'] = Rails.env
+        data[:rails]['version'] = Rails.version
       end
-
       config_data = SimpleWorker.config.get_atts_to_send
       data[:sw_config] = config_data
       return data

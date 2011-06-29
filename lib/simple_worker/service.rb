@@ -26,9 +26,9 @@ module SimpleWorker
       self.host = self.config.host if self.config && self.config.host
     end
 
-      # Options:
-      #    - :callback_url
-      #    - :merge => array of files to merge in with this file
+    # Options:
+    #    - :callback_url
+    #    - :merge => array of files to merge in with this file
     def upload(filename, class_name, options={})
 #      puts "Uploading #{class_name}"
 # check whether it should upload again
@@ -39,7 +39,7 @@ module SimpleWorker
       if File.exists?(f)
         existing_md5 = IO.read(f)
       end
-        # Check for code changes.
+      # Check for code changes.
       md5 = Digest::MD5.hexdigest(File.read(filename))
       new_code = false
       if md5 != existing_md5
@@ -71,7 +71,7 @@ module SimpleWorker
             "class_name"=>class_name,
             "file_name"=> File.basename(filename)
         }
-          #puts 'options for upload=' + options.inspect
+        #puts 'options for upload=' + options.inspect
         SimpleWorker.logger.info "Uploading now..."
         ret = post_file("code/put", File.new(zip_filename), options)
         SimpleWorker.logger.info "Done uploading."
@@ -115,6 +115,19 @@ module SimpleWorker
       merge.uniq!
       tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
       File.open(tmp_file, "w") do |f|
+        # add some rails stuff if using Rails
+        if defined?(Rails)
+          f.write "module Rails
+  def self.version
+    '#{Rails.version}'
+  end
+  def self.env
+    '#{Rails.env}'
+  end
+end
+"
+
+        end
         if SimpleWorker.config.extra_requires
           SimpleWorker.config.extra_requires.each do |r|
             f.write "require '#{r}'\n"
@@ -163,9 +176,9 @@ module SimpleWorker
       # puts "merge after uniq! " + merge.inspect
 
       fname2 = tmp_file + ".zip"
-        #            puts 'fname2=' + fname2
-        #            puts 'merged_file_array=' + merge.inspect
-        #File.open(fname2, "w") do |f|
+      #            puts 'fname2=' + fname2
+      #            puts 'merged_file_array=' + merge.inspect
+      #File.open(fname2, "w") do |f|
       File.delete(fname2) if File.exist?(fname2)
       Zip::ZipFile.open(fname2, 'w') do |f|
         if merged_gems && merged_gems.size > 0
