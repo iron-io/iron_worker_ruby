@@ -1,3 +1,5 @@
+require 'rake/dsl_definition' # temporary I think?
+
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gemspec|

@@ -29,6 +29,8 @@ module SimpleWorker
     end
 
     def get_server_gems
+      return []
+      # skipping this now, don't want any server dependencies if possible
       self.server_gems = SimpleWorker.service.get_server_gems unless self.server_gems
       self.server_gems
     end

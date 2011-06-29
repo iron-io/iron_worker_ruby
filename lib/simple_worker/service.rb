@@ -26,12 +26,12 @@ module SimpleWorker
       self.host = self.config.host if self.config && self.config.host
     end
 
-    # Options:
-    #    - :callback_url
-    #    - :merge => array of files to merge in with this file
+      # Options:
+      #    - :callback_url
+      #    - :merge => array of files to merge in with this file
     def upload(filename, class_name, options={})
 #      puts "Uploading #{class_name}"
-      # check whether it should upload again
+# check whether it should upload again
       tmp = Dir.tmpdir()
       md5file = "simple_worker_#{class_name.gsub("::", ".")}_#{access_key[0, 8]}.md5"
       existing_md5 = nil
@@ -39,20 +39,21 @@ module SimpleWorker
       if File.exists?(f)
         existing_md5 = IO.read(f)
       end
-      # Check for code changes.
+        # Check for code changes.
       md5 = Digest::MD5.hexdigest(File.read(filename))
       new_code = false
       if md5 != existing_md5
         SimpleWorker.logger.info "Uploading #{class_name}, code modified."
         File.open(f, 'w') { |f| f.write(md5) }
         new_code = true
+        # todo: delete md5 file if error occurs during upload process
       else
 #        puts "#{class_name}: same code, not uploading"
         return
       end
 
-
       zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:merged_mailers], options[:merged_folders])
+      SimpleWorker.logger.info 'file size to upload: ' + File.size(zip_filename).to_s
 
 #            sys.classes[subclass].__file__
 #            puts '__FILE__=' + Base.subclass.__file__.to_s
@@ -70,8 +71,10 @@ module SimpleWorker
             "class_name"=>class_name,
             "file_name"=> File.basename(filename)
         }
-        #puts 'options for upload=' + options.inspect
+          #puts 'options for upload=' + options.inspect
+        SimpleWorker.logger.info "Uploading now..."
         ret = post_file("code/put", File.new(zip_filename), options)
+        SimpleWorker.logger.info "Done uploading."
         ret
       end
     end
@@ -81,8 +84,9 @@ module SimpleWorker
       JSON.parse(hash["gems"])
     end
 
-    def get_gem_path(gem_info)
-      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
+    def self.get_gem_path(gem_info)
+#      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
+      gem_name =(gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
       puts "Searching for #{gem_name}..."
       gems= Gem::Specification.respond_to?(:each) ? Gem::Specification.find_all_by_name(gem_name) : Gem::GemPathSearcher.new.find_all(gem_name)
 #      gems     = searcher.init_gemspecs.select { |gem| gem.name==gem_name }
@@ -90,14 +94,15 @@ module SimpleWorker
       gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
         gem = gems.first
-        gem.full_gem_path + "/lib"
+        return gem.full_gem_path + "/lib"
       else
-        nil
+        SimpleWorker.logger.warn "Gem file was not found for #{gem_name}, continuing anyways."
+        return nil
       end
     end
 
-    def build_merged_file(filename, merge, unmerge, merged_gems, merged_mailers,merged_folders)
-#      unless (merge && merge.size > 0) || (merged_gems && merged_gems.size > 0)
+    def build_merged_file(filename, merge, unmerge, merged_gems, merged_mailers, merged_folders)
+#      unless (merge && merge.size > 0) || (rged_gems && merged_gems.size > 0)
 #        return filename
 #      end
       merge = merge.nil? ? [] : merge.dup
@@ -116,14 +121,28 @@ module SimpleWorker
           end
         end
         if merged_mailers && !merged_mailers.empty?
+          # todo: isn't 'action_mailer already required in railtie?
           f.write "require 'action_mailer'\n"
           f.write "ActionMailer::Base.prepend_view_path('templates')\n"
         end
         if SimpleWorker.config.auto_merge
           if SimpleWorker.config.gems
             SimpleWorker.config.gems.each do |gem|
+              puts "Bundling gem #{gem[:name]}..."
               f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}')\n" if gem[:merge]
-              f.write "require '#{gem[:require]||gem[:name]}'\n"
+#              unless gem[:no_require]
+              puts 'writing requires: ' + gem[:require].inspect
+              if gem[:require].nil?
+                gem[:require] = []
+              elsif gem[:require].is_a?(String)
+                gem[:require] = [gem[:require]]
+              end
+              puts gem[:require].inspect
+              gem[:require].each do |r|
+                puts 'adding require to file ' + r.to_s
+                f.write "require '#{r}'\n"
+              end
+#              end
             end
           end
           if SimpleWorker.config.models
@@ -140,20 +159,20 @@ module SimpleWorker
         f.write File.open(filename, 'r') { |mo| mo.read }
       end
       merge << tmp_file
-      #puts "merge before uniq! " + merge.inspect      
-      # puts "merge after uniq! " + merge.inspect
+        #puts "merge before uniq! " + merge.inspect
+        # puts "merge after uniq! " + merge.inspect
 
       fname2 = tmp_file + ".zip"
-#            puts 'fname2=' + fname2
-#            puts 'merged_file_array=' + merge.inspect
-      #File.open(fname2, "w") do |f|
+        #            puts 'fname2=' + fname2
+        #            puts 'merged_file_array=' + merge.inspect
+        #File.open(fname2, "w") do |f|
       File.delete(fname2) if File.exist?(fname2)
       Zip::ZipFile.open(fname2, 'w') do |f|
         if merged_gems && merged_gems.size > 0
           merged_gems.each do |gem|
             next unless gem[:merge]
 #            puts 'gem=' + gem.inspect
-            path = get_gem_path(gem)
+            path = gem[:path] # get_gem_path(gem)
             if path
               SimpleWorker.logger.debug "Collecting gem #{path}"
               Dir["#{path}/**/**"].each do |file|
@@ -164,16 +183,22 @@ module SimpleWorker
                 f.add(zdest, file)
               end
             else
-              raise "Gem #{gem[:name]} #{gem[:version]} was not found."
+              if gem[:auto_merged]
+                # todo: should only continue if the gem was auto merged.
+                SimpleWorker.logger.warn "Gem #{gem[:name]} #{gem[:version]} was not found, continuing anyways."
+              else
+                raise "Gem #{gem[:name]} #{gem[:version]} was not found, continuing anyways."
+              end
+
             end
           end
-          end
+        end
         if merged_folders && merged_folders.size > 0
           merged_folders.each do |folder, files|
             SimpleWorker.logger.debug "Collecting folder #{folder}"
             if files and files.size>0
               files.each do |file|
-                zdest = "#{Digest::MD5.hexdigest(folder)}/#{file.sub(':','_').sub('/','_')}"
+                zdest = "#{Digest::MD5.hexdigest(folder)}/#{file.sub(':', '_').sub('/', '_')}"
                 puts 'put file to=' + zdest
                 f.add(zdest, file)
               end
@@ -218,8 +243,8 @@ module SimpleWorker
       queue(class_name, data, options)
     end
 
-    # class_name: The class name of a previously upload class, eg: MySuperWorker
-    # data: Arbitrary hash of your own data that your task will need to run.
+      # class_name: The class name of a previously upload class, eg: MySuperWorker
+      # data: Arbitrary hash of your own data that your task will need to run.
     def queue(class_name, data={}, options={})
       puts "Queuing #{class_name}..."
       check_config
@@ -233,9 +258,9 @@ module SimpleWorker
       hash_to_send["priority"] = options[:priority] if options[:priority]
       hash_to_send["options"] = options
       add_sw_params(hash_to_send)
-      if defined?(RAILS_ENV)
-        # todo: move this to global_attributes in railtie
-        hash_to_send["rails_env"] = RAILS_ENV
+      # todo: move this to global_attributes in railtie
+      if defined?(Rails)
+        hash_to_send["rails_env"] = Rails.env
       end
       return queue_raw(class_name, hash_to_send)
 
@@ -250,16 +275,16 @@ module SimpleWorker
 
     end
 
-    #
-    # schedule: hash of scheduling options that can include:
-    #     Required:
-    #     - start_at:      Time of first run - DateTime or Time object.
-    #     Optional:
-    #     - run_every:     Time in seconds between runs. If ommitted, task will only run once.
-    #     - delay_type:    Fixed Rate or Fixed Delay. Default is fixed_delay.
-    #     - end_at:        Scheduled task will stop running after this date (optional, if ommitted, runs forever or until cancelled)
-    #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
-    #
+      #
+      # schedule: hash of scheduling options that can include:
+      #     Required:
+      #     - start_at:      Time of first run - DateTime or Time object.
+      #     Optional:
+      #     - run_every:     Time in seconds between runs. If ommitted, task will only run once.
+      #     - delay_type:    Fixed Rate or Fixed Delay. Default is fixed_delay.
+      #     - end_at:        Scheduled task will stop running after this date (optional, if ommitted, runs forever or until cancelled)
+      #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
+      #
     def schedule(class_name, data, schedule)
       puts "Scheduling #{class_name}..."
       raise "Schedule must be a hash." if !schedule.is_a? Hash

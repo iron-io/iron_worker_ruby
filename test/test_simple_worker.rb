@@ -8,6 +8,15 @@ require_relative 'db_worker'
 class SimpleWorkerTests < TestBase
 
 
+  def test_gem_merging
+    worker = GemDependencyWorker.new
+    worker.queue
+    status = worker.wait_until_complete
+    p status
+    assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
+    puts worker.get_log
+  end
+
   def test_new_worker_style
     # Add something to queue, get task ID back
     tw = TestWorker2.new
@@ -15,16 +24,16 @@ class SimpleWorkerTests < TestBase
     tw.times = 3
     tw.x = true
 
-    # schedule up a task
-#        start_at = 10.seconds.since
-#        response_hash_single = tw.schedule(:start_at=>start_at, :run_every=>30, :run_times=>3)
-#        puts 'response_hash=' + response_hash_single.inspect
-#
-#        10.times do |i|
-#            puts "status #{i}: " + tw.schedule_status.inspect
-#        end
+      # schedule up a task
+      #        start_at = 10.seconds.since
+      #        response_hash_single = tw.schedule(:start_at=>start_at, :run_every=>30, :run_times=>3)
+      #        puts 'response_hash=' + response_hash_single.inspect
+      #
+      #        10.times do |i|
+      #            puts "status #{i}: " + tw.schedule_status.inspect
+      #        end
 
-    # queue up a task
+      # queue up a task
     puts 'queuing ' + tw.inspect
 
     response_hash_single = nil
@@ -88,8 +97,8 @@ class SimpleWorkerTests < TestBase
     assert !dbw.ob.id.nil?
 
     dbw.queue
-    # would be interesting if the object could update itself on complete. Like it would retrieve new values from
-    # finished job when calling status or something.
+      # would be interesting if the object could update itself on complete. Like it would retrieve new values from
+      # finished job when calling status or something.
 
     status = wait_for_task(dbw)
     assert status["status"] == "complete"

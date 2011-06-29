@@ -7,7 +7,7 @@ module SimpleWorker
   class Railtie < Rails::Railtie
 
     initializer "simple_worker.configure_rails_initialization" do |app|
-      SimpleWorker.logger.info  "Initializing SimpleWorker for Rails 3..."
+      SimpleWorker.logger.info "Initializing SimpleWorker for Rails 3..."
       start_time = Time.now
       SimpleWorker.configure do |c2|
         models_path = File.join(Rails.root, 'app/models/*.rb')
@@ -29,23 +29,49 @@ module SimpleWorker
 
     def get_required_gems
       gems_in_gemfile = Bundler.environment.dependencies.select { |d| d.groups.include?(:default) }
+      puts 'gems in gemfile=' + gems_in_gemfile.inspect
       gems =[]
       specs = Bundler.load.specs
       SimpleWorker.logger.debug 'Bundler specs=' + specs.inspect
-      gems_in_gemfile.each do |dep|
-        next if dep.name=='rails' #monkey patch
-        gem_info = {:name=>dep.name, :version=>dep.requirement}
-        gem_info.merge!({:require=>dep.autorequire.join}) if dep.autorequire
-        spec = specs.find { |g| g.name==gem_info[:name] }
-        if spec
-          gem_info[:version] = spec.version.to_s
-          gems << gem_info
-        else
-          SimpleWorker.logger.warn "Could not find gem spec for #{gem_info[:name]}"
+      specs.each do |spec|
+        puts 'spec=' + spec.inspect
+        p spec.methods
+#        next if dep.name=='rails' #monkey patch
+        gem_info = {:name=>spec.name, :version=>spec.version}
+        gem_info[:auto_merged] = true
+# Now find dependency in gemfile in case user set the require
+        dep = gems_in_gemfile.find { |g| g.name == gem_info[:name] }
+        if dep
+          puts 'dep found in gemfile: ' + dep.inspect
+          puts 'autorequire=' + dep.autorequire.inspect
+          gem_info[:require] = dep.autorequire if dep.autorequire
+#        spec = specs.find { |g| g.name==gem_info[:name] }
         end
+        gem_info[:version] = spec.version.to_s
+        gems << gem_info
+        path = SimpleWorker::Service.get_gem_path(gem_info)
+        if path
+          gem_info[:path] = path
+          if gem_info[:require].nil? && dep
+            # see if we should try to require this in our worker
+            require_path = gem_info[:path] + "/#{gem_info[:name]}.rb"
+            puts "require_path=" + require_path
+            if File.exists?(require_path)
+              puts "File exists for require"
+              gem_info[:require] = gem_info[:name]
+            else
+              puts "no require"
+#              gem_info[:no_require] = true
+            end
+          end
+        end
+#        else
+#          SimpleWorker.logger.warn "Could not find gem spec for #{gem_info[:name]}"
+#          raise "Could not find gem spec for #{gem_info[:name]}"
+#        end
       end
       gems
     end
-  end
 
+  end
 end
