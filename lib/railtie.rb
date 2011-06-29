@@ -54,7 +54,7 @@ module SimpleWorker
           gem_info[:path] = path
           if gem_info[:require].nil? && dep
             # see if we should try to require this in our worker
-            require_path = gem_info[:path] + "/#{gem_info[:name]}.rb"
+            require_path = gem_info[:path] + "/lib/#{gem_info[:name]}.rb"
             puts "require_path=" + require_path
             if File.exists?(require_path)
               puts "File exists for require"

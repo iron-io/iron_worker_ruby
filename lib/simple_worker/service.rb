@@ -94,7 +94,7 @@ module SimpleWorker
       gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
         gem = gems.first
-        return gem.full_gem_path + "/lib"
+        gem.full_gem_path
       else
         SimpleWorker.logger.warn "Gem file was not found for #{gem_name}, continuing anyways."
         return nil
@@ -129,7 +129,7 @@ module SimpleWorker
           if SimpleWorker.config.gems
             SimpleWorker.config.gems.each do |gem|
               puts "Bundling gem #{gem[:name]}..."
-              f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}')\n" if gem[:merge]
+              f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n" if gem[:merge]
 #              unless gem[:no_require]
               puts 'writing requires: ' + gem[:require].inspect
               if gem[:require].nil?
@@ -159,8 +159,8 @@ module SimpleWorker
         f.write File.open(filename, 'r') { |mo| mo.read }
       end
       merge << tmp_file
-        #puts "merge before uniq! " + merge.inspect
-        # puts "merge after uniq! " + merge.inspect
+      #puts "merge before uniq! " + merge.inspect      
+      # puts "merge after uniq! " + merge.inspect
 
       fname2 = tmp_file + ".zip"
         #            puts 'fname2=' + fname2
@@ -175,11 +175,13 @@ module SimpleWorker
             path = gem[:path] # get_gem_path(gem)
             if path
               SimpleWorker.logger.debug "Collecting gem #{path}"
-              Dir["#{path}/**/**"].each do |file|
+              Dir["#{path}/*", "#{path}/lib/**/**"].each do |file|
+                # todo: could check if directory and it not lib, skip it
+                puts 'file=' + file.inspect
 #                puts 'gem2=' + gem.inspect
                 zdest = "gems/#{gem[:name]}/#{file.sub(path+'/', '')}"
 #                puts 'gem file=' + file.to_s
-#                puts 'zdest=' + zdest
+                puts 'zdest=' + zdest
                 f.add(zdest, file)
               end
             else
@@ -243,8 +245,8 @@ module SimpleWorker
       queue(class_name, data, options)
     end
 
-      # class_name: The class name of a previously upload class, eg: MySuperWorker
-      # data: Arbitrary hash of your own data that your task will need to run.
+    # class_name: The class name of a previously upload class, eg: MySuperWorker
+    # data: Arbitrary hash of your own data that your task will need to run.
     def queue(class_name, data={}, options={})
       puts "Queuing #{class_name}..."
       check_config
@@ -258,9 +260,9 @@ module SimpleWorker
       hash_to_send["priority"] = options[:priority] if options[:priority]
       hash_to_send["options"] = options
       add_sw_params(hash_to_send)
-      # todo: move this to global_attributes in railtie
-      if defined?(Rails)
-        hash_to_send["rails_env"] = Rails.env
+      if defined?(RAILS_ENV)
+        # todo: move this to global_attributes in railtie
+        hash_to_send["rails_env"] = RAILS_ENV
       end
       return queue_raw(class_name, hash_to_send)
 
@@ -275,16 +277,16 @@ module SimpleWorker
 
     end
 
-      #
-      # schedule: hash of scheduling options that can include:
-      #     Required:
-      #     - start_at:      Time of first run - DateTime or Time object.
-      #     Optional:
-      #     - run_every:     Time in seconds between runs. If ommitted, task will only run once.
-      #     - delay_type:    Fixed Rate or Fixed Delay. Default is fixed_delay.
-      #     - end_at:        Scheduled task will stop running after this date (optional, if ommitted, runs forever or until cancelled)
-      #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
-      #
+    #
+    # schedule: hash of scheduling options that can include:
+    #     Required:
+    #     - start_at:      Time of first run - DateTime or Time object.
+    #     Optional:
+    #     - run_every:     Time in seconds between runs. If ommitted, task will only run once.
+    #     - delay_type:    Fixed Rate or Fixed Delay. Default is fixed_delay.
+    #     - end_at:        Scheduled task will stop running after this date (optional, if ommitted, runs forever or until cancelled)
+    #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
+    #
     def schedule(class_name, data, schedule)
       puts "Scheduling #{class_name}..."
       raise "Schedule must be a hash." if !schedule.is_a? Hash
