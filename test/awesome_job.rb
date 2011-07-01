@@ -2,7 +2,9 @@
 class AwesomeJob < SimpleWorker::Base
   merge_gem 'dropbox' # , '1.2.3'
   # bumpdsfsdfdsfasdf
-  merge_gem 'mongoid_i18n', :require => 'mongoid/i18n'
+
+  # todo: this one causes a stack level too deep error??
+#  merge_gem 'mongoid_i18n', :require => 'mongoid/i18n'
 
   def run
     begin

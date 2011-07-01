@@ -6,6 +6,9 @@ rescue Exception => ex
   puts "Could NOT load current simple_worker: " + ex.message
   require 'simple_worker'
 end
+
+SimpleWorker.logger.level = Logger::DEBUG
+
 require_relative "test_worker"
 require_relative "test_worker_2"
 require_relative "test_worker_3"

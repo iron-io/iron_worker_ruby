@@ -1,0 +1,3 @@
+# These are required for the tests
+gem 'dropbox'
+gem 'mongoid_i18n'

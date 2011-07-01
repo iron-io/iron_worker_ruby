@@ -71,20 +71,23 @@ module SimpleWorker
       end
 
         # merges the specified gem.
-      def merge_gem(gem_name, options=nil)
+      def merge_gem(gem_name, options={})
         gem_info = {:name=>gem_name, :merge=>true}
         if options.is_a?(Hash)
           gem_info.merge!(options)
         else
           gem_info[:version] = options
         end
-        path = SimpleWorker::Service.get_gem_path(spec)
+        path = SimpleWorker::Service.get_gem_path(gem_info)
+        SimpleWorker.logger.debug "Gem path=#{path}"
         if !path
           raise "Gem path not found for #{gem_name}"
         end
         gem_info[:path] = path
         @merged_gems << gem_info
+        puts 'before require ' + (options[:require] || gem_name)
         require options[:require] || gem_name
+        puts 'required yo'
       end
 
 
