@@ -41,14 +41,14 @@ module SimpleWorker
 
     def get_required_gems
       gems_in_gemfile = Bundler.environment.dependencies.select { |d| d.groups.include?(:default) }
-      puts 'gems in gemfile=' + gems_in_gemfile.inspect
+      SimpleWorker.logger.debug  'gems in gemfile=' + gems_in_gemfile.inspect
       gems =[]
       specs = Bundler.load.specs
       SimpleWorker.logger.debug 'Bundler specs=' + specs.inspect
       SimpleWorker.logger.debug "gems_to_skip=" + self.class.gems_to_skip.inspect
       specs.each do |spec|
-        puts 'spec.name=' + spec.name.inspect
-        puts 'spec=' + spec.inspect
+        SimpleWorker.logger.debug 'spec.name=' + spec.name.inspect
+        SimpleWorker.logger.debug 'spec=' + spec.inspect
         p spec.methods
         if self.class.gems_to_skip.include?(spec.name)
           SimpleWorker.logger.debug "Skipping #{spec.name}"
@@ -60,8 +60,8 @@ module SimpleWorker
 # Now find dependency in gemfile in case user set the require
         dep = gems_in_gemfile.find { |g| g.name == gem_info[:name] }
         if dep
-          puts 'dep found in gemfile: ' + dep.inspect
-          puts 'autorequire=' + dep.autorequire.inspect
+          SimpleWorker.logger.debug  'dep found in gemfile: ' + dep.inspect
+          SimpleWorker.logger.debug 'autorequire=' + dep.autorequire.inspect
           gem_info[:require] = dep.autorequire if dep.autorequire
 #        spec = specs.find { |g| g.name==gem_info[:name] }
         end
@@ -73,12 +73,12 @@ module SimpleWorker
           if gem_info[:require].nil? && dep
             # see if we should try to require this in our worker
             require_path = gem_info[:path] + "/lib/#{gem_info[:name]}.rb"
-            puts "require_path=" + require_path
+            SimpleWorker.logger.debug  "require_path=" + require_path
             if File.exists?(require_path)
-              puts "File exists for require"
+              SimpleWorker.logger.debug  "File exists for require"
               gem_info[:require] = gem_info[:name]
             else
-              puts "no require"
+              SimpleWorker.logger.debug  "no require"
 #              gem_info[:no_require] = true
             end
           end
