@@ -6,6 +6,18 @@ require 'rails'
 module SimpleWorker
   class Railtie < Rails::Railtie
 
+    @gems_to_skip = ['actionmailer', 'actionpack', 'activemodel', 'activeresource', 'activesupport',
+                     'bundler',
+                     'mail',
+                     'mysql2',
+                     'rails',
+                     'tzinfo' # HUGE!
+    ]
+
+    def self.gems_to_skip
+      @gems_to_skip
+    end
+
     initializer "simple_worker.configure_rails_initialization" do |app|
       SimpleWorker.logger.info "Initializing SimpleWorker for Rails 3..."
       start_time = Time.now
@@ -33,9 +45,15 @@ module SimpleWorker
       gems =[]
       specs = Bundler.load.specs
       SimpleWorker.logger.debug 'Bundler specs=' + specs.inspect
+      SimpleWorker.logger.debug "gems_to_skip=" + self.class.gems_to_skip.inspect
       specs.each do |spec|
+        puts 'spec.name=' + spec.name.inspect
         puts 'spec=' + spec.inspect
         p spec.methods
+        if self.class.gems_to_skip.include?(spec.name)
+          SimpleWorker.logger.debug "Skipping #{spec.name}"
+          next
+        end
 #        next if dep.name=='rails' #monkey patch
         gem_info = {:name=>spec.name, :version=>spec.version}
         gem_info[:auto_merged] = true

@@ -275,3 +275,8 @@ Then in your worker, you would have the attributes defined:
 
     attr_accessor :db_user, :db_pass
 
+
+Development of the Gem
+----------------------
+
+Join the discussion group at: https://groups.google.com/forum/?hl=en#!forum/simple_worker
