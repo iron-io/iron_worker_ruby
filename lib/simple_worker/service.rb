@@ -68,6 +68,7 @@ module SimpleWorker
 #        puts 'code=' + mystring
         options = {
             "class_name"=>class_name,
+            "name"=>class_name,
             "file_name"=> File.basename(filename)
         }
         #puts 'options for upload=' + options.inspect
