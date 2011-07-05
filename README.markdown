@@ -104,6 +104,16 @@ action in your application. This is almost the same as queuing your worker.
     worker.body = "This is the body"
     worker.schedule(:start_at=>1.hours.since)
 
+By default, if you call `schedule` more than once for the same worker class, the new schedule will replace the old one. If you'd
+like multiple schedules for the same class, provide a `:name` parameter:
+
+    worker.schedule(:name=>"EmailWorkerDaily", :start_at=>......)
+
+You can also set priority for scheduled jobs:
+
+    worker.schedule(:priority=>1, ....)
+
+
 Check Status
 ------------
 

@@ -218,13 +218,13 @@ module SimpleWorker
 
       # Call this to queue up your job to SimpleWorker cloud.
       # options:
-      #   :priority => 0,1 or 2. Default is 0.
+      #   :priority => 0, 1 or 2. Default is 0.
       #   :recursive => true/false. Default is false. If you queue up a worker that is the same class as the currently
       #                 running worker, it will be rejected unless you set this explicitly so we know you meant to do it.
     def queue(options={})
 #            puts 'in queue'
       set_auto_attributes
-      upload_if_needed
+      upload_if_needed(options)
 
       response = SimpleWorker.service.queue(self.class.name, sw_get_data, options)
 #            puts 'queue response=' + response.inspect
@@ -233,6 +233,7 @@ module SimpleWorker
       response
     end
 
+    # Receive the status of your worker.
     def status
       check_service
       if task_id
@@ -289,10 +290,11 @@ module SimpleWorker
       #     - delay_type:    Fixed Rate or Fixed Delay. Default is fixed_delay.
       #     - end_at:        Scheduled task will stop running after this date (optional, if ommitted, runs forever or until cancelled)
       #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
+      #     - name:          Provide a name for the schedule, defaults to class name. Use this if you want more than one schedule per worker class.
       #
     def schedule(schedule)
       set_global_attributes
-      upload_if_needed
+      upload_if_needed(schedule)
 
       response = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
 #            puts 'schedule response=' + response.inspect
@@ -377,7 +379,7 @@ module SimpleWorker
       ret
     end
 
-    def upload_if_needed
+    def upload_if_needed(options={})
       check_service
       SimpleWorker.service.check_config
 
@@ -424,7 +426,9 @@ module SimpleWorker
         end
         merged.uniq!
         merged_mailers.uniq!
-        SimpleWorker.service.upload(rfile, subclass.name, :merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers, :merged_folders=>merged_folders)
+        options_for_upload = {:merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers, :merged_folders=>merged_folders}
+        options_for_upload[:name] = options[:name] if options[:name]
+        SimpleWorker.service.upload(rfile, subclass.name, options_for_upload)
         self.class.instance_variable_set(:@uploaded, true)
       else
         SimpleWorker.logger.debug 'Already uploaded for ' + self.class.name

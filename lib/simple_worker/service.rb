@@ -30,6 +30,7 @@ module SimpleWorker
     #    - :callback_url
     #    - :merge => array of files to merge in with this file
     def upload(filename, class_name, options={})
+      name = options[:name] || class_name
 #      puts "Uploading #{class_name}"
 # check whether it should upload again
       tmp = Dir.tmpdir()
@@ -55,21 +56,10 @@ module SimpleWorker
       zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:merged_mailers], options[:merged_folders])
       SimpleWorker.logger.info 'file size to upload: ' + File.size(zip_filename).to_s
 
-#            sys.classes[subclass].__file__
-#            puts '__FILE__=' + Base.subclass.__file__.to_s
-#            puts "new md5=" + md5
-
-
       if new_code
-#        mystring = nil
-#        file     = File.open(filename, "r") do |f|
-#          mystring = f.read
-#        end
-#        mystring = Base64.encode64(mystring)
-#        puts 'code=' + mystring
         options = {
             "class_name"=>class_name,
-            "name"=>class_name,
+            "name"=>name,
             "file_name"=> File.basename(filename)
         }
         #puts 'options for upload=' + options.inspect
@@ -267,10 +257,11 @@ end
       if !data.is_a?(Array)
         data = [data]
       end
-#      p data
+      name = options[:name] || class_name
       hash_to_send = {}
       hash_to_send["payload"] = data
       hash_to_send["class_name"] = class_name
+      hash_to_send["name"] = name
       hash_to_send["priority"] = options[:priority] if options[:priority]
       hash_to_send["options"] = options
       add_sw_params(hash_to_send)
@@ -285,10 +276,10 @@ end
     def queue_raw(class_name, data={})
       params = nil
       hash_to_send = data
-      hash_to_send["class_name"] = class_name
+      hash_to_send["class_name"] = class_name unless hash_to_send["class_name"]
+      hash_to_send["name"] = class_name unless hash_to_send["name"]
       ret = post("queue/add", hash_to_send)
       ret
-
     end
 
     #
