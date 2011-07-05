@@ -13,7 +13,6 @@ module SimpleWorker
     attr_accessor :config
 
     def initialize(access_key, secret_key, options={})
-      SimpleWorker.logger.info 'Starting SimpleWorker::Service...'
       if options[:config]
         self.config = options[:config]
       else
@@ -24,6 +23,7 @@ module SimpleWorker
       end
       super("http://api.simpleworker.com/api/", access_key, secret_key, options)
       self.host = self.config.host if self.config && self.config.host
+      SimpleWorker.logger.info 'SimpleWorker initialized.'
     end
 
     # Options:
