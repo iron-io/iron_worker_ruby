@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_worker}
-  s.version = "0.7.0.beta.3"
+  s.version = "0.7.0"
 
-  s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
+  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Travis Reeder}]
-  s.date = %q{2011-07-05}
+  s.date = %q{2011-07-06}
   s.description = %q{The official SimpleWorker gem for http://www.simpleworker.com}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
