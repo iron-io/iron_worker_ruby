@@ -49,7 +49,6 @@ module SimpleWorker
       specs.each do |spec|
         SimpleWorker.logger.debug 'spec.name=' + spec.name.inspect
         SimpleWorker.logger.debug 'spec=' + spec.inspect
-        p spec.methods
         if self.class.gems_to_skip.include?(spec.name)
           SimpleWorker.logger.debug "Skipping #{spec.name}"
           next

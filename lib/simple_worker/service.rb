@@ -75,13 +75,17 @@ module SimpleWorker
       JSON.parse(hash["gems"])
     end
 
+    def logger
+      SimpleWorker.logger
+    end
+
     def self.get_gem_path(gem_info)
 #      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
       gem_name =(gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
-      puts "Searching for #{gem_name}..."
+      #puts "Searching for #{gem_name}..."
       gems= Gem::Specification.respond_to?(:each) ? Gem::Specification.find_all_by_name(gem_name) : Gem::GemPathSearcher.new.find_all(gem_name)
 #      gems     = searcher.init_gemspecs.select { |gem| gem.name==gem_name }
-      puts 'gems found=' + gems.inspect
+      logger.debug 'gems found=' + gems.inspect
       gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
         gem = gems.first
