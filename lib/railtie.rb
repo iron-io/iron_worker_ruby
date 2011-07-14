@@ -26,8 +26,14 @@ module SimpleWorker
         c2.models = Dir.glob(models_path)
         mailers_path = File.join(Rails.root, 'app/mailers/*.rb')
         c2.mailers = Dir.glob(mailers_path).collect { |m| {:filename=>m, :name => File.basename(m), :path_to_templates=>File.join(Rails.root, "app/views/#{File.basename(m, File.extname(m))}")} }
-        c2.extra_requires += ['active_support/core_ext', 'active_record', 'action_mailer']
-        c2.database = Rails.configuration.database_configuration[Rails.env]
+        c2.extra_requires += ['active_support/core_ext', 'action_mailer']
+        #puts 'DB FILE=' + File.join(Rails.root, 'config', 'database.yml').to_s
+        if defined?(ActiveRecord) && File.exist?(File.join(Rails.root, 'config', 'database.yml'))
+          c2.extra_requires += ['active_record']
+          c2.database = Rails.configuration.database_configuration[Rails.env]
+        else
+          #puts 'NOT DOING ACTIVERECORD'
+        end
         c2.gems = get_required_gems if defined?(Bundler)
         SimpleWorker.logger.debug "MODELS " + c2.models.inspect
         SimpleWorker.logger.debug "MAILERS " + c2.mailers.inspect
