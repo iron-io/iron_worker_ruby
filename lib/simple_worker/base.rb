@@ -86,7 +86,11 @@ module SimpleWorker
         gem_info[:path] = path
         @merged_gems << gem_info
         puts 'before require ' + (options[:require] || gem_name)
-        require options[:require] || gem_name
+        begin
+          require options[:require] || gem_name
+        rescue LoadError=>ex
+          raise "Gem #{gem_name} was found, but we could not load the file '#{options[:require] || gem_name}.rb'. You may need to use :require=>x.........."
+        end
         puts 'required yo'
       end
 
