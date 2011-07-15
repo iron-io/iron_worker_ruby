@@ -106,7 +106,7 @@ module SimpleWorker
 
       def merge_folder(path)
         files = []
-        Dir["#{path}*.rb"].each do |f|
+        Dir["#{File.join(File.dirname(caller_file),path)}*.rb"].each do |f|
           f = check_for_file(f)
           files<<f
         end
