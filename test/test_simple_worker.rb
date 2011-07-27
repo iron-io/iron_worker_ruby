@@ -8,6 +8,7 @@ require_relative 'db_worker'
 class SimpleWorkerTests < TestBase
 
 
+
   def test_gem_merging
     worker = GemDependencyWorker.new
     worker.queue

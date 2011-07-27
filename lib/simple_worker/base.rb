@@ -9,21 +9,21 @@ module SimpleWorker
 
     class << self
       attr_accessor :subclass, :caller_file
-      @merged = []
-      @merged_workers = []
+      @merged = {}
+      @merged_workers = {}
       @merged_gems = []
       @merged_mailers = []
       @merged_folders = {}
-      @unmerged = []
+      @unmerged = {}
       @unmerged_gems = []
 
       def reset!
-        @merged = []
-        @merged_workers = []
+        @merged = {}
+        @merged_workers = {}
         @merged_gems = []
         @merged_mailers = []
         @merged_folders = {}
-        @unmerged = []
+        @unmerged = {}
         @unmerged_gems = []
       end
 
@@ -45,6 +45,7 @@ module SimpleWorker
       end
 
       def check_for_file(f)
+        puts 'Checking for ' + f.to_s
         f = f.to_str
         unless ends_with?(f, ".rb")
           f << ".rb"
@@ -56,7 +57,7 @@ module SimpleWorker
           # try relative
           #          p caller
           f2 = File.join(File.dirname(caller[3]), f)
-#          puts 'f2=' + f2
+          puts 'f2=' + f2
           if File.exist? f2
             exists = true
             f = f2
@@ -70,7 +71,7 @@ module SimpleWorker
         f
       end
 
-        # merges the specified gem.
+      # merges the specified gem.
       def merge_gem(gem_name, options={})
         gem_info = {:name=>gem_name, :merge=>true}
         if options.is_a?(Hash)
@@ -85,13 +86,13 @@ module SimpleWorker
         end
         gem_info[:path] = path
         @merged_gems << gem_info
-        puts 'before require ' + (options[:require] || gem_name)
+        #puts 'before require ' + (options[:require] || gem_name)
         begin
           require options[:require] || gem_name
         rescue LoadError=>ex
           raise "Gem #{gem_name} was found, but we could not load the file '#{options[:require] || gem_name}.rb'. You may need to use :require=>x.........."
         end
-        puts 'required yo'
+        #puts 'required yo'
       end
 
 
@@ -100,7 +101,7 @@ module SimpleWorker
         @unmerged_gems << gem_info
       end
 
-        #merge action_mailer mailers
+      #merge action_mailer mailers
       def merge_mailer(mailer, params={})
         check_for_file mailer
         basename = File.basename(mailer, File.extname(mailer))
@@ -110,29 +111,45 @@ module SimpleWorker
 
       def merge_folder(path)
         files = []
-        Dir["#{File.join(File.dirname(caller_file),path)}*.rb"].each do |f|
-          f = check_for_file(f)
-          files<<f
+        puts "caller_file=" + caller_file
+        if path[0, 1] == '/'
+          abs_dir = path
+        else # relative
+          abs_dir = File.join(File.dirname(caller_file), path)
         end
-        @merged_folders[path]=files unless files.empty?
-        SimpleWorker.logger.info "Merged folders! #{@merged_folders.inspect}"
+        puts 'abs_dir=' + abs_dir
+        raise "Folder not found for merge_folder #{path}!" unless File.directory?(abs_dir)
+        rbfiles = File.join(abs_dir, "*.rb")
+        Dir[rbfiles].each do |f|
+          #f2 = check_for_file(f)
+          #puts "f2=#{f2}"
+          merge(f)
+          #files << f
+          #@merged[f]
+        end
+        #@merged_folders[path] = files unless files.empty?
+        #SimpleWorker.logger.info "Merged folders! #{@merged_folders.inspect}"
       end
 
-        # merges the specified files.
-        # todo: don't allow multiple files per merge, just one like require
+      # merges the specified file.
+      #
+      # Example: merge 'models/my_model'
       def merge(*files)
+        ret = nil
         files.each do |f|
-          f = check_for_file(f)
-          @merged << f
+          f2 = check_for_file(f)
+          ret =  {:name=>f, :path=>f2}
+          @merged[File.basename(f2)] = ret
         end
+        ret
       end
 
-        # Opposite of merge, this will omit the files you specify from being merged in. Useful in Rails apps
-        # where a lot of things are auto-merged by default like your models.
+      # Opposite of merge, this will omit the files you specify from being merged in. Useful in Rails apps
+      # where a lot of things are auto-merged by default like your models.
       def unmerge(*files)
         files.each do |f|
-          f = check_for_file(f)
-          @unmerged << f
+          f2 = check_for_file(f)
+          @unmerged[File.basename(f2)] = {:name=>f, :path=>f2}
         end
       end
 
@@ -141,15 +158,18 @@ module SimpleWorker
         s[-suffix.length, suffix.length] == suffix
       end
 
-        # Use this to merge in other workers. These are treated differently the normal merged files because
-        # they will be uploaded separately and treated as distinctly separate workers.
-        #
-        # file: This is the path to the file, just like merge.
-        # class_name: eg: 'MyWorker'.
+      # Use this to merge in other workers. These are treated differently the normal merged files because
+      # they will be uploaded separately and treated as distinctly separate workers.
+      #
+      # file: This is the path to the file, just like merge.
+      # class_name: eg: 'MyWorker'.
       def merge_worker(file, class_name)
 #        puts 'merge_worker in ' + self.name
-        merge(file)
-        @merged_workers << [File.expand_path(file), class_name]
+        ret = merge(file)
+        ret[:class_name] = class_name
+        #[File.expand_path(file), class_name]
+        @merged_workers[file] = ret
+        ret
       end
     end
 
@@ -174,7 +194,7 @@ module SimpleWorker
       self.class.instance_variable_defined?(:@uploaded) && self.class.instance_variable_get(:@uploaded)
     end
 
-      # Call this if you want to run locally and get some extra features from this gem like global attributes.
+    # Call this if you want to run locally and get some extra features from this gem like global attributes.
     def run_local
       # puts 'run_local'
       set_auto_attributes
@@ -220,11 +240,11 @@ module SimpleWorker
       queue(options)
     end
 
-      # Call this to queue up your job to SimpleWorker cloud.
-      # options:
-      #   :priority => 0, 1 or 2. Default is 0.
-      #   :recursive => true/false. Default is false. If you queue up a worker that is the same class as the currently
-      #                 running worker, it will be rejected unless you set this explicitly so we know you meant to do it.
+    # Call this to queue up your job to SimpleWorker cloud.
+    # options:
+    #   :priority => 0, 1 or 2. Default is 0.
+    #   :recursive => true/false. Default is false. If you queue up a worker that is the same class as the currently
+    #                 running worker, it will be rejected unless you set this explicitly so we know you meant to do it.
     def queue(options={})
 #            puts 'in queue'
       set_auto_attributes
@@ -261,9 +281,9 @@ module SimpleWorker
       false
     end
 
-      # will return after job has completed or errored out.
-      # Returns status.
-      # todo: add a :timeout option
+    # will return after job has completed or errored out.
+    # Returns status.
+    # todo: add a :timeout option
     def wait_until_complete
       check_service
       tries = 0
@@ -285,17 +305,17 @@ module SimpleWorker
       upload_if_needed
     end
 
-      #
-      # schedule: hash of scheduling options that can include:
-      #     Required:
-      #     - start_at:      Time of first run - DateTime or Time object.
-      #     Optional:
-      #     - run_every:     Time in seconds between runs. If ommitted, task will only run once.
-      #     - delay_type:    Fixed Rate or Fixed Delay. Default is fixed_delay.
-      #     - end_at:        Scheduled task will stop running after this date (optional, if ommitted, runs forever or until cancelled)
-      #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
-      #     - name:          Provide a name for the schedule, defaults to class name. Use this if you want more than one schedule per worker class.
-      #
+    #
+    # schedule: hash of scheduling options that can include:
+    #     Required:
+    #     - start_at:      Time of first run - DateTime or Time object.
+    #     Optional:
+    #     - run_every:     Time in seconds between runs. If ommitted, task will only run once.
+    #     - delay_type:    Fixed Rate or Fixed Delay. Default is fixed_delay.
+    #     - end_at:        Scheduled task will stop running after this date (optional, if ommitted, runs forever or until cancelled)
+    #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
+    #     - name:          Provide a name for the schedule, defaults to class name. Use this if you want more than one schedule per worker class.
+    #
     def schedule(schedule)
       set_global_attributes
       upload_if_needed(schedule)
@@ -310,12 +330,12 @@ module SimpleWorker
       SimpleWorker.service.schedule_status(schedule_id)
     end
 
-      # Retrieves the log for this worker from the SimpleWorker service.
+    # Retrieves the log for this worker from the SimpleWorker service.
     def get_log
       SimpleWorker.service.log(task_id)
     end
 
-      # Callbacks for developer
+    # Callbacks for developer
     def before_upload
 
     end
@@ -362,7 +382,7 @@ module SimpleWorker
         #puts 'superclass=' + superclass.name
         break if superclass.name == SimpleWorker::Base.name
         super_merged = superclass.instance_variable_get(:@merged)
-          #puts 'merging caller file: ' + superclass.instance_variable_get(:@caller_file).inspect
+        #puts 'merging caller file: ' + superclass.instance_variable_get(:@caller_file).inspect
         super_merged << superclass.instance_variable_get(:@caller_file)
         merged = super_merged + merged
         #puts 'merged with superclass=' + merged.inspect
@@ -373,11 +393,11 @@ module SimpleWorker
     def self.extract_merged_workers(worker)
       merged_workers = worker.class.instance_variable_get(:@merged_workers)
       SimpleWorker.logger.debug "Looking for merged_workers in #{worker.class.name}: #{merged_workers.inspect}"
-      ret = []
+      ret = {}
       if merged_workers && merged_workers.size > 0
         merged_workers.each do |mw|
           SimpleWorker.logger.debug "merged worker found in #{worker.class.name}: #{mw.inspect}"
-          ret << mw[0]
+          ret[mw[:name]] = mw
         end
       end
       ret
@@ -391,17 +411,17 @@ module SimpleWorker
 
       merged = self.class.instance_variable_get(:@merged)
 
-        # do merged_workers first because we need to get their subclasses and what not too
+      # do merged_workers first because we need to get their subclasses and what not too
       merged_workers = self.class.instance_variable_get(:@merged_workers)
       if merged_workers && merged_workers.size > 0
         SimpleWorker.logger.debug 'now uploading merged workers ' + merged_workers.inspect
-        merged_workers.each do |mw|
-          SimpleWorker.logger.debug 'Instantiating and uploading ' + mw[1]
-          mw_instantiated = Kernel.const_get(mw[1]).new
+        merged_workers.each_pair do |mw, v|
+          SimpleWorker.logger.debug 'Instantiating and uploading ' + v.inspect
+          mw_instantiated = Kernel.const_get(v[:class_name]).new
           mw_instantiated.upload
 
           merged, rfile, subclass = SimpleWorker::Base.extract_superclasses_merges(mw_instantiated, merged)
-          merged += SimpleWorker::Base.extract_merged_workers(mw_instantiated)
+          merged.merge!(SimpleWorker::Base.extract_merged_workers(mw_instantiated))
 
         end
       end
@@ -428,7 +448,7 @@ module SimpleWorker
           merged_gems = gems_to_merge(merged_gems)
           merged_gems.uniq!
         end
-        merged.uniq!
+        #merged.uniq!
         merged_mailers.uniq!
         options_for_upload = {:merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers, :merged_folders=>merged_folders}
         options_for_upload[:name] = options[:name] if options[:name]
@@ -446,7 +466,7 @@ module SimpleWorker
       data = {}
 
       payload = {}
-        # todo: should put these down a layer, eg: payload[:attributes]
+      # todo: should put these down a layer, eg: payload[:attributes]
       self.instance_variables.each do |iv|
         payload[iv] = instance_variable_get(iv)
       end

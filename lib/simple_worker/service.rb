@@ -40,7 +40,7 @@ module SimpleWorker
       if File.exists?(f)
         existing_md5 = IO.read(f)
       end
-      # Check for code changes.
+# Check for code changes.
       md5 = Digest::MD5.hexdigest(File.read(filename))
       new_code = false
       if md5 != existing_md5
@@ -60,7 +60,7 @@ module SimpleWorker
         options = {
             "class_name"=>class_name,
             "name"=>name,
-            "file_name"=> File.basename(filename)
+            "file_name"=> "runner.rb" # File.basename(filename)
         }
         #puts 'options for upload=' + options.inspect
         SimpleWorker.logger.info "Uploading now..."
@@ -84,7 +84,7 @@ module SimpleWorker
       gem_name =(gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
       #puts "Searching for #{gem_name}..."
       gems= Gem::Specification.respond_to?(:each) ? Gem::Specification.find_all_by_name(gem_name) : Gem::GemPathSearcher.new.find_all(gem_name)
-#      gems     = searcher.init_gemspecs.select { |gem| gem.name==gem_name }
+      #      gems     = searcher.init_gemspecs.select { |gem| gem.name==gem_name }
       logger.debug 'gems found=' + gems.inspect
       gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
@@ -100,17 +100,24 @@ module SimpleWorker
 #      unless (merge && merge.size > 0) || (rged_gems && merged_gems.size > 0)
 #        return filename
 #      end
-      merge = merge.nil? ? [] : merge.dup
+      merge = merge.nil? ? {} : merge.dup
+      SimpleWorker.logger.debug "merge"
       if unmerge
-        unmerge.each do |x|
+        unmerge.each_pair do |x, y|
           deleted = merge.delete x
-#          puts "Unmerging #{x}. Success? #{deleted}"
+          SimpleWorker.logger.debug "Unmerging #{x}. Success? #{deleted}"
         end
       end
-      merge.uniq!
-      tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
+      #tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
+      tmp_file = File.join(Dir.tmpdir(), 'runner.rb')
       File.open(tmp_file, "w") do |f|
         # add some rails stuff if using Rails
+
+        merge.each_pair do |k,v|
+          SimpleWorker.logger.debug "merging #{k} into #{filename}"
+          f.write("require_relative '#{k}'\n") # add(File.basename(m), m)
+        end
+
         if defined?(Rails)
           f.write "module Rails
   def self.version
@@ -121,7 +128,6 @@ module SimpleWorker
   end
 end
 "
-
         end
         if SimpleWorker.config.extra_requires
           SimpleWorker.config.extra_requires.each do |r|
@@ -164,9 +170,13 @@ end
             end
           end
         end
-        f.write File.open(filename, 'r') { |mo| mo.read }
+        #f.write File.open(filename, 'r') { |mo| mo.read }
+        f.write("require_relative '#{File.basename(filename)}'")
       end
-      merge << tmp_file
+      puts 'funner.rb=' + tmp_file
+      merge['runner.rb'] = {:path=>tmp_file}
+      puts 'filename=' + filename
+      merge[File.basename(filename)] = {:path=>filename}
       #puts "merge before uniq! " + merge.inspect      
       # puts "merge after uniq! " + merge.inspect
 
@@ -185,11 +195,11 @@ end
               SimpleWorker.logger.debug "Collecting gem #{path}"
               Dir["#{path}/*", "#{path}/lib/**/**"].each do |file|
                 # todo: could check if directory and it not lib, skip it
-                puts 'file=' + file.inspect
+                SimpleWorker.logger.debug 'file for gem=' + file.inspect
 #                puts 'gem2=' + gem.inspect
                 zdest = "gems/#{gem[:name]}/#{file.sub(path+'/', '')}"
 #                puts 'gem file=' + file.to_s
-                puts 'zdest=' + zdest
+                SimpleWorker.logger.debug 'zip dest=' + zdest
                 f.add(zdest, file)
               end
             else
@@ -216,9 +226,9 @@ end
           end
         end
 
-        merge.each do |m|
+        merge.each_pair do |k,v|
 #          puts "merging #{m} into #{filename}"
-          f.add(File.basename(m), m)
+          f.add(File.basename(v[:path]), v[:path])
         end
         if merged_mailers && merged_mailers.size > 0
           # puts " MERGED MAILERS" + merged_mailers.inspect
