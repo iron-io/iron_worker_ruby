@@ -92,7 +92,6 @@ module SimpleWorker
         rescue LoadError=>ex
           raise "Gem #{gem_name} was found, but we could not load the file '#{options[:require] || gem_name}.rb'. You may need to use :require=>x.........."
         end
-        #puts 'required yo'
       end
 
 
