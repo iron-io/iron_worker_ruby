@@ -219,7 +219,7 @@ end
             if files and files.size>0
               files.each do |file|
                 zdest = "#{Digest::MD5.hexdigest(folder)}/#{file.sub(':', '_').sub('/', '_')}"
-                puts 'put file to=' + zdest
+                SimpleWorker.logger.debug 'put file to=' + zdest
                 f.add(zdest, file)
               end
             end
