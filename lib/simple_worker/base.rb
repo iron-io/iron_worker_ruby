@@ -45,7 +45,7 @@ module SimpleWorker
       end
 
       def check_for_file(f)
-        puts 'Checking for ' + f.to_s
+        SimpleWorker.logger.debug 'Checking for ' + f.to_s
         f = f.to_str
         unless ends_with?(f, ".rb")
           f << ".rb"
@@ -111,13 +111,13 @@ module SimpleWorker
 
       def merge_folder(path)
         files = []
-        puts "caller_file=" + caller_file
+        #puts "caller_file=" + caller_file
         if path[0, 1] == '/'
           abs_dir = path
         else # relative
           abs_dir = File.join(File.dirname(caller_file), path)
         end
-        puts 'abs_dir=' + abs_dir
+        #puts 'abs_dir=' + abs_dir
         raise "Folder not found for merge_folder #{path}!" unless File.directory?(abs_dir)
         rbfiles = File.join(abs_dir, "*.rb")
         Dir[rbfiles].each do |f|

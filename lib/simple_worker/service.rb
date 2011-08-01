@@ -173,9 +173,9 @@ end
         #f.write File.open(filename, 'r') { |mo| mo.read }
         f.write("require_relative '#{File.basename(filename)}'")
       end
-      puts 'funner.rb=' + tmp_file
+      #puts 'funner.rb=' + tmp_file
       merge['runner.rb'] = {:path=>tmp_file}
-      puts 'filename=' + filename
+      #puts 'filename=' + filename
       merge[File.basename(filename)] = {:path=>filename}
       #puts "merge before uniq! " + merge.inspect      
       # puts "merge after uniq! " + merge.inspect
