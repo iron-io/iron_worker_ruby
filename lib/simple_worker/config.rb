@@ -45,5 +45,10 @@ module SimpleWorker
 
   end
 
+  # Can merge a gem globally here
+  def self.merge_gem(options)
+
+  end
+
 end
 

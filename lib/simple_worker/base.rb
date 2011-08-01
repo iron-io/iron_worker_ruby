@@ -85,13 +85,12 @@ module SimpleWorker
         end
         gem_info[:path] = path
         @merged_gems << gem_info
-        puts 'before require ' + (options[:require] || gem_name)
+        #puts 'before require ' + (options[:require] || gem_name)
         begin
           require options[:require] || gem_name
         rescue LoadError=>ex
           raise "Gem #{gem_name} was found, but we could not load the file '#{options[:require] || gem_name}.rb'. You may need to use :require=>x.........."
         end
-        puts 'required yo'
       end
 
 
@@ -348,7 +347,7 @@ module SimpleWorker
     end
 
     def check_service
-      raise "SimpleWorker configuration not set." unless SimpleWorker.service
+      raise "SimpleWorker not configured properly." unless SimpleWorker.service
     end
 
     def self.extract_superclasses_merges(worker, merged)
