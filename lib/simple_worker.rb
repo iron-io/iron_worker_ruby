@@ -1,3 +1,4 @@
+require_relative 'simple_worker/utils'
 require_relative 'simple_worker/service'
 require_relative 'simple_worker/base'
 require_relative 'simple_worker/config'

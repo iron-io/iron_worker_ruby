@@ -11,20 +11,20 @@ module SimpleWorker
       attr_accessor :subclass, :caller_file
       @merged = {}
       @merged_workers = {}
-      @merged_gems = []
+      @merged_gems = {}
       @merged_mailers = []
       @merged_folders = {}
       @unmerged = {}
-      @unmerged_gems = []
+      @unmerged_gems = {}
 
       def reset!
         @merged = {}
         @merged_workers = {}
-        @merged_gems = []
+        @merged_gems = {}
         @merged_mailers = []
         @merged_folders = {}
         @unmerged = {}
-        @unmerged_gems = []
+        @unmerged_gems = {}
       end
 
       def inherited(subclass)
@@ -44,48 +44,10 @@ module SimpleWorker
         super
       end
 
-      def check_for_file(f)
-        SimpleWorker.logger.debug 'Checking for ' + f.to_s
-        f = f.to_str
-        unless ends_with?(f, ".rb")
-          f << ".rb"
-        end
-        exists = false
-        if File.exist? f
-          exists = true
-        else
-          # try relative
-          #          p caller
-          f2 = File.join(File.dirname(caller[3]), f)
-          puts 'f2=' + f2
-          if File.exist? f2
-            exists = true
-            f = f2
-          end
-        end
-        unless exists
-          raise "File not found: " + f
-        end
-        f = File.expand_path(f)
-        require f
-        f
-      end
-
       # merges the specified gem.
       def merge_gem(gem_name, options={})
-        gem_info = {:name=>gem_name, :merge=>true}
-        if options.is_a?(Hash)
-          gem_info.merge!(options)
-        else
-          gem_info[:version] = options
-        end
-        path = SimpleWorker::Service.get_gem_path(gem_info)
-        SimpleWorker.logger.debug "Gem path=#{path}"
-        if !path
-          raise "Gem path not found for #{gem_name}"
-        end
-        gem_info[:path] = path
-        @merged_gems << gem_info
+        gem_info = SimpleWorker::MergeHelper.create_gem_info(gem_name, options)
+        @merged_gems[gem_name.to_s] = gem_info
         #puts 'before require ' + (options[:require] || gem_name)
         begin
           require options[:require] || gem_name
@@ -96,13 +58,17 @@ module SimpleWorker
 
 
       def unmerge_gem(gem_name)
-        gem_info = {:name=>gem_name}
-        @unmerged_gems << gem_info
+        #gem_info = {:name=>gem_name}
+        #@unmerged_gems[gem_name.to_s] = gem_info
+         gs = gem_name.to_s
+        gem_info = {:name=>gs}
+        @unmerged_gems[gs] = gem_info
+        @merged_gems.delete(gs)
       end
 
       #merge action_mailer mailers
       def merge_mailer(mailer, params={})
-        check_for_file mailer
+         f2 = SimpleWorker::MergeHelper.check_for_file mailer, caller[2]
         basename = File.basename(mailer, File.extname(mailer))
         path_to_templates = params[:path_to_templates] || File.join(Rails.root, "app/views/#{basename}")
         @merged_mailers << {:name=>basename, :path_to_templates=>path_to_templates, :filename => mailer}.merge!(params)
@@ -136,8 +102,8 @@ module SimpleWorker
       def merge(*files)
         ret = nil
         files.each do |f|
-          f2 = check_for_file(f)
-          ret =  {:name=>f, :path=>f2}
+          f2 = SimpleWorker::MergeHelper.check_for_file(f, caller[2])
+          ret = {:name=>f, :path=>f2}
           @merged[File.basename(f2)] = ret
         end
         ret
@@ -147,15 +113,11 @@ module SimpleWorker
       # where a lot of things are auto-merged by default like your models.
       def unmerge(*files)
         files.each do |f|
-          f2 = check_for_file(f)
+          f2 = SimpleWorker::MergeHelper.check_for_file(f, caller[2])
           @unmerged[File.basename(f2)] = {:name=>f, :path=>f2}
         end
       end
 
-      def ends_with?(s, suffix)
-        suffix = suffix.to_s
-        s[-suffix.length, suffix.length] == suffix
-      end
 
       # Use this to merge in other workers. These are treated differently the normal merged files because
       # they will be uploaded separately and treated as distinctly separate workers.
@@ -354,12 +316,12 @@ module SimpleWorker
     private
 
     def gems_to_merge(merged_gems)
-      list_of_gems =[]
+      list_of_gems = {}
       if merged_gems && merged_gems.size > 0
         installed_gems = SimpleWorker.config.get_server_gems
-        merged_gems.each do |gem|
+        merged_gems.each_pair do |k, gem|
           gem.merge!({:merge=>(!installed_gems.find { |g| g["name"]==gem[:name] && g["version"]==gem[:version] })})
-          list_of_gems<< gem if (list_of_gems.select { |g| g[:name]==gem[:name] }).empty?
+          list_of_gems[gem[:name]] = gem # don't' need this if (list_of_gems.select { |k,g| g[:name]==gem[:name] }).empty?
         end
         SimpleWorker.logger.debug "#{list_of_gems.inspect}"
       end
@@ -382,8 +344,11 @@ module SimpleWorker
         break if superclass.name == SimpleWorker::Base.name
         super_merged = superclass.instance_variable_get(:@merged)
         #puts 'merging caller file: ' + superclass.instance_variable_get(:@caller_file).inspect
-        super_merged << superclass.instance_variable_get(:@caller_file)
-        merged = super_merged + merged
+        caller_to_add = superclass.instance_variable_get(:@caller_file)
+        fb = File.basename(caller_to_add)
+        r = {:name=>fb, :path=>f2}
+        super_merged[fb] = r
+        merged.merge!(super_merged)
         #puts 'merged with superclass=' + merged.inspect
       end
       return merged, rfile, subclass
@@ -435,19 +400,23 @@ module SimpleWorker
 #        puts 'merged1=' + merged.inspect
 
         merged, rfile, subclass = SimpleWorker::Base.extract_superclasses_merges(self, merged)
-        if SimpleWorker.config.auto_merge
+        #if SimpleWorker.config.auto_merge
           puts "Auto merge Enabled"
-          merged += SimpleWorker.config.models if SimpleWorker.config.models
+          #if SimpleWorker.config.models
+          #  SimpleWorker.config.models.each do |m|
+          #    merged[m] = m
+          #  end
+          #end
           merged_mailers += SimpleWorker.config.mailers if SimpleWorker.config.mailers
-          SimpleWorker.config.gems.each do |gem|
-            merged_gems<<gem
-          end
-        end
-        unless merged_gems.empty?
+          #SimpleWorker.config.gems.each do |gem|
+          #  merged_gems[gem[:name]] = gem
+          #end
+        #end
+        unless merged_gems.size == 0
           merged_gems = gems_to_merge(merged_gems)
-          merged_gems.uniq!
+          #merged_gems.uniq!
         end
-        #merged.uniq!
+#merged.uniq!
         merged_mailers.uniq!
         options_for_upload = {:merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers, :merged_folders=>merged_folders}
         options_for_upload[:name] = options[:name] if options[:name]

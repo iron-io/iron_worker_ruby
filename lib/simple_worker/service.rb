@@ -96,24 +96,31 @@ module SimpleWorker
       end
     end
 
-    def build_merged_file(filename, merge, unmerge, merged_gems, merged_mailers, merged_folders)
-#      unless (merge && merge.size > 0) || (rged_gems && merged_gems.size > 0)
-#        return filename
-#      end
-      merge = merge.nil? ? {} : merge.dup
-      SimpleWorker.logger.debug "merge"
+    def build_merged_file(filename, merged, unmerge, merged_gems, merged_mailers, merged_folders)
+
+      merge = SimpleWorker.config.merged.dup
+      merge.merge!(merged) if merged
       if unmerge
         unmerge.each_pair do |x, y|
           deleted = merge.delete x
           SimpleWorker.logger.debug "Unmerging #{x}. Success? #{deleted}"
         end
       end
+
+      merged_gems = merged_gems.merge(SimpleWorker.config.merged_gems)
+      puts 'merged_gems=' + merged_gems.inspect
+      SimpleWorker.config.unmerged_gems.each_pair do |k, v|
+        puts 'unmerging gem=' + k.inspect
+        merged_gems.delete(k)
+      end
+      puts 'merged_gems_after=' + merged_gems.inspect
+
       #tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
       tmp_file = File.join(Dir.tmpdir(), 'runner.rb')
       File.open(tmp_file, "w") do |f|
         # add some rails stuff if using Rails
 
-        merge.each_pair do |k,v|
+        merge.each_pair do |k, v|
           SimpleWorker.logger.debug "merging #{k} into #{filename}"
           f.write("require_relative '#{k}'\n") # add(File.basename(m), m)
         end
@@ -139,37 +146,39 @@ end
           f.write "require 'action_mailer'\n"
           f.write "ActionMailer::Base.prepend_view_path('templates')\n"
         end
-        if SimpleWorker.config.auto_merge
-          if SimpleWorker.config.gems
-            SimpleWorker.config.gems.each do |gem|
-              puts "Bundling gem #{gem[:name]}..."
-              f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n" if gem[:merge]
+        #if SimpleWorker.config.auto_merge
+        if SimpleWorker.config.merged_gems
+          SimpleWorker.config.merged_gems.each_pair do |k, gem|
+            puts "Bundling gem #{gem[:name]}..."
+            if gem[:merge]
+              f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
+            end
 #              unless gem[:no_require]
-              puts 'writing requires: ' + gem[:require].inspect
-              if gem[:require].nil?
-                gem[:require] = []
-              elsif gem[:require].is_a?(String)
-                gem[:require] = [gem[:require]]
-              end
-              puts gem[:require].inspect
-              gem[:require].each do |r|
-                puts 'adding require to file ' + r.to_s
-                f.write "require '#{r}'\n"
-              end
+            puts 'writing requires: ' + gem[:require].inspect
+            if gem[:require].nil?
+              gem[:require] = []
+            elsif gem[:require].is_a?(String)
+              gem[:require] = [gem[:require]]
+            end
+            puts gem[:require].inspect
+            gem[:require].each do |r|
+              puts 'adding require to file ' + r.to_s
+              f.write "require '#{r}'\n"
+            end
 #              end
-            end
-          end
-          if SimpleWorker.config.models
-            SimpleWorker.config.models.each do |model|
-              f.write "require File.join(File.dirname(__FILE__),'#{File.basename(model)}')\n"
-            end
-          end
-          if SimpleWorker.config.mailers
-            SimpleWorker.config.mailers.each do |mailer|
-              f.write "require File.join(File.dirname(__FILE__),'#{mailer[:name]}')\n"
-            end
           end
         end
+        if SimpleWorker.config.merged
+          SimpleWorker.config.merged.each_pair do |k, v|
+            f.write "require_relative '#{File.basename(v[:path])}'\n"
+          end
+        end
+        if SimpleWorker.config.mailers
+          SimpleWorker.config.mailers.each do |mailer|
+            f.write "require_relative '#{mailer[:name]}'\n"
+          end
+        end
+        #end
         #f.write File.open(filename, 'r') { |mo| mo.read }
         f.write("require_relative '#{File.basename(filename)}'")
       end
@@ -187,7 +196,7 @@ end
       File.delete(fname2) if File.exist?(fname2)
       Zip::ZipFile.open(fname2, 'w') do |f|
         if merged_gems && merged_gems.size > 0
-          merged_gems.each do |gem|
+          merged_gems.each_pair do |k, gem|
             next unless gem[:merge]
 #            puts 'gem=' + gem.inspect
             path = gem[:path] # get_gem_path(gem)
@@ -226,8 +235,9 @@ end
           end
         end
 
-        merge.each_pair do |k,v|
-#          puts "merging #{m} into #{filename}"
+        puts "merge=" + merge.inspect
+        merge.each_pair do |k, v|
+          puts "merging k=#{k.inspect} v=#{v.inspect} into #{filename}"
           f.add(File.basename(v[:path]), v[:path])
         end
         if merged_mailers && merged_mailers.size > 0
