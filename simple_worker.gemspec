@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_worker}
-  s.version = "0.7.3"
+  s.version = "0.7.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Travis Reeder}]
-  s.date = %q{2011-08-01}
+  s.date = %q{2011-08-03}
   s.description = %q{The official SimpleWorker gem for http://www.simpleworker.com}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
@@ -25,11 +25,12 @@ Gem::Specification.new do |s|
     "lib/simple_worker/runner.rb",
     "lib/simple_worker/service.rb",
     "lib/simple_worker/used_in_worker.rb",
+    "lib/simple_worker/utils.rb",
     "rails/init.rb"
   ]
   s.homepage = %q{http://github.com/appoxy/simple_worker}
   s.require_paths = [%q{lib}]
-  s.rubygems_version = %q{1.8.5}
+  s.rubygems_version = %q{1.8.6}
   s.summary = %q{The official SimpleWorker gem for http://www.simpleworker.com}
 
   if s.respond_to? :specification_version then
