@@ -377,7 +377,8 @@ end
 
     # data is a hash, should include 'percent' and 'message'
     def set_progress(task_id, data)
-
+      data={"data"=>data, "task_id"=>task_id}
+      post("task/setstatus", data)
     end
 
     def log(task_id)

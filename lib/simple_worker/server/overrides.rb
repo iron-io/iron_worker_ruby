@@ -101,7 +101,7 @@ module SimpleWorker
     end
 
     def set_progress(hash)
-      SimpleWorker.service.set_progress(instance_variable_get(:@task_id), hash)
+      SimpleWorker.service.set_progress(@job_data["task_id"], hash)
     end
 
     def something

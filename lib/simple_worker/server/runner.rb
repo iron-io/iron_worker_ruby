@@ -5,7 +5,7 @@ def init_database_connection(sw_config)
   if sw_config
     db_config = sw_config['database']
     if db_config
-      @logger.info "Connecting to database using ActiveRecord..."
+      #@logger.info "Connecting to database using ActiveRecord..."
       require 'active_record'
       ActiveRecord::Base.establish_connection(db_config)
     end
@@ -50,7 +50,7 @@ end
 # Find environment (-e)
 dirname = ""
 i = 0
-job_data_file = nil
+job_data_file = run_data_file = nil
 puts "args for single file=" + ARGV.inspect
 ARGV.each do |arg|
   if arg == "-d"
@@ -61,6 +61,10 @@ ARGV.each do |arg|
     # path to job data
     job_data_file = ARGV[i+1]
   end
+  if arg == "-p"
+    # path to run data
+    run_data_file = ARGV[i+1]
+  end
   i+=1
 end
 
@@ -68,19 +72,25 @@ end
 puts 'dirname=' + dirname.inspect
 Dir.chdir(dirname)
 
+run_data = JSON.load(File.open(run_data_file))
 # Load in job data
 job_data = JSON.load(File.open(job_data_file))
+job_data.merge!(run_data)
 puts 'job_data=' + job_data.inspect
 
 sw_config = job_data['sw_config']
-init_database_connection(sw_config)
-
-SimpleWorker.disable_queueing()
-runner_class = get_class_to_run(job_data['class_name'])
-SimpleWorker.running_class = runner_class
-runner = init_runner(runner_class, job_data)
-init_worker_service_for_runner(job_data)
-SimpleWorker.enable_queueing()
+begin
+  init_database_connection(sw_config)
+  SimpleWorker.disable_queueing()
+  runner_class = get_class_to_run(job_data['class_name'])
+  SimpleWorker.running_class = runner_class
+  runner = init_runner(runner_class, job_data)
+  init_worker_service_for_runner(job_data)
+  SimpleWorker.enable_queueing()
 
 # Let's run it!
-runner_return_data = runner.run
+  runner_return_data = runner.run
+rescue Exception => ex
+  $stderr.puts "_error_from_sw_"
+  raise ex
+end
