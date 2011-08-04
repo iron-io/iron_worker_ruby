@@ -60,6 +60,7 @@ module SimpleWorker
         options = {
             "class_name"=>class_name,
             "name"=>name,
+            "standalone"=>true,
             "file_name"=> "runner.rb" # File.basename(filename)
         }
         #puts 'options for upload=' + options.inspect
@@ -115,15 +116,15 @@ module SimpleWorker
       end
       puts 'merged_gems_after=' + merged_gems.inspect
 
+      merged_mailers ||= {}
+      merged_mailers = merged_mailers.merge(SimpleWorker.config.mailers) if SimpleWorker.config.mailers
+
       #tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
       tmp_file = File.join(Dir.tmpdir(), 'runner.rb')
       File.open(tmp_file, "w") do |f|
         # add some rails stuff if using Rails
 
-        merge.each_pair do |k, v|
-          SimpleWorker.logger.debug "merging #{k} into #{filename}"
-          f.write("require_relative '#{k}'\n") # add(File.basename(m), m)
-        end
+        f.write("require 'simple_worker'\n")
 
         if defined?(Rails)
           f.write "module Rails
@@ -136,51 +137,62 @@ module SimpleWorker
 end
 "
         end
-        if SimpleWorker.config.extra_requires
-          SimpleWorker.config.extra_requires.each do |r|
-            f.write "require '#{r}'\n"
-          end
-        end
+
         if merged_mailers && !merged_mailers.empty?
           # todo: isn't 'action_mailer already required in railtie?
           f.write "require 'action_mailer'\n"
           f.write "ActionMailer::Base.prepend_view_path('templates')\n"
         end
         #if SimpleWorker.config.auto_merge
-        if SimpleWorker.config.merged_gems
-          SimpleWorker.config.merged_gems.each_pair do |k, gem|
-            puts "Bundling gem #{gem[:name]}..."
-            if gem[:merge]
-              f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
-            end
+        merged_gems.each_pair do |k, gem|
+          puts "Bundling gem #{gem[:name]}..."
+          if gem[:merge]
+            f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
+          end
 #              unless gem[:no_require]
-            puts 'writing requires: ' + gem[:require].inspect
-            if gem[:require].nil?
-              gem[:require] = []
-            elsif gem[:require].is_a?(String)
-              gem[:require] = [gem[:require]]
-            end
-            puts gem[:require].inspect
-            gem[:require].each do |r|
-              puts 'adding require to file ' + r.to_s
-              f.write "require '#{r}'\n"
-            end
+          puts 'writing requires: ' + gem[:require].inspect
+          if gem[:require].nil?
+            gem[:require] = []
+          elsif gem[:require].is_a?(String)
+            gem[:require] = [gem[:require]]
+          end
+          puts gem[:require].inspect
+          gem[:require].each do |r|
+            puts 'adding require to file ' + r.to_s
+            f.write "require '#{r}'\n"
+          end
 #              end
+        end
+
+        if SimpleWorker.config.extra_requires
+          SimpleWorker.config.extra_requires.each do |r|
+            f.write "require '#{r}'\n"
           end
         end
-        if SimpleWorker.config.merged
-          SimpleWorker.config.merged.each_pair do |k, v|
-            f.write "require_relative '#{File.basename(v[:path])}'\n"
+
+        File.open(File.join(File.dirname(__FILE__), 'server', 'overrides.rb'), 'r') do |fr|
+          while line = fr.gets
+            f.write line
           end
         end
-        if SimpleWorker.config.mailers
-          SimpleWorker.config.mailers.each do |mailer|
-            f.write "require_relative '#{mailer[:name]}'\n"
-          end
+
+        merged.each_pair do |k, v|
+          f.write "require_relative '#{File.basename(v[:path])}'\n"
+        end
+        merged_mailers.each_pair do |k, mailer|
+          f.write "require_relative '#{mailer[:name]}'\n"
         end
         #end
         #f.write File.open(filename, 'r') { |mo| mo.read }
         f.write("require_relative '#{File.basename(filename)}'")
+
+        File.open(File.join(File.dirname(__FILE__), "server", 'runner.rb'), 'r') do |fr|
+          while line = fr.gets
+            f.write line
+          end
+        end
+
+
       end
       #puts 'funner.rb=' + tmp_file
       merge['runner.rb'] = {:path=>tmp_file}
@@ -242,7 +254,7 @@ end
         end
         if merged_mailers && merged_mailers.size > 0
           # puts " MERGED MAILERS" + merged_mailers.inspect
-          merged_mailers.each do |mailer|
+          merged_mailers.each_pair do |k, mailer|
             SimpleWorker.logger.debug "Collecting mailer #{mailer[:name]}"
             f.add(File.basename(mailer[:filename]), mailer[:filename])
             path = mailer[:path_to_templates]
@@ -281,16 +293,21 @@ end
       if !data.is_a?(Array)
         data = [data]
       end
+      data.each do |d|
+        d['class_name'] = class_name
+        d['access_key'] = class_name
+      end
       name = options[:name] || class_name
       hash_to_send = {}
       hash_to_send["payload"] = data
       hash_to_send["class_name"] = class_name
       hash_to_send["name"] = name
+      #hash_to_send["standalone"] = true # new school
       hash_to_send["priority"] = options[:priority] if options[:priority]
       hash_to_send["options"] = options
       add_sw_params(hash_to_send)
       if defined?(RAILS_ENV)
-        # todo: move this to global_attributes in railtie
+        # todo: REMOVE THIS
         hash_to_send["rails_env"] = RAILS_ENV
       end
       return queue_raw(class_name, hash_to_send)
@@ -356,6 +373,11 @@ end
       data = {"schedule_id"=>schedule_id}
       ret = get("scheduler/status", data)
       ret
+    end
+
+    # data is a hash, should include 'percent' and 'message'
+    def set_progress(task_id, data)
+
     end
 
     def log(task_id)

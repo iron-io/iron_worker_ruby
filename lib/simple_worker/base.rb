@@ -12,7 +12,7 @@ module SimpleWorker
       @merged = {}
       @merged_workers = {}
       @merged_gems = {}
-      @merged_mailers = []
+      @merged_mailers = {}
       @merged_folders = {}
       @unmerged = {}
       @unmerged_gems = {}
@@ -21,7 +21,7 @@ module SimpleWorker
         @merged = {}
         @merged_workers = {}
         @merged_gems = {}
-        @merged_mailers = []
+        @merged_mailers = {}
         @merged_folders = {}
         @unmerged = {}
         @unmerged_gems = {}
@@ -30,15 +30,8 @@ module SimpleWorker
       def inherited(subclass)
         subclass.reset!
 
-#                puts "subclass.inspect=" + subclass.inspect
-#                puts 'existing caller=' + (subclass.instance_variable_defined?(:@caller_file) ? subclass.instance_variable_get(:@caller_file).inspect : "nil")
-#                puts "caller=" + caller.inspect
-#                splits = caller[0].split(":")
-#                caller_file = splits[0] + ":" + splits[1]
         caller_file = caller[0][0...(caller[0].index(":in"))]
         caller_file = caller_file[0...(caller_file.rindex(":"))]
-#        puts 'caller_file=' + caller_file
-# don't need these class_variables anymore probably
         subclass.instance_variable_set(:@caller_file, caller_file)
 
         super
@@ -60,7 +53,7 @@ module SimpleWorker
       def unmerge_gem(gem_name)
         #gem_info = {:name=>gem_name}
         #@unmerged_gems[gem_name.to_s] = gem_info
-         gs = gem_name.to_s
+        gs = gem_name.to_s
         gem_info = {:name=>gs}
         @unmerged_gems[gs] = gem_info
         @merged_gems.delete(gs)
@@ -68,10 +61,10 @@ module SimpleWorker
 
       #merge action_mailer mailers
       def merge_mailer(mailer, params={})
-         f2 = SimpleWorker::MergeHelper.check_for_file mailer, caller[2]
+        f2 = SimpleWorker::MergeHelper.check_for_file mailer, caller[2]
         basename = File.basename(mailer, File.extname(mailer))
         path_to_templates = params[:path_to_templates] || File.join(Rails.root, "app/views/#{basename}")
-        @merged_mailers << {:name=>basename, :path_to_templates=>path_to_templates, :filename => mailer}.merge!(params)
+        @merged_mailers[basename] = {:name=>basename, :path_to_templates=>path_to_templates, :filename => mailer}.merge!(params)
       end
 
       def merge_folder(path)
@@ -99,23 +92,22 @@ module SimpleWorker
       # merges the specified file.
       #
       # Example: merge 'models/my_model'
-      def merge(*files)
+      def merge(f)
         ret = nil
-        files.each do |f|
-          f2 = SimpleWorker::MergeHelper.check_for_file(f, caller[2])
-          ret = {:name=>f, :path=>f2}
-          @merged[File.basename(f2)] = ret
-        end
+        f2 = SimpleWorker::MergeHelper.check_for_file(f, caller[2])
+        fbase = File.basename(f2)
+        ret = {:name=>fbase, :path=>f2}
+        @merged[fbase] = ret
         ret
       end
 
       # Opposite of merge, this will omit the files you specify from being merged in. Useful in Rails apps
       # where a lot of things are auto-merged by default like your models.
-      def unmerge(*files)
-        files.each do |f|
-          f2 = SimpleWorker::MergeHelper.check_for_file(f, caller[2])
-          @unmerged[File.basename(f2)] = {:name=>f, :path=>f2}
-        end
+      def unmerge(f)
+        f2 = SimpleWorker::MergeHelper.check_for_file(f, caller[2])
+        fbase = File.basename(f2)
+        @unmerged[fbase] = {:name=>fbase, :path=>f2}
+        @merged.delete(fbase)
       end
 
 
@@ -346,7 +338,7 @@ module SimpleWorker
         #puts 'merging caller file: ' + superclass.instance_variable_get(:@caller_file).inspect
         caller_to_add = superclass.instance_variable_get(:@caller_file)
         fb = File.basename(caller_to_add)
-        r = {:name=>fb, :path=>f2}
+        r = {:name=>fb, :path=>caller_to_add}
         super_merged[fb] = r
         merged.merge!(super_merged)
         #puts 'merged with superclass=' + merged.inspect
@@ -400,24 +392,24 @@ module SimpleWorker
 #        puts 'merged1=' + merged.inspect
 
         merged, rfile, subclass = SimpleWorker::Base.extract_superclasses_merges(self, merged)
-        #if SimpleWorker.config.auto_merge
-          puts "Auto merge Enabled"
-          #if SimpleWorker.config.models
-          #  SimpleWorker.config.models.each do |m|
-          #    merged[m] = m
-          #  end
-          #end
-          merged_mailers += SimpleWorker.config.mailers if SimpleWorker.config.mailers
-          #SimpleWorker.config.gems.each do |gem|
-          #  merged_gems[gem[:name]] = gem
-          #end
-        #end
+#if SimpleWorker.config.auto_merge
+        puts "Auto merge Enabled"
+#if SimpleWorker.config.models
+#  SimpleWorker.config.models.each do |m|
+#    merged[m] = m
+#  end
+#end
+        merged_mailers = merged_mailers.merge(SimpleWorker.config.mailers) if SimpleWorker.config.mailers
+#SimpleWorker.config.gems.each do |gem|
+#  merged_gems[gem[:name]] = gem
+#end
+#end
         unless merged_gems.size == 0
           merged_gems = gems_to_merge(merged_gems)
           #merged_gems.uniq!
         end
 #merged.uniq!
-        merged_mailers.uniq!
+#        merged_mailers.uniq!
         options_for_upload = {:merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers, :merged_folders=>merged_folders}
         options_for_upload[:name] = options[:name] if options[:name]
         SimpleWorker.service.upload(rfile, subclass.name, options_for_upload)

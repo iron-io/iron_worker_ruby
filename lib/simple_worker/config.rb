@@ -60,7 +60,7 @@ module SimpleWorker
           c2.models = models
           models.each { |model| c2.merge(model) }
           mailers_path = File.join(Rails.root, 'app/mailers/*.rb')
-          c2.mailers = Dir.glob(mailers_path).collect { |m| {:filename=>m, :name => File.basename(m), :path_to_templates=>File.join(Rails.root, "app/views/#{File.basename(m, File.extname(m))}")} }
+          Dir.glob(mailers_path).collect { |m| c2.mailers[File.basename(m)] = {:filename=>m, :name => File.basename(m), :path_to_templates=>File.join(Rails.root, "app/views/#{File.basename(m, File.extname(m))}")} }
           c2.extra_requires += ['active_support/core_ext', 'action_mailer']
           #puts 'DB FILE=' + File.join(Rails.root, 'config', 'database.yml').to_s
           if defined?(ActiveRecord) && File.exist?(File.join(Rails.root, 'config', 'database.yml'))
@@ -142,6 +142,8 @@ module SimpleWorker
 
     def get_atts_to_send
       config_data = {}
+      config_data['access_key'] = access_key
+      config_data['secret_key'] = secret_key
       config_data['database'] = self.database if self.database
       config_data['global_attributes'] = self.global_attributes if self.global_attributes
       config_data['host'] = self.host if self.host
@@ -150,8 +152,17 @@ module SimpleWorker
 
     def merge(file)
       f2 = SimpleWorker::MergeHelper.check_for_file(file, caller[2])
-      ret = {:name=>file, :path=>f2}
-      @merged[File.basename(f2)] = ret
+      fbase = File.basename(f2)
+      ret = {:name=>fbase, :path=>f2}
+      @merged[fbase] = ret
+      ret
+    end
+
+    def unmerge(file)
+      f2 = SimpleWorker::MergeHelper.check_for_file(file, caller[2])
+      fbase = File.basename(f2)
+      @unmerged[fbase] = {:name=>fbase, :path=>f2}
+      @merged.delete(fbase)
     end
 
     # Merge a gem globally here

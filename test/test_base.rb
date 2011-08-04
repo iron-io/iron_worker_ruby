@@ -4,7 +4,8 @@ begin
   require File.join(File.dirname(__FILE__), '../lib/simple_worker')
 rescue Exception => ex
   puts "Could NOT load current simple_worker: " + ex.message
-  require 'simple_worker'
+  #require 'simple_worker'
+  raise ex
 end
 
 SimpleWorker.logger.level = Logger::DEBUG
