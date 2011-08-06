@@ -252,6 +252,17 @@ uploaded separately and treated as distinctly separate workers.
 
     merge_worker "./other_worker.rb", "OtherWorker"
 
+Merging Mailers
+---------------------
+
+You could easily merge mailers you're using in your application.
+
+    merge_mailer 'mailer_file' #if your mailer's templates are placed in default path
+    #or
+    merge_mailer 'mailer_file', {:path_to_templates=>"templates_path"}#if you're using mailer outside of rails with custom templates path
+
+if you already set auto_merge=true all your mailers already merged.
+
 Merging Gems
 ---------------------
 
