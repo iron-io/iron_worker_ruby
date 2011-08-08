@@ -177,7 +177,8 @@ module SimpleWorker
     def self.check_for_file(f, callerr)
       SimpleWorker.logger.debug 'Checking for ' + f.to_s
       f = f.to_str
-      unless Utils.ends_with?(f, ".rb")
+      f_ext = File.extname(f)
+      unless f_ext
         f << ".rb"
       end
       exists = false
@@ -197,7 +198,7 @@ module SimpleWorker
         raise "File not found: " + f
       end
       f = File.expand_path(f)
-      require f
+      require f if f_ext == '.rb'
       f
     end
 
