@@ -214,7 +214,8 @@ Then before you job is run, SimpleWorker will establish the ActiveRecord connect
 Including/Merging other Ruby Classes
 ------------------------------------
 
-If you are using the Rails setup above, you can probably skip this as your models will automatically be merged.
+If you need to inclue other classes in for your worker to use (which is very common), then you'll
+want to use the merge functions. For example: 
 
     class AvgWorker < SimpleWorker::Base
 
@@ -271,6 +272,15 @@ This allows you to use any gem you'd like with SimpleWorker. This uses the same 
     merge_gem 'mongoid_i18n', :require => 'mongoid/i18n'
 
 [Check here for more info on merge_gem](http://support.simpleworker.com/kb/working-with-simpleworker/merging-gems-into-your-worker).
+
+Global Merging
+--------------
+
+If you want to merge items for all of your workers, you can do merges in your SimpleWorker.configure block:
+
+   config.merge 'my file'
+   config.merge_gem 'httparty'
+
 
 
 Configuration Options
