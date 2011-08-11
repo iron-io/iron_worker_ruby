@@ -29,20 +29,6 @@ You really just need your access keys.
         config.secret_key = SECRET_KEY
     end
 
-
-Configure SimpleWorker in Rails
-----------------------
-
-If you're using Rails you could set additional config option - "auto_merge=true".
-It will automatically merge all models,mailers,gems and database configuration from your Rails app.
-
-    SimpleWorker.configure do |config|
-        config.access_key = ACCESS_KEY
-        config.secret_key = SECRET_KEY
-        config.auto_merge = true
-    end
-
-
 Write a Worker
 --------------
 

@@ -34,6 +34,7 @@ module SimpleWorker
       @unmerged = {}
       @merged_gems = {}
       @unmerged_gems = {}
+      @mailers = {}
 
     end
 
