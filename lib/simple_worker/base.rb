@@ -61,7 +61,7 @@ module SimpleWorker
 
       #merge action_mailer mailers
       def merge_mailer(mailer, params={})
-        f2 = SimpleWorker::MergeHelper.check_for_file mailer, caller[2]
+        f2 = SimpleWorker::MergeHelper.check_for_file mailer, @caller_file
         basename = File.basename(mailer, File.extname(mailer))
         path_to_templates = params[:path_to_templates] || File.join(Rails.root, "app/views/#{basename}")
         @merged_mailers[basename] = {:name=>basename, :path_to_templates=>path_to_templates, :filename => mailer}.merge!(params)
@@ -94,7 +94,7 @@ module SimpleWorker
       # Example: merge 'models/my_model'
       def merge(f)
         ret = nil
-        f2 = SimpleWorker::MergeHelper.check_for_file(f, caller[2])
+        f2 = SimpleWorker::MergeHelper.check_for_file(f, @caller_file)
         fbase = File.basename(f2)
         ret = {:name=>fbase, :path=>f2}
         @merged[fbase] = ret
@@ -104,7 +104,7 @@ module SimpleWorker
       # Opposite of merge, this will omit the files you specify from being merged in. Useful in Rails apps
       # where a lot of things are auto-merged by default like your models.
       def unmerge(f)
-        f2 = SimpleWorker::MergeHelper.check_for_file(f, caller[2])
+        f2 = SimpleWorker::MergeHelper.check_for_file(f, @caller_file)
         fbase = File.basename(f2)
         @unmerged[fbase] = {:name=>fbase, :path=>f2}
         @merged.delete(fbase)

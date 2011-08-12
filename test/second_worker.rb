@@ -1,4 +1,4 @@
-
+# bump..
 class SecondWorker < SimpleWorker::Base
     attr_accessor :start_time, :num
 

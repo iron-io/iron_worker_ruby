@@ -1,18 +1,11 @@
-=begin
-begin
-    require File.join(File.dirname(__FILE__), '../lib/simple_worker')
-rescue Exception => ex
-    puts ex.message
-    require 'simple_worker'
-end
-=end
 
-# Bump for new checksum.sdf adsfjlaksdjf dasfasdfadsf
+# Bump....
 class TestWorker2 < SimpleWorker::Base
 
     merge File.join(File.dirname(__FILE__), 'models', 'model_1.rb')
     unmerge 'models/model_2.rb'
     merge_worker File.join(File.dirname(__FILE__), 'second_worker.rb'), 'SecondWorker'
+    #merge_worker 'second_worker.rb', 'SecondWorker'
 
     attr_accessor :s3_key, :times, :x
 
@@ -28,8 +21,8 @@ class TestWorker2 < SimpleWorker::Base
         log 's3_key instance_variable = ' + self.s3_key
         times.times do |i|
             log 'running at ' + i.to_s
-            sleep 1
-            set_progress(:percent=> (i / times * 100))
+            sleep 0.3
+            #set_progress(:percent=> (i / times * 100))
         end
         m1 = Model1.new
         log "I made a new model1"
