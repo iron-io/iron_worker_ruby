@@ -190,8 +190,9 @@ module SimpleWorker
       SimpleWorker.logger.debug 'Checking for ' + f.to_s
       f = f.to_str
       f_ext = File.extname(f)
-      unless f_ext.empty?
-        f << ".rb"
+      if f_ext.empty?
+        f_ext = ".rb"
+        f << f_ext
       end
       exists = false
       if File.exist? f
