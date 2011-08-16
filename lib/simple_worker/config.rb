@@ -153,16 +153,16 @@ module SimpleWorker
 
     def merge(file)
       f2 = SimpleWorker::MergeHelper.check_for_file(file, caller[2])
-      fbase = File.basename(f2)
-      ret = {:name=>fbase, :path=>f2}
+      fbase = f2[:basename]
+      ret = f2
       @merged[fbase] = ret
       ret
     end
 
     def unmerge(file)
       f2 = SimpleWorker::MergeHelper.check_for_file(file, caller[2])
-      fbase = File.basename(f2)
-      @unmerged[fbase] = {:name=>fbase, :path=>f2}
+      fbase = f2[:basename]
+      @unmerged[fbase] =f2
       @merged.delete(fbase)
     end
 
@@ -212,7 +212,12 @@ module SimpleWorker
       end
       f = File.expand_path(f)
       require f if f_ext == '.rb'
-      f
+      ret = {}
+      ret[:path] = f
+      ret[:extname] = f_ext
+      ret[:basename] = File.basename(f)
+      ret[:name] = ret[:basename]
+      ret
     end
 
     def self.create_gem_info(gem_name, options={})
@@ -222,6 +227,7 @@ module SimpleWorker
       else
         gem_info[:version] = options
       end
+      gem_info[:require] ||= gem_name
       path = SimpleWorker::Service.get_gem_path(gem_info)
       SimpleWorker.logger.debug "Gem path=#{path}"
       if !path

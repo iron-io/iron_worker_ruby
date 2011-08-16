@@ -107,6 +107,8 @@ module SimpleWorker
           SimpleWorker.logger.debug "Unmerging #{x}. Success? #{deleted}"
         end
       end
+      merged = merge
+      puts 'merged=' + merged.inspect
 
       merged_gems = merged_gems.merge(SimpleWorker.config.merged_gems)
       puts 'merged_gems=' + merged_gems.inspect
@@ -158,7 +160,7 @@ end
           end
           puts gem[:require].inspect
           gem[:require].each do |r|
-            puts 'adding require to file ' + r.to_s
+            #puts 'adding require to file ' + r.to_s
             f.write "require '#{r}'\n"
           end
 #              end
@@ -177,7 +179,9 @@ end
         end
 
         merged.each_pair do |k, v|
-          f.write "require_relative '#{File.basename(v[:path])}'\n"
+          if v[:extname] == ".rb"
+            f.write "require_relative '#{File.basename(v[:path])}'\n"
+          end
         end
         merged_mailers.each_pair do |k, mailer|
           f.write "require_relative '#{mailer[:name]}'\n"

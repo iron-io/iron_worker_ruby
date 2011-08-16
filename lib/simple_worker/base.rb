@@ -43,7 +43,7 @@ module SimpleWorker
         @merged_gems[gem_name.to_s] = gem_info
         #puts 'before require ' + (options[:require] || gem_name)
         begin
-          require options[:require] || gem_name
+          require gem_info[:require]
         rescue LoadError=>ex
           raise "Gem #{gem_name} was found, but we could not load the file '#{options[:require] || gem_name}.rb'. You may need to use :require=>x.........."
         end
@@ -61,8 +61,8 @@ module SimpleWorker
 
       #merge action_mailer mailers
       def merge_mailer(mailer, params={})
-        f2 = SimpleWorker::MergeHelper.check_for_file mailer, @caller_file
-        basename = File.basename(mailer, File.extname(mailer))
+        f2 = SimpleWorker::MergeHelper.check_for_file(mailer, @caller_file)
+        basename = File.basename(mailer, f2[:extname])
         path_to_templates = params[:path_to_templates] || File.join(Rails.root, "app/views/#{basename}")
         @merged_mailers[basename] = {:name=>basename, :path_to_templates=>path_to_templates, :filename => mailer}.merge!(params)
       end
@@ -93,10 +93,9 @@ module SimpleWorker
       #
       # Example: merge 'models/my_model'
       def merge(f)
-        ret = nil
         f2 = SimpleWorker::MergeHelper.check_for_file(f, @caller_file)
-        fbase = File.basename(f2)
-        ret = {:name=>fbase, :path=>f2}
+        fbase = f2[:basename]
+        ret = f2
         @merged[fbase] = ret
         ret
       end
@@ -105,8 +104,8 @@ module SimpleWorker
       # where a lot of things are auto-merged by default like your models.
       def unmerge(f)
         f2 = SimpleWorker::MergeHelper.check_for_file(f, @caller_file)
-        fbase = File.basename(f2)
-        @unmerged[fbase] = {:name=>fbase, :path=>f2}
+        fbase = f2[:basename]
+        @unmerged[fbase] = f2
         @merged.delete(fbase)
       end
 
