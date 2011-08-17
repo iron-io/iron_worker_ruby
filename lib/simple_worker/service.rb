@@ -36,16 +36,16 @@ module SimpleWorker
       tmp = Dir.tmpdir()
       md5file = "simple_worker_#{class_name.gsub("::", ".")}_#{access_key[0, 8]}.md5"
       existing_md5 = nil
-      f = File.join(tmp, md5file)
-      if File.exists?(f)
-        existing_md5 = IO.read(f)
+      md5_f = File.join(tmp, md5file)
+      if File.exists?(md5_f)
+        existing_md5 = IO.read(md5_f)
       end
 # Check for code changes.
       md5 = Digest::MD5.hexdigest(File.read(filename))
       new_code = false
       if md5 != existing_md5
         SimpleWorker.logger.info "Uploading #{class_name}, code modified."
-        File.open(f, 'w') { |f| f.write(md5) }
+        File.open(md5_f, 'w') { |f| f.write(md5) }
         new_code = true
         # todo: delete md5 file if error occurs during upload process
       else
@@ -53,21 +53,29 @@ module SimpleWorker
         return
       end
 
-      zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:merged_mailers], options[:merged_folders])
-      SimpleWorker.logger.info 'file size to upload: ' + File.size(zip_filename).to_s
+      begin
 
-      if new_code
-        options = {
-            "class_name"=>class_name,
-            "name"=>name,
-            "standalone"=>true,
-            "file_name"=> "runner.rb" # File.basename(filename)
-        }
-        #puts 'options for upload=' + options.inspect
-        SimpleWorker.logger.info "Uploading now..."
-        ret = post_file("code/put", File.new(zip_filename), options)
-        SimpleWorker.logger.info "Done uploading."
-        ret
+        zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:merged_mailers], options[:merged_folders])
+        SimpleWorker.logger.info 'file size to upload: ' + File.size(zip_filename).to_s
+
+        if new_code
+          options = {
+              "class_name"=>class_name,
+              "name"=>name,
+              "standalone"=>true,
+              "file_name"=> "runner.rb" # File.basename(filename)
+          }
+          #puts 'options for upload=' + options.inspect
+          SimpleWorker.logger.info "Uploading now..."
+          ret = post_file("code/put", File.new(zip_filename), options)
+          SimpleWorker.logger.info "Done uploading."
+          return ret
+        end
+
+      rescue => ex
+        # if it errors, let's delete md5 since it wouldn't have uploaded.
+        File.delete(md5_f)
+        raise ex
       end
     end
 
@@ -108,15 +116,15 @@ module SimpleWorker
         end
       end
       merged = merge
-      puts 'merged=' + merged.inspect
+      SimpleWorker.logger.debug 'merged=' + merged.inspect
 
       merged_gems = merged_gems.merge(SimpleWorker.config.merged_gems)
-      puts 'merged_gems=' + merged_gems.inspect
+      SimpleWorker.logger.debug 'merged_gems=' + merged_gems.inspect
       SimpleWorker.config.unmerged_gems.each_pair do |k, v|
-        puts 'unmerging gem=' + k.inspect
+        SimpleWorker.logger.debug 'unmerging gem=' + k.inspect
         merged_gems.delete(k)
       end
-      puts 'merged_gems_after=' + merged_gems.inspect
+      SimpleWorker.logger.debug 'merged_gems_after=' + merged_gems.inspect
 
       merged_mailers ||= {}
       merged_mailers = merged_mailers.merge(SimpleWorker.config.mailers) if SimpleWorker.config.mailers
@@ -147,12 +155,12 @@ end
         end
         #if SimpleWorker.config.auto_merge
         merged_gems.each_pair do |k, gem|
-          puts "Bundling gem #{gem[:name]}..."
+          SimpleWorker.logger.info "Bundling gem #{gem[:name]}..."
           if gem[:merge]
             f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
           end
 #              unless gem[:no_require]
-          puts 'writing requires: ' + gem[:require].inspect
+          SimpleWorker.logger.debug 'writing requires: ' + gem[:require].inspect
           if gem[:require].nil?
             gem[:require] = []
           elsif gem[:require].is_a?(String)
@@ -160,7 +168,7 @@ end
           end
           puts gem[:require].inspect
           gem[:require].each do |r|
-            #puts 'adding require to file ' + r.to_s
+            SimpleWorker.logger.debug 'adding require to file ' + r.to_s
             f.write "require '#{r}'\n"
           end
 #              end
@@ -218,7 +226,15 @@ end
             path = gem[:path] # get_gem_path(gem)
             if path
               SimpleWorker.logger.debug "Collecting gem #{path}"
-              Dir["#{path}/*", "#{path}/lib/**/**"].each do |file|
+              paths_to_use = ["#{path}/*", "#{path}/lib/**/**"]
+              if gem[:include_dirs]
+                SimpleWorker.logger.debug "including extra dirs: " + gem[:include_dirs].inspect
+                gem[:include_dirs].each do |dir|
+                  paths_to_use << "#{path}/#{dir}/**/**"
+                end
+              end
+              SimpleWorker.logger.debug 'paths_to_use: ' + paths_to_use.inspect
+              Dir.glob(paths_to_use).each do |file|
                 # todo: could check if directory and it not lib, skip it
                 SimpleWorker.logger.debug 'file for gem=' + file.inspect
 #                puts 'gem2=' + gem.inspect
@@ -251,9 +267,9 @@ end
           end
         end
 
-        puts "merge=" + merge.inspect
+        SimpleWorker.logger.debug "merge=" + merge.inspect
         merge.each_pair do |k, v|
-          puts "merging k=#{k.inspect} v=#{v.inspect} into #{filename}"
+          SimpleWorker.logger.debug "merging k=#{k.inspect} v=#{v.inspect} into #{filename}"
           f.add(File.basename(v[:path]), v[:path])
         end
         if merged_mailers && merged_mailers.size > 0

@@ -1,11 +1,11 @@
 require_relative 'test_base'
-require_relative 'test_worker_4'
+require_relative 'prawn_worker'
 
 class QuickRun < TestBase
 
   def test_worker
     #worker = MergingWorker.new
-    worker = TestWorker4.new
+    worker = PrawnWorker.new
     worker.queue
 
     status = worker.wait_until_complete

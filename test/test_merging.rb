@@ -29,5 +29,17 @@ class SimpleWorkerTests < TestBase
     puts 'log=' + tw.get_log
     assert tw.status["status"] == "complete"
   end
+  
+  def test_include_dirs
+    worker = PrawnWorker.new
+    worker.queue
+
+    status = worker.wait_until_complete
+    p status
+    puts "\n\n\nLOG START:"
+    puts worker.get_log
+    puts "LOG END\n\n\n"
+    assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
+  end
 
 end
