@@ -1,3 +1,4 @@
+gem 'test-unit'
 require 'test/unit'
 require 'yaml'
 begin

@@ -1,4 +1,3 @@
-require 'simple_worker'
 
 class GemDependencyWorker < SimpleWorker::Base
 

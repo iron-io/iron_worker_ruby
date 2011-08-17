@@ -1,10 +1,11 @@
-require 'active_record'
+gem 'test-unit'
+require 'test/unit'
 require_relative 'test_base'
+require 'active_record'
 require_relative 'cool_worker'
 require_relative 'cool_model'
 require_relative 'trace_object'
-require_relative 'db_worker'
-require_relative 'gem_dependency_worker'
+require_relative 'prawn_worker'
 
 class SimpleWorkerTests < TestBase
 
@@ -37,9 +38,11 @@ class SimpleWorkerTests < TestBase
     status = worker.wait_until_complete
     p status
     puts "\n\n\nLOG START:"
-    puts worker.get_log
+    l = worker.get_log
+    puts l
     puts "LOG END\n\n\n"
     assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
+    assert l.include?("hello.pdf")
   end
 
 end
