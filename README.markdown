@@ -270,6 +270,9 @@ This allows you to use any gem you'd like with SimpleWorker. This uses the same 
     merge_gem "some_gem_with_version", "1.2.3"
     # or if gem has poor naming scheme
     merge_gem 'mongoid_i18n', :require => 'mongoid/i18n'
+    # of if gem requires other directories outside lib
+    merge_gem 'prawn', :include_dirs=>['data']
+
 
 [Check here for more info on merge_gem](http://support.simpleworker.com/kb/working-with-simpleworker/merging-gems-into-your-worker).
 
