@@ -5,6 +5,7 @@ class PrawnWorker < SimpleWorker::Base
 
   merge 'resources/something.yml'
   merge_gem 'prawn', :include_dirs=>['data']
+  merge_gem "pdf-reader"
 
   attr_accessor :x
 
@@ -23,6 +24,9 @@ class PrawnWorker < SimpleWorker::Base
     Dir.glob("*").each do |f|
       puts f
     end
+
+    raise PDF::Reader::UnsupportedFeatureError
+
 
   end
 
