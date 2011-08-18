@@ -1,5 +1,4 @@
 # bump.............
-require 'prawn'
 
 class PrawnWorker < SimpleWorker::Base
 
