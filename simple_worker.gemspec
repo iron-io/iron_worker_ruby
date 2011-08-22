@@ -16,12 +16,12 @@ Gem::Specification.new do |s|
     "README.markdown"
   ]
   s.files = [
-    "lib/rails2_init.rb",
-    "lib/railtie.rb",
     "lib/simple_worker.rb",
     "lib/simple_worker/api.rb",
     "lib/simple_worker/base.rb",
     "lib/simple_worker/config.rb",
+    "lib/simple_worker/rails2_init.rb",
+    "lib/simple_worker/railtie.rb",
     "lib/simple_worker/server/overrides.rb",
     "lib/simple_worker/server/runner.rb",
     "lib/simple_worker/service.rb",
