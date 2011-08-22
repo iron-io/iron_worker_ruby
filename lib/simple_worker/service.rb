@@ -149,7 +149,7 @@ end
         end
 
         if SimpleWorker.config.database && !SimpleWorker.config.database.empty?
-          f.write "require 'active_record'"
+          f.write "require 'active_record'\n"
         end
 
         if merged_mailers && !merged_mailers.empty?
