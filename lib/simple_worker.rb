@@ -40,8 +40,8 @@ if defined?(Rails)
 #  puts 'Rails=' + Rails.inspect
 #  puts 'vers=' + Rails::VERSION::MAJOR.inspect
   if Rails::VERSION::MAJOR == 2
-    require_relative 'rails2_init.rb'
+    require_relative 'simple_worker/rails2_init.rb'
   else
-    require_relative 'railtie'
+    require_relative 'simple_worker/railtie'
   end
 end
