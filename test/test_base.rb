@@ -30,7 +30,6 @@ class TestBase < Test::Unit::TestCase
       config.host = @config['simple_worker']['host']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
-      config.database = @config['database']
 
     end
   end

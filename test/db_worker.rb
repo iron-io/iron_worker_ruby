@@ -1,13 +1,19 @@
 require 'mysql2'
-
+require 'active_record'
+# bump........
 class DbWorker < SimpleWorker::Base
-  attr_accessor :array_of_models
-  merge 'trace_object'
+  merge 'db_model'
 
   def run
-    to = TraceObject.find(:first)
-    log to.inspect
+
+    n = DbModel.new(:name=>"jane", :age=>21)
+    n.save!
+
+    to = DbModel.first
+    puts 'found: ' + to.inspect
     @object = to
+
+    n.delete
   end
 
   def ob

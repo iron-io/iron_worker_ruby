@@ -148,6 +148,10 @@ end
 "
         end
 
+        if SimpleWorker.config.database && !SimpleWorker.config.database.empty?
+          f.write "require 'active_record'"
+        end
+
         if merged_mailers && !merged_mailers.empty?
           # todo: isn't 'action_mailer already required in railtie?
           f.write "require 'action_mailer'\n"

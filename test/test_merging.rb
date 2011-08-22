@@ -4,7 +4,7 @@ require_relative 'test_base'
 require 'active_record'
 require_relative 'cool_worker'
 require_relative 'cool_model'
-require_relative 'trace_object'
+require_relative 'db_model'
 require_relative 'prawn_worker'
 
 class SimpleWorkerTests < TestBase

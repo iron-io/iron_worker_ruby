@@ -1,9 +1,6 @@
-require 'active_record'
 require_relative 'test_base'
 require_relative 'cool_worker'
 require_relative 'cool_model'
-require_relative 'trace_object'
-require_relative 'db_worker'
 require_relative 'gem_dependency_worker'
 
 class SimpleWorkerTests < TestBase
@@ -92,21 +89,6 @@ class SimpleWorkerTests < TestBase
     assert status["msg"].present?
   end
 
-  def test_active_record
-    dbw = DbWorker.new
-    dbw.run_local
-    assert !dbw.ob.nil?
-    assert !dbw.ob.id.nil?
-
-    dbw.queue
-      # would be interesting if the object could update itself on complete. Like it would retrieve new values from
-      # finished job when calling status or something.
-
-    status = wait_for_task(dbw)
-    assert status["status"] == "complete"
-
-
-  end
 
 
   def test_require_relative_merge
