@@ -1,11 +1,8 @@
-
 # This is used when a bad worker is uploaded.
-class InvalidWorkerError < StandardError
-
-end
-
 
 module SimpleWorker
+
+  class InvalidWorkerError < StandardError; end
 
   class << self
     def running_class=(rc)
