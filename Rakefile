@@ -20,7 +20,7 @@ rescue LoadError
 end
 
 task :test do
-  require 'lib/simple_worker'
+  require './lib/simple_worker'
   ruby 'test/simple_worker_tests.rb'
 end
 
