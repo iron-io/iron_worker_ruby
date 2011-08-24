@@ -13,8 +13,21 @@ def init_database_connection(sw_config)
 end
 
 def get_class_to_run(class_name)
-  runner_class = Kernel.const_get(class_name)
+  runner_class = constantize(class_name)
   return runner_class
+end
+
+# File activesupport/lib/active_support/inflector/methods.rb, line 107
+# Shoutout to the MIT License
+def constantize(camel_cased_word)
+  names = camel_cased_word.split('::')
+  names.shift if names.empty? || names.first.empty?
+
+  constant = Object
+  names.each do |name|
+    constant = constant.const_defined?(name) ? constant.const_get(name) : constant.const_missing(name)
+  end
+  constant
 end
 
 def init_runner(runner_class, job_data)
