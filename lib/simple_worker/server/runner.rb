@@ -23,7 +23,7 @@ def init_runner(runner_class, job_data)
   if init_arity == 0 || init_arity == -1
     # good. -1 can be if it's not defined at all
   else
-    raise InvalidWorkerError, "Worker initialize method must accept zero arguments."
+    raise SimpleWorker::InvalidWorkerError, "Worker initialize method must accept zero arguments."
   end
   runner = runner_class.new
   runner.instance_variable_set(:@job_data, job_data)
