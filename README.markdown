@@ -28,6 +28,19 @@ You really just need your access keys.
         config.access_key = ACCESS_KEY
         config.secret_key = SECRET_KEY
     end
+    
+Generate a Worker with Rails
+----------------------------
+If you're rolling on Rails, use the following:    
+
+    rails generate simple_worker worker_class_in_underscore_format
+    
+This will set you up with a worker in ```app/workers```  
+However, this is not autorequired, so a line similar to this will be required in your initializer:  
+
+    Dir.glob("#{Rails.root}/app/workers/*.rb").each{|w| require w}
+    
+This one-liner requires all ```.rb``` files in ```app/workers```  
 
 Write a Worker
 --------------
