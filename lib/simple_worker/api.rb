@@ -1,3 +1,5 @@
+require 'rest_client'
+
 module SimpleWorker
   module Api
 
@@ -45,9 +47,9 @@ module SimpleWorker
 
       def process_ex(ex)
         body = ex.http_body
-        puts 'EX BODY=' + body.to_s
-        decoded_ex = JSON.parse(ex.http_body)
-        exception = Exception.new(ex.message+":"+decoded_ex["msg"])
+        @@logger.debug 'EX BODY=' + body.to_s
+        decoded_ex = JSON.parse(body)
+        exception = Exception.new(ex.message + ": " + decoded_ex["msg"])
         exception.set_backtrace(decoded_ex["backtrace"].split(",")) if decoded_ex["backtrace"]
         raise exception
       end
@@ -56,7 +58,7 @@ module SimpleWorker
         begin
 #                ClientHelper.run_http(host, access_key, secret_key, :get, method, nil, params)
           parse_response RestClient.get(append_params(url(method), add_params(method, params)), headers), options
-        rescue RestClient::BadRequest, RestClient::InternalServerError => ex
+        rescue RestClient::Exception  => ex
           process_ex(ex)
         end
       end
@@ -64,7 +66,7 @@ module SimpleWorker
       def post_file(method, file, params={}, options={})
         begin
           parse_response RestClient.post(url(method), add_params(method, params).merge!({:file=>file}), :multipart => true), options
-        rescue RestClient::BadRequest, RestClient::InternalServerError => ex
+        rescue RestClient::Exception  => ex
           process_ex(ex)
         end
       end
@@ -73,7 +75,7 @@ module SimpleWorker
         begin
           parse_response RestClient.post(url(method), add_params(method, params).to_json, headers), options
           #ClientHelper.run_http(host, access_key, secret_key, :post, method, nil, params)
-        rescue RestClient::BadRequest, RestClient::InternalServerError => ex
+        rescue RestClient::Exception  => ex
           process_ex(ex)
         end
       end
@@ -83,7 +85,7 @@ module SimpleWorker
         begin
           parse_response RestClient.put(url(method), add_params(method, body).to_json, headers), options
           #ClientHelper.run_http(host, access_key, secret_key, :put, method, body, nil)
-        rescue RestClient::BadRequest, RestClient::InternalServerError => ex
+        rescue RestClient::Exception  => ex
           process_ex(ex)
         end
       end
@@ -91,7 +93,7 @@ module SimpleWorker
       def delete(method, params={}, options={})
         begin
           parse_response RestClient.delete(append_params(url(method), add_params(method, params))), options
-        rescue RestClient::BadRequest, RestClient::InternalServerError => ex
+        rescue RestClient::Exception => ex
           process_ex(ex)
         end
       end

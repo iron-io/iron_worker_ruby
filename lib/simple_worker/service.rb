@@ -56,20 +56,9 @@ module SimpleWorker
       begin
 
         zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:merged_mailers], options[:merged_folders])
-        SimpleWorker.logger.info 'file size to upload: ' + File.size(zip_filename).to_s
 
         if new_code
-          options = {
-              "class_name"=>class_name,
-              "name"=>name,
-              "standalone"=>true,
-              "file_name"=> "runner.rb" # File.basename(filename)
-          }
-          #puts 'options for upload=' + options.inspect
-          SimpleWorker.logger.info "Uploading now..."
-          ret = post_file("code/put", File.new(zip_filename), options)
-          SimpleWorker.logger.info "Done uploading."
-          return ret
+          upload_code(name, zip_filename, 'runner.rb', :runtime=>'ruby')
         end
 
       rescue => ex
@@ -221,7 +210,7 @@ end
       #            puts 'fname2=' + fname2
       #            puts 'merged_file_array=' + merge.inspect
       #File.open(fname2, "w") do |f|
-      File.delete(fname2) if File.exist?(fname2)
+      #File.delete(fname2) if File.exist?(fname2)
       Zip::ZipFile.open(fname2, 'w') do |f|
         if merged_gems && merged_gems.size > 0
           merged_gems.each_pair do |k, gem|
@@ -290,6 +279,51 @@ end
         end
       end
       fname2
+    end
+
+    # This will package up files into a zip file ready for uploading.
+    def package_code(files)
+      fname2 = "package.zip"
+      File.delete(fname2) if File.exist?(fname2)
+      Zip::ZipFile.open(fname2, 'w') do |f|
+        files.each do |file|
+          f.add(file, file)
+        end
+      end
+      fname2
+    end
+
+    # options:
+    #   :runtime => 'ruby', 'python', 'node', 'java', 'go'
+    def upload_code(name, package_file, exec_file, options={})
+      SimpleWorker.logger.info 'file size to upload: ' + File.size(package_file).to_s
+      options = {
+          "name"=>name,
+          "standalone"=>true,
+          "runtime"=>options[:runtime],
+          "file_name"=> exec_file # File.basename(filename)
+      }
+      #puts 'options for upload=' + options.inspect
+      SimpleWorker.logger.info "Uploading now..."
+      ret = post_file("code/put", File.new(package_file), options)
+      SimpleWorker.logger.info "Done uploading."
+      return ret
+
+    end
+
+    def wait_until_complete(task_id)
+      tries = 0
+      status = nil
+      sleep 1
+      while tries < 100
+        status = status(task_id)
+        puts "Waiting... status=" + status["status"]
+        if status["status"] != "queued" && status["status"] != "running"
+          break
+        end
+        sleep 2
+      end
+      status
     end
 
     def add_sw_params(hash_to_send)

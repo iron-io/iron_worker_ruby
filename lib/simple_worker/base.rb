@@ -238,20 +238,8 @@ module SimpleWorker
     # todo: add a :timeout option
     def wait_until_complete
       check_service
-      tries = 0
-      status = nil
-      sleep 1
-      while tries < 100
-        status = self.status
-        puts "Waiting... status=" + status["status"]
-        if status["status"] != "queued" && status["status"] != "running"
-          break
-        end
-        sleep 2
-      end
-      status
+      SimplerWorker.service.wait_until_complete(self.task_id)
     end
-
 
     def upload
       upload_if_needed
