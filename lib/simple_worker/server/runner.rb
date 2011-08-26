@@ -30,7 +30,7 @@ def constantize(camel_cased_word)
   constant
 end
 
-def init_runner(runner_class, job_data)
+def init_runner(runner_class, job_data, user_dir)
   # ensure initialize takes no arguments
   init_arity = runner_class.instance_method(:initialize).arity
   if init_arity == 0 || init_arity == -1
@@ -41,6 +41,7 @@ def init_runner(runner_class, job_data)
   runner = runner_class.new
   runner.instance_variable_set(:@job_data, job_data)
   runner.instance_variable_set(:@sw_config, job_data['sw_config'])
+  runner.instance_variable_set(:@user_dir, user_dir)
   runner.sw_set_data(job_data)
   runner
 end
@@ -97,7 +98,7 @@ begin
   SimpleWorker.disable_queueing()
   runner_class = get_class_to_run(job_data['class_name'])
   SimpleWorker.running_class = runner_class
-  runner = init_runner(runner_class, job_data)
+  runner = init_runner(runner_class, job_data, dirname)
   init_worker_service_for_runner(job_data)
   SimpleWorker.enable_queueing()
 

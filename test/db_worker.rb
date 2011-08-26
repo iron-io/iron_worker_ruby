@@ -1,6 +1,6 @@
 require 'mysql2'
 require 'active_record'
-# bump........
+# bump..........
 class DbWorker < SimpleWorker::Base
   merge 'db_model'
 

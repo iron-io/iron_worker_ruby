@@ -107,7 +107,7 @@ module SimpleWorker
 
     def user_dir
 #      puts 'user_dir=' + @context.user_dir.to_s
-      @context.user_dir
+      @user_dir || "./"
     end
 
     def sw_set_data(data)

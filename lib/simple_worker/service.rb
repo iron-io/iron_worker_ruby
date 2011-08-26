@@ -210,7 +210,7 @@ end
       #            puts 'fname2=' + fname2
       #            puts 'merged_file_array=' + merge.inspect
       #File.open(fname2, "w") do |f|
-      #File.delete(fname2) if File.exist?(fname2)
+      File.delete(fname2) if File.exist?(fname2)
       Zip::ZipFile.open(fname2, 'w') do |f|
         if merged_gems && merged_gems.size > 0
           merged_gems.each_pair do |k, gem|
@@ -299,6 +299,7 @@ end
       SimpleWorker.logger.info 'file size to upload: ' + File.size(package_file).to_s
       options = {
           "name"=>name,
+          "class_name"=>name, # todo: remove this shortly
           "standalone"=>true,
           "runtime"=>options[:runtime],
           "file_name"=> exec_file # File.basename(filename)
