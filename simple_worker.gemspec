@@ -5,17 +5,18 @@
 
 Gem::Specification.new do |s|
   s.name = %q{simple_worker}
-  s.version = "1.0.5"
+  s.version = "1.0.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Travis Reeder}]
-  s.date = %q{2011-08-22}
+  s.date = %q{2011-08-26}
   s.description = %q{The official SimpleWorker gem for http://www.simpleworker.com}
   s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
     "README.markdown"
   ]
   s.files = [
+    "lib/generators/simple_worker/simple_worker_generator.rb",
     "lib/simple_worker.rb",
     "lib/simple_worker/api.rb",
     "lib/simple_worker/base.rb",
@@ -31,7 +32,7 @@ Gem::Specification.new do |s|
   ]
   s.homepage = %q{http://github.com/appoxy/simple_worker}
   s.require_paths = [%q{lib}]
-  s.rubygems_version = %q{1.8.5}
+  s.rubygems_version = %q{1.8.8}
   s.summary = %q{The official SimpleWorker gem for http://www.simpleworker.com}
 
   if s.respond_to? :specification_version then
