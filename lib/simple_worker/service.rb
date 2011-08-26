@@ -241,7 +241,7 @@ end
                 # todo: should only continue if the gem was auto merged.
                 SimpleWorker.logger.warn "Gem #{gem[:name]} #{gem[:version]} was not found, continuing anyways."
               else
-                raise "Gem #{gem[:name]} #{gem[:version]} was not found, continuing anyways."
+                raise "Gem #{gem[:name]} #{gem[:version]} was not found. This will occour when gem_name.gemspec is not the same as the gems primary require."
               end
 
             end
