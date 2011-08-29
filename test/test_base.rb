@@ -18,7 +18,7 @@ require_relative "test_worker_3"
 class TestBase < Test::Unit::TestCase
 
   def setup
-    @config = YAML::load(File.open(File.expand_path("~/.test_configs/simple_worker.yml")))
+    @config = YAML::load_file("config.yml")
     #puts @config.inspect
     @access_key = @config['simple_worker']['access_key']
     @secret_key = @config['simple_worker']['secret_key']
