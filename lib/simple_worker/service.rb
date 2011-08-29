@@ -12,16 +12,17 @@ module SimpleWorker
 
     attr_accessor :config
 
-    def initialize(access_key, secret_key, options={})
+    def initialize(token, options={})
       if options[:config]
         self.config = options[:config]
       else
         c = SimpleWorker::Config.new unless self.config
-        c.access_key = access_key
-        c.secret_key = secret_key
+        c.token = token
         self.config = c
       end
-      super("http://api.simpleworker.com/api/", access_key, secret_key, options)
+      options[:version] = SimpleWorker.api_version
+      options[:logger] = SimpleWorker.logger
+      super("http://api.simpleworker.com/api/", token, options)
       self.host = self.config.host if self.config && self.config.host
       SimpleWorker.logger.info 'SimpleWorker initialized.'
     end
@@ -34,7 +35,7 @@ module SimpleWorker
 #      puts "Uploading #{class_name}"
 # check whether it should upload again
       tmp = Dir.tmpdir()
-      md5file = "simple_worker_#{class_name.gsub("::", ".")}_#{access_key[0, 8]}.md5"
+      md5file = "simple_worker_#{class_name.gsub("::", ".")}_#{token[0, 8]}.md5"
       existing_md5 = nil
       md5_f = File.join(tmp, md5file)
       if File.exists?(md5_f)
@@ -306,10 +307,13 @@ end
       }
       #puts 'options for upload=' + options.inspect
       SimpleWorker.logger.info "Uploading now..."
-      ret = post_file("code/put", File.new(package_file), options)
+      ret = post_file("#{project_url_prefix}workers", File.new(package_file), options)
       SimpleWorker.logger.info "Done uploading."
       return ret
+    end
 
+    def project_url_prefix
+      "projects/#{SimpleWorker.config.project_id}/"
     end
 
     def wait_until_complete(task_id)
@@ -329,13 +333,12 @@ end
 
     def add_sw_params(hash_to_send)
       # todo: remove secret key??  Can use worker service from within a worker without it now
-      hash_to_send["sw_access_key"] = self.access_key
-      hash_to_send["sw_secret_key"] = self.secret_key
+      hash_to_send["token"] = self.token
       hash_to_send["api_version"] = SimpleWorker.api_version
     end
 
     def check_config
-      if self.config.nil? || self.config.access_key.nil?
+      if self.config.nil? || self.config.token.nil?
         raise "Invalid SimpleWorker configuration, no access key specified."
       end
     end

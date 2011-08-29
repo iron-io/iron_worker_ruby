@@ -16,8 +16,10 @@ module SimpleWorker
 
     def configure()
       yield(config)
-      if config && config.access_key && config.secret_key
-        SimpleWorker.service ||= Service.new(config.access_key, config.secret_key, :config=>config)
+      if config && config.token
+        SimpleWorker.service ||= Service.new(config.token, :config=>config)
+      else
+        @@logger.warn "No token specified in configure, be sure to set it!"
       end
     end
 
@@ -30,7 +32,7 @@ module SimpleWorker
     end
 
     def api_version
-      3
+      2
     end
   end
 

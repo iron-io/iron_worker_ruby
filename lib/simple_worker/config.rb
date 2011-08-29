@@ -10,8 +10,8 @@ module SimpleWorker
   # config.database configures a database connection. If specified like ActiveRecord, SimpleWorker will automatically establish a connection
   # for you before running your worker.
   class Config
-    attr_accessor :access_key,
-                  :secret_key,
+    attr_accessor :token,
+        :project_id,
                   :host,
                   :global_attributes,
                   :models,

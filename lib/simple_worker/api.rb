@@ -30,24 +30,19 @@ module SimpleWorker
     #  host: endpoint url for service
     class Client
 
-      @@logger = Logger.new(STDOUT)
-      @@logger.level = Logger::INFO
+      attr_accessor :host, :token, :version
 
-      def self.logger
-        @@logger
-      end
-
-      attr_accessor :host, :access_key, :secret_key, :version
-
-      def initialize(host, access_key, secret_key, options={})
+      def initialize(host, token, options={})
         @host = host
-        @access_key = access_key
-        @secret_key = secret_key
+        @token = token
+        @version = options[:version]
+        @logger = options[:logger]
+
       end
 
       def process_ex(ex)
         body = ex.http_body
-        @@logger.debug 'EX BODY=' + body.to_s
+        @logger.debug 'EX BODY=' + body.to_s
         decoded_ex = JSON.parse(body)
         exception = Exception.new(ex.message + ": " + decoded_ex["msg"])
         exception.set_backtrace(decoded_ex["backtrace"].split(",")) if decoded_ex["backtrace"]
@@ -104,17 +99,9 @@ module SimpleWorker
       end
 
       def add_params(command_path, hash)
-        v = version||"0.1"
+        v = version || "2.0"
         ts = SimpleWorker::Api::Signatures.generate_timestamp(Time.now.gmtime)
-        # puts 'timestamp = ' + ts
-        sig = case v
-                when "0.2"
-                  SimpleWorker::Api::Signatures.generate_signature(command_path + SimpleWorker::Api::Signatures.hash_to_s(hash), ts, secret_key)
-                when "0.1"
-                  SimpleWorker::Api::Signatures.generate_signature(command_path, ts, secret_key)
-              end
-
-        extra_params = {'sigv'=>v, 'sig' => sig, 'timestamp' => ts, 'access_key' => access_key}
+        extra_params = {'version'=>v, 'timestamp' => ts, 'token' => token}
         hash.merge!(extra_params)
       end
 

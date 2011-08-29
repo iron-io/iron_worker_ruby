@@ -20,17 +20,16 @@ class TestBase < Test::Unit::TestCase
   def setup
     @config = YAML::load_file("config.yml")
     #puts @config.inspect
-    @access_key = @config['simple_worker']['access_key']
-    @secret_key = @config['simple_worker']['secret_key']
+    @token = @config['simple_worker']['token']
+    @project_id = @config['simple_worker']['project_id']
 
     # new style
     SimpleWorker.configure do |config|
-      config.access_key = @access_key
-      config.secret_key = @secret_key
+      config.token = @token
+      config.project_id = @project_id
       config.host = @config['simple_worker']['host']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
-
     end
   end
 
