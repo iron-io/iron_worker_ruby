@@ -426,7 +426,7 @@ end
 
     def status(task_id)
       data = {"task_id"=>task_id}
-      ret = get("task/status", data)
+      ret = get("#{project_url_prefix}jobs/#{task_id}/status", data)
       ret
     end
 

@@ -110,8 +110,9 @@ module SimpleWorker
         host += "?"
         i = 0
         params.each_pair do |k, v|
+          puts "k=#{k} v=#{v}"
           host += "&" if i > 0
-          host += k + "=" + CGI.escape(v)
+          host += k + "=" + (v.is_a?(String) ? CGI.escape(v) : v.to_s)
           i +=1
         end
         return host
