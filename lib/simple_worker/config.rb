@@ -143,8 +143,8 @@ module SimpleWorker
 
     def get_atts_to_send
       config_data = {}
-      config_data['access_key'] = access_key
-      config_data['secret_key'] = secret_key
+      config_data['token'] = token
+      config_data['project_id'] = project_id
       config_data['database'] = self.database if self.database
       config_data['global_attributes'] = self.global_attributes if self.global_attributes
       config_data['host'] = self.host if self.host

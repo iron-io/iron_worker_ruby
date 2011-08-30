@@ -238,7 +238,7 @@ module SimpleWorker
     # todo: add a :timeout option
     def wait_until_complete
       check_service
-      SimplerWorker.service.wait_until_complete(self.task_id)
+      SimpleWorker.service.wait_until_complete(self.task_id)
     end
 
     def upload

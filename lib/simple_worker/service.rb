@@ -373,7 +373,6 @@ end
         hash_to_send["rails_env"] = RAILS_ENV
       end
       return queue_raw(class_name, hash_to_send)
-
     end
 
     def queue_raw(class_name, data={})
@@ -381,7 +380,7 @@ end
       hash_to_send = data
       hash_to_send["class_name"] = class_name unless hash_to_send["class_name"]
       hash_to_send["name"] = class_name unless hash_to_send["name"]
-      ret = post("queue/add", hash_to_send)
+      ret = post("#{project_url_prefix}jobs", hash_to_send)
       ret
     end
 

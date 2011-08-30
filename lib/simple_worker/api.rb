@@ -42,6 +42,7 @@ module SimpleWorker
 
       def process_ex(ex)
         body = ex.http_body
+        @logger.debug 'EX http_code: ' + ex.http_code.to_s
         @logger.debug 'EX BODY=' + body.to_s
         decoded_ex = JSON.parse(body)
         exception = Exception.new(ex.message + ": " + decoded_ex["msg"])
@@ -68,7 +69,7 @@ module SimpleWorker
 
       def post(method, params={}, options={})
         begin
-          parse_response RestClient.post(url(method), add_params(method, params).to_json, headers), options
+          parse_response(RestClient.post(url(method), add_params(method, params).to_json, headers), options)
           #ClientHelper.run_http(host, access_key, secret_key, :post, method, nil, params)
         rescue RestClient::Exception  => ex
           process_ex(ex)
@@ -122,12 +123,12 @@ module SimpleWorker
       end
 
       def parse_response(response, options={})
-#        puts 'PARSE RESPONSE!'
+        #puts 'PARSE RESPONSE: ' + response.to_s
         unless options[:parse] == false
           begin
             return JSON.parse(response.to_s)
           rescue => ex
-            puts 'response that caused error = ' + response.to_s
+            puts 'parse_response: response that caused error = ' + response.to_s
             raise ex
           end
         else
