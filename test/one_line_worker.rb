@@ -1,4 +1,4 @@
-
+# bump...
 class OneLineWorker < SimpleWorker::Base
 
   def run

@@ -62,7 +62,7 @@ module SimpleWorker
           upload_code(name, zip_filename, 'runner.rb', :runtime=>'ruby')
         end
 
-      rescue => ex
+      rescue Exception => ex
         # if it errors, let's delete md5 since it wouldn't have uploaded.
         File.delete(md5_f)
         raise ex
@@ -426,7 +426,7 @@ end
 
     def status(task_id)
       data = {"task_id"=>task_id}
-      ret = get("#{project_url_prefix}jobs/#{task_id}/status", data)
+      ret = get("#{project_url_prefix}jobs/#{task_id}", data)
       ret
     end
 
