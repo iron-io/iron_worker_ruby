@@ -61,7 +61,8 @@ module SimpleWorker
 
       def post_file(method, file, params={}, options={})
         begin
-          parse_response RestClient.post(url(method), add_params(method, params).merge!({:file=>file}), :multipart => true), options
+          data = add_params(method, params).to_json
+          parse_response RestClient.post(url(method), {:data => data, :file => file}, :content_type => 'application/json'), options
         rescue RestClient::Exception  => ex
           process_ex(ex)
         end
@@ -69,7 +70,7 @@ module SimpleWorker
 
       def post(method, params={}, options={})
         begin
-          parse_response(RestClient.post(url(method), add_params(method, params).to_json, headers), options)
+          parse_response(RestClient.post(url(method), add_params(method, params).to_json, headers.merge!({:content_type=>'application/json'})), options)
           #ClientHelper.run_http(host, access_key, secret_key, :post, method, nil, params)
         rescue RestClient::Exception  => ex
           process_ex(ex)
