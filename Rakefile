@@ -12,6 +12,7 @@ begin
     gemspec.files = FileList['init.rb', 'lib/**/*.rb', 'rails/**/*.rb']
     gemspec.add_dependency 'zip'
     gemspec.add_dependency 'rest-client'
+    gemspec.required_ruby_version = '>= 1.9'
   end
 
   Jeweler::GemcutterTasks.new
