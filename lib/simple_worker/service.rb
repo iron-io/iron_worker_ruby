@@ -148,7 +148,7 @@ end
         end
         #if SimpleWorker.config.auto_merge
         merged_gems.each_pair do |k, gem|
-          SimpleWorker.logger.info "Bundling gem #{gem[:name]}..."
+          SimpleWorker.logger.debug "Bundling gem #{gem[:name]}..."
           if gem[:merge]
             f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
           end
@@ -159,7 +159,7 @@ end
           elsif gem[:require].is_a?(String)
             gem[:require] = [gem[:require]]
           end
-          puts gem[:require].inspect
+          SimpleWorker.logger.debug "gem[:require]: " + gem[:require].inspect
           gem[:require].each do |r|
             SimpleWorker.logger.debug 'adding require to file ' + r.to_s
             f.write "require '#{r}'\n"
