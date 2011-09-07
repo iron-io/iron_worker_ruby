@@ -380,7 +380,7 @@ module SimpleWorker
 
         merged, rfile, subclass = SimpleWorker::Base.extract_superclasses_merges(self, merged)
 #if SimpleWorker.config.auto_merge
-        puts "Auto merge Enabled"
+#        puts "Auto merge Enabled"
 #if SimpleWorker.config.models
 #  SimpleWorker.config.models.each do |m|
 #    merged[m] = m

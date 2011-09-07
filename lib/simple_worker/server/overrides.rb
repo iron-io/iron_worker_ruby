@@ -6,23 +6,23 @@ module SimpleWorker
 
   class << self
     def running_class=(rc)
-      @@running_class = rc
+      @running_class = rc
     end
     def running_class
-      @@running_class
+      @running_class
     end
   end
 
   def self.disable_queueing()
-    @@queueing_enabled = false
+    @queueing_enabled = false
   end
 
   def self.enable_queueing()
-    @@queueing_enabled = true
+    @queueing_enabled = true
   end
 
   def self.queueing_enabled?
-    @@queueing_enabled
+    @queueing_enabled
   end
 
 

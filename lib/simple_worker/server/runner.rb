@@ -61,30 +61,6 @@ def init_worker_service_for_runner(job_data)
   end
 end
 
-# Find environment (-e)
-dirname = ""
-i = 0
-job_data_file = run_data_file = nil
-puts "args for single file=" + ARGV.inspect
-ARGV.each do |arg|
-  if arg == "-d"
-    # the user's writable directory
-    dirname = ARGV[i+1]
-  end
-  if arg == "-j"
-    # path to job data
-    job_data_file = ARGV[i+1]
-  end
-  if arg == "-p"
-    # path to run data
-    run_data_file = ARGV[i+1]
-  end
-  i+=1
-end
-
-# Change to user directory
-puts 'dirname=' + dirname.inspect
-Dir.chdir(dirname)
 
 run_data = JSON.load(File.open(run_data_file))
 # Load in job data

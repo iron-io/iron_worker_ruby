@@ -121,10 +121,39 @@ module SimpleWorker
       #tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
       tmp_file = File.join(Dir.tmpdir(), 'runner.rb')
       File.open(tmp_file, "w") do |f|
-        # add some rails stuff if using Rails
+
+        f.write("
+# Find environment (-e)
+dirname = " "
+i = 0
+job_data_file = run_data_file = nil
+puts \"args for single file=\" + ARGV.inspect
+ARGV.each do |arg|
+  if arg == \"-d\"
+    # the user's writable directory
+    dirname = ARGV[i+1]
+  end
+  if arg == \"-j\"
+    # path to job data
+    job_data_file = ARGV[i+1]
+  end
+  if arg == \"-p\"
+    # path to run data
+    run_data_file = ARGV[i+1]
+  end
+  i+=1
+end
+
+# Change to user directory
+puts 'dirname=' + dirname.inspect
+Dir.chdir(dirname)
+")
+
 
         f.write("require 'simple_worker'\n")
 
+
+        # add some rails stuff if using Rails
         if defined?(Rails)
           f.write "module Rails
   def self.version
