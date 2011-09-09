@@ -1,12 +1,3 @@
-KNOWN ISSUES IN NEW VERSION
-=====
-
-- Cancel chain will not work because we don't have parent task it. Do we need it though?
-We could just allow kill all by class name and that would be sufficient? (see runner.rb add_sw_params)
-
-
-
-
 Getting Started
 ===============
 
