@@ -1,5 +1,3 @@
-gem 'test-unit'
-require 'test/unit'
 require_relative 'test_base'
 require 'active_record'
 require_relative 'cool_worker'
