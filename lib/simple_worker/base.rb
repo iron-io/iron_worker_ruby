@@ -338,7 +338,7 @@ module SimpleWorker
       SimpleWorker.logger.debug "Looking for merged_workers in #{worker.class.name}: #{merged_workers.inspect}"
       ret = {}
       if merged_workers && merged_workers.size > 0
-        merged_workers.each do |mw|
+        merged_workers.each_pair do |k, mw|
           SimpleWorker.logger.debug "merged worker found in #{worker.class.name}: #{mw.inspect}"
           ret[mw[:name]] = mw
         end

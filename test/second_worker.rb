@@ -2,6 +2,8 @@
 class SecondWorker < SimpleWorker::Base
     attr_accessor :start_time, :num
 
+    merge_worker 'third_worker.rb', 'ThirdWorker'
+
     # change
 
     def run

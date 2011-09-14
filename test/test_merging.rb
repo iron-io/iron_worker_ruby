@@ -19,6 +19,7 @@ class SimpleWorkerTests < TestBase
         response_hash_single = tw.queue
       rescue => ex
         puts ex.message
+        raise ex
       end
     end
 
