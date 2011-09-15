@@ -12,6 +12,17 @@ def init_database_connection(sw_config)
   end
 end
 
+def init_mailer(sw_config)
+  if sw_config
+    mailer_config = sw_config['mailer']
+    if mailer_config
+      require 'action_mailer'
+       ActionMailer::Base.raise_delivery_errors = true
+      ActionMailer::Base.smtp_settings =  mailer_config
+    end
+  end
+end
+
 def get_class_to_run(class_name)
   runner_class = constantize(class_name)
   return runner_class
@@ -57,6 +68,10 @@ def init_worker_service_for_runner(job_data)
     if db_config
       config.database = db_config
     end
+    mailer_config = sw_config['mailer']
+    if mailer_config
+      config.mailer = mailer_config
+    end
     config.global_attributes = sw_config['global_attributes'] if sw_config['global_attributes']
   end
 end
@@ -71,6 +86,7 @@ puts 'job_data=' + job_data.inspect
 sw_config = job_data['sw_config']
 begin
   init_database_connection(sw_config)
+  init_mailer(sw_config)
   SimpleWorker.disable_queueing()
   runner_class = get_class_to_run(job_data['class_name'])
   SimpleWorker.running_class = runner_class
