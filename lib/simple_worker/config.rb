@@ -224,13 +224,14 @@ module SimpleWorker
       gem_info = {:name=>gem_name, :merge=>true}
       if options.is_a?(Hash)
         gem_info.merge!(options)
+        if options[:include_dirs]
+          gem_info[:include_dirs] = options[:include_dirs].is_a?(Array) ? options[:include_dirs] : [options[:include_dirs]]
+        end
       else
         gem_info[:version] = options
       end
       gem_info[:require] ||= gem_name
-      if options[:include_dirs]
-        gem_info[:include_dirs] = options[:include_dirs].is_a?(Array) ? options[:include_dirs] : [options[:include_dirs]]
-      end
+
       path = SimpleWorker::Service.get_gem_path(gem_info)
       SimpleWorker.logger.debug "Gem path=#{path}"
       if !path
