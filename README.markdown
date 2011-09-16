@@ -22,7 +22,8 @@ Install SimpleWorker Gem
 Configure SimpleWorker
 ----------------------
 
-You really just need your token, which you can get from simpleworker.com/tokens .
+You really just need your token, which you can get [here][2]
+[2]: http://simpleworker.com/tokens 
 
     SimpleWorker.configure do |config|
         config.token = TOKEN
