@@ -69,7 +69,7 @@ def init_worker_service_for_runner(job_data)
       config.database = db_config
     end
     mailer_config = sw_config['mailer']
-    if mailer_config
+    if mailer_config && config.respond_to?(:mailer)
       config.mailer = mailer_config
     end
     config.global_attributes = sw_config['global_attributes'] if sw_config['global_attributes']
