@@ -18,6 +18,7 @@ module SimpleWorker
                   :mailers,
                   #:gems, # todo: move anything that uses this to merged_gems
                   :database,
+                  :mailer,
                   :extra_requires,
                   #:auto_merge,
                   :server_gems,
@@ -69,6 +70,10 @@ module SimpleWorker
             c2.database = Rails.configuration.database_configuration[Rails.env]
           else
             #puts 'NOT DOING ACTIVERECORD'
+          end
+
+          if defined?(ActionMailer) && ActionMailer::Base.smtp_settings
+            c2.mailer = ActionMailer::Base.smtp_settings
           end
           c2.merged_gems.merge!(get_required_gems) if defined?(Bundler)
           SimpleWorker.logger.debug "MODELS " + c2.models.inspect
@@ -146,6 +151,7 @@ module SimpleWorker
       config_data['access_key'] = access_key
       config_data['secret_key'] = secret_key
       config_data['database'] = self.database if self.database
+      config_data['mailer'] = self.mailer if self.mailer
       config_data['global_attributes'] = self.global_attributes if self.global_attributes
       config_data['host'] = self.host if self.host
       config_data

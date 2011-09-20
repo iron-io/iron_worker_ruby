@@ -151,6 +151,7 @@ module SimpleWorker
       # puts 'run_local'
       set_auto_attributes
       init_database
+	  init_mailer
       begin
         run
       rescue => ex
@@ -159,6 +160,14 @@ module SimpleWorker
         else
           raise ex
         end
+      end
+    end
+
+	def init_mailer
+      if SimpleWorker.config.mailer
+        require 'action_mailer'
+         ActionMailer::Base.raise_delivery_errors = true
+         ActionMailer::Base.smtp_settings = (SimpleWorker.config.mailer)
       end
     end
 
