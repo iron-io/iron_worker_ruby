@@ -18,7 +18,8 @@ def init_mailer(sw_config)
     if mailer_config
       require 'action_mailer'
        ActionMailer::Base.raise_delivery_errors = true
-      ActionMailer::Base.smtp_settings =  mailer_config
+       ActionMailer::Base.smtp_settings =  mailer_config
+       ActionMailer::Base.delivery_method = :smtp
     end
   end
 end
