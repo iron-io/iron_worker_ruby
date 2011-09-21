@@ -263,6 +263,23 @@ You could easily merge mailers you're using in your application.
 
 if you already set auto_merge=true all your mailers already merged.
 
+Configuring a Mailer Connection
+
+If you are using Rails 3,your action_mailer connection would be configured automatically from your config
+
+For non Rails 3 or if you want to use different mailer configs, you should add the following to your SimpleWorker config:
+
+    config.mailer = {
+        :address => "smtp.gmail.com",
+        :port => 587,
+        :domain => 'gmail.com',
+        :user_name => GMAIL_USERNAME
+        :password => GMAIL_PASSWORD
+        :authentication => 'plain',
+        :enable_starttls_auto => true}
+
+Then before you job is run, SimpleWorker will establish the ActionMailer connection.
+
 Merging Gems
 ---------------------
 
