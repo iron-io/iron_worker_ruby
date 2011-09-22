@@ -1,4 +1,4 @@
- 'rest_client'
+require 'rest_client'
 
 module SimpleWorker
   module Api
