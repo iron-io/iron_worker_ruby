@@ -22,15 +22,17 @@ module SimpleWorker
       end
       options[:version] = SimpleWorker.api_version
       options[:logger] = SimpleWorker.logger
-      super("http://api.simpleworker.com/api/", token, options)
+      #super("http://api.simpleworker.com/api/", token, options)
+      super("http://174.129.54.171:8080/1/", token, options)
       self.host = self.config.host if self.config && self.config.host
       SimpleWorker.logger.info 'SimpleWorker initialized.'
+      SimpleWorker.logger.debug ' host = ' + self.host.inspect
     end
 
     # Options:
     #    - :callback_url
     #    - :merge => array of files to merge in with this file
-    def upload(filename, class_name, options={})
+    def upload(filename, project_id, class_name, options={})
       name = options[:name] || class_name
 #      puts "Uploading #{class_name}"
 # check whether it should upload again
@@ -59,7 +61,7 @@ module SimpleWorker
         zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:merged_mailers], options[:merged_folders])
 
         if new_code
-          upload_code(name, zip_filename, 'runner.rb', :runtime=>'ruby')
+          upload_code(name, project_id, zip_filename, 'runner.rb', :runtime=>'ruby')
         end
 
       rescue Exception => ex
@@ -296,7 +298,7 @@ end
 
     # options:
     #   :runtime => 'ruby', 'python', 'node', 'java', 'go'
-    def upload_code(name, package_file, exec_file, options={})
+    def upload_code(name, project_id, project_file, package_file, exec_file, options={})
       SimpleWorker.logger.info 'file size to upload: ' + File.size(package_file).to_s
       options = {
           "name"=>name,
@@ -307,13 +309,18 @@ end
       }
       #puts 'options for upload=' + options.inspect
       SimpleWorker.logger.info "Uploading now..."
-      ret = post_file("#{project_url_prefix}workers", File.new(package_file), options)
+      ret = post_file("#{project_url_prefix(project_id)}workers", File.new(package_file), options)
       SimpleWorker.logger.info "Done uploading."
       return ret
     end
 
-    def project_url_prefix
-      "projects/#{SimpleWorker.config.project_id}/"
+    def project_url_prefix(project_id = 0)
+      SimpleWorker.logger.info "project_url_prefix, project_id = " + project_id.inspect
+      if project_id == 0
+        return false
+        project_id = SimpleWorker.config.project_id
+      end
+      "projects/#{project_id}/"
     end
 
     def wait_until_complete(task_id)
@@ -349,7 +356,7 @@ end
 
     # class_name: The class name of a previously upload class, eg: MySuperWorker
     # data: Arbitrary hash of your own data that your task will need to run.
-    def queue(class_name, data={}, options={})
+    def queue(class_name, project_id, data={}, options={})
       puts "Queuing #{class_name}..."
       check_config
       if !data.is_a?(Array)
@@ -372,15 +379,17 @@ end
         # todo: REMOVE THIS
         hash_to_send["rails_env"] = RAILS_ENV
       end
-      return queue_raw(class_name, hash_to_send)
+      return queue_raw(class_name, project_id, hash_to_send)
     end
 
-    def queue_raw(class_name, data={})
+    def queue_raw(class_name, project_id, data={})
       params = nil
       hash_to_send = data
       hash_to_send["class_name"] = class_name unless hash_to_send["class_name"]
       hash_to_send["name"] = class_name unless hash_to_send["name"]
-      ret = post("#{project_url_prefix}jobs", hash_to_send)
+      uri = project_url_prefix(project_id) + "jobs"
+      SimpleWorker.logger.info 'queue_raw , uri = ' + uri
+      ret = post(uri, hash_to_send)
       ret
     end
 
@@ -418,13 +427,51 @@ end
       ret
     end
 
-    def get_schedules()
+    def get_projects()
       hash_to_send = {}
-      ret = get("scheduler/list", hash_to_send)
+      ret = get("projects", hash_to_send)
       ret
     end
 
-    def status(task_id)
+    def get_project(id)
+      hash_to_send = {}
+      ret = get("projects/"+id+"/", hash_to_send)
+      #uri = project_url_prefix(id)
+      #puts "get_project, uri = " + uri
+      #ret = get(uri, hash_to_send)
+      ret
+    end
+
+    def get_workers(project_id)
+      hash_to_send = {}
+      uri = "projects/" + project_id + "/workers/"
+      ret = get(uri, hash_to_send)
+      ret
+    end
+
+    def get_schedules(project_id)
+      hash_to_send = {}
+      uri = "projects/" + project_id + "/schedules/"
+      ret = get(uri, hash_to_send)
+      ret
+    end
+
+    def get_jobs(project_id)
+      hash_to_send = {}
+      uri = "projects/" + project_id + "/jobs/"
+      ret = get(uri, hash_to_send)
+      ret
+    end
+
+    def get_log(project_id, job_id)
+      hash_to_send = {}
+      uri = "projects/" + project_id + "/jobs/" + job_id
+      ret = get(uri, hash_to_send)
+      ret
+    end
+
+
+    def status(task_id, project_id)
       data = {"task_id"=>task_id}
       ret = get("#{project_url_prefix}jobs/#{task_id}", data)
       ret

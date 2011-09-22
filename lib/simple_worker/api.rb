@@ -1,4 +1,4 @@
-require 'rest_client'
+ 'rest_client'
 
 module SimpleWorker
   module Api
@@ -51,26 +51,52 @@ module SimpleWorker
       end
 
       def get(method, params={}, options={})
-        begin
+        #begin
 #                ClientHelper.run_http(host, access_key, secret_key, :get, method, nil, params)
-          parse_response RestClient.get(append_params(url(method), add_params(method, params)), headers), options
-        rescue RestClient::Exception  => ex
-          process_ex(ex)
-        end
+          fullURL = url(method)
+          allParams = add_params(method,params)
+
+          urlPlusParams = append_params(fullURL, allParams)
+          resp = RestClient.get(urlPlusParams, headers)
+
+          parse_response(resp, options)
+        
+          # Was: 
+          #parse_response RestClient.get(append_params(url(method), add_params(method, params)), headers), options
+        #rescue RestClient::Exception  => ex
+        #  process_ex(ex)
+        #end
       end
 
       def post_file(method, file, params={}, options={})
         begin
+          params.delete("runtime")
+          params["runtime"]='ruby'
+          params.delete("file_name")
+          params["file_name"] = "runner.rb"
           data = add_params(method, params).to_json
-          parse_response RestClient.post(url(method), {:data => data, :file => file}, :content_type => 'application/json'), options
+          @logger.debug "data = " + data
+          @logger.debug "params = " + params.inspect
+          @logger.debug "options = " + options.inspect
+          token = params["oauth"]
+          parse_response RestClient.post(url(method) + "?oauth="+token, {:data => data, :file => file}, :content_type => 'application/json', :accept => :json), options
+          #parse_response(RestClient.post(append_params(url(method), add_params(method, params)), {:data => data, :file => file}, :content_type => 'application/json'), options)
         rescue RestClient::Exception  => ex
           process_ex(ex)
         end
       end
 
       def post(method, params={}, options={})
+          @logger.debug "params = " + params.inspect
+          @logger.debug "options = " + options.inspect
+          @logger.debug "params.payload = " + params[:payload].inspect
+          token = params["token"]
+          @logger.debug "token = "+ token.inspect
         begin
-          parse_response(RestClient.post(url(method), add_params(method, params).to_json, headers.merge!({:content_type=>'application/json'})), options)
+          # here's what get() does:
+          #parse_response RestClient.get(append_params(url(method), add_params(method, params)), headers), options
+          parse_response(RestClient.post(url(method)+"?oauth="+token, add_params(method, params).to_json, headers.merge!({:content_type=>'application/json', :accept => "json"})), options)
+          # was , add_params(method, params).to_json, headers.merge!({:content_type=>'application/json'})), options)
           #ClientHelper.run_http(host, access_key, secret_key, :post, method, nil, params)
         rescue RestClient::Exception  => ex
           process_ex(ex)
@@ -103,7 +129,7 @@ module SimpleWorker
       def add_params(command_path, hash)
         v = version || "2.0"
         ts = SimpleWorker::Api::Signatures.generate_timestamp(Time.now.gmtime)
-        extra_params = {'version'=>v, 'timestamp' => ts, 'token' => token}
+        extra_params = {'version'=>v, 'timestamp' => ts, 'oauth' => token}
         hash.merge!(extra_params)
       end
 

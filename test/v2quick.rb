@@ -20,11 +20,14 @@ class QuickRun < TestBase
     puts workers.inspect
 
     worker = OneLineWorker.new
-    worker.queue("4e71843298ea9b6b9f000004")
+    res = worker.queue("4e71843298ea9b6b9f000004")
+    puts "worker.queue returns:  " +  res.inspect
+    job_id = res["task_id"]
 
     sleep 10
 
-    puts worker.get_log
+    log = worker.get_log("4e71843298ea9b6b9f000004", job_id)
+    puts log.inspect
   end
 
 end
