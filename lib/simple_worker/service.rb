@@ -122,10 +122,10 @@ module SimpleWorker
       #tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
       tmp_file = File.join(Dir.tmpdir(), 'runner.rb')
       File.open(tmp_file, "w") do |f|
-
+        f.write("begin\n")#error handling block start
         f.write("
 # Find environment (-e)
-dirname = " "
+dirname = ''
 i = 0
 job_data_file = run_data_file = nil
 puts \"args for single file=\" + ARGV.inspect
@@ -226,7 +226,12 @@ end
             f.write line
           end
         end
-
+        #error handling block - end
+        f.write("\nrescue Exception => ex
+                $stderr.puts '_error_from_sw_'
+                 raise ex
+                end
+                ")
 
       end
       #puts 'funner.rb=' + tmp_file

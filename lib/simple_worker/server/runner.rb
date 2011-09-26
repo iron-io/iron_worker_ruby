@@ -85,7 +85,6 @@ job_data.merge!(run_data)
 puts 'job_data=' + job_data.inspect
 
 sw_config = job_data['sw_config']
-begin
   init_database_connection(sw_config)
   init_mailer(sw_config)
   SimpleWorker.disable_queueing()
@@ -97,7 +96,3 @@ begin
 
 # Let's run it!
   runner_return_data = runner.run
-rescue Exception => ex
-  $stderr.puts "_error_from_sw_"
-  raise ex
-end
