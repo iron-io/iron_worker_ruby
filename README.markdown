@@ -22,11 +22,11 @@ Install SimpleWorker Gem
 Configure SimpleWorker
 ----------------------
 
-You really just need your access keys.
+You really just need your token, which you can get [here][2]
+[2]: http://simpleworker.com/tokens 
 
     SimpleWorker.configure do |config|
-        config.access_key = ACCESS_KEY
-        config.secret_key = SECRET_KEY
+        config.token = TOKEN
     end
     
 Generate a Worker with Rails
