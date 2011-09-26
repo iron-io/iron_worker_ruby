@@ -297,6 +297,18 @@ This allows you to use any gem you'd like with SimpleWorker. This uses the same 
 
 [Check here for more info on merge_gem](http://support.simpleworker.com/kb/working-with-simpleworker/merging-gems-into-your-worker).
 
+
+Job Timeout
+--------------
+
+By default, each job has 60 minutes (3600 seconds to complete). If you know that your job should take less than that, you can specify a timeout explicitly:
+
+    worker.queue(:timeout=>1800)
+
+This will kill your job if it is running more than 1800 seconds, or half an hour.
+
+
+
 Global Merging
 --------------
 
