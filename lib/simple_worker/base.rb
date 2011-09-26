@@ -197,12 +197,12 @@ module SimpleWorker
     #   :priority => 0, 1 or 2. Default is 0.
     #   :recursive => true/false. Default is false. If you queue up a worker that is the same class as the currently
     #                 running worker, it will be rejected unless you set this explicitly so we know you meant to do it.
-    def queue(options={})
+    def queue(project_id, options={})
 #            puts 'in queue'
       set_auto_attributes
-      upload_if_needed(options)
+      upload_if_needed(project_id, options)
 
-      response = SimpleWorker.service.queue(self.class.name, sw_get_data, options)
+      response = SimpleWorker.service.queue(self.class.name, project_id, sw_get_data, options)
 #            puts 'queue response=' + response.inspect
 #      @task_set_id = response["task_set_id"]
       @task_id = response["task_id"]
@@ -271,8 +271,8 @@ module SimpleWorker
     end
 
     # Retrieves the log for this worker from the SimpleWorker service.
-    def get_log
-      SimpleWorker.service.log(task_id)
+    def get_log(project_id, job_id)
+      SimpleWorker.service.get_log(project_id, job_id)
     end
 
     # Callbacks for developer
@@ -346,7 +346,7 @@ module SimpleWorker
       ret
     end
 
-    def upload_if_needed(options={})
+    def upload_if_needed(project_id, options={})
       check_service
       SimpleWorker.service.check_config
 
@@ -399,7 +399,7 @@ module SimpleWorker
 #        merged_mailers.uniq!
         options_for_upload = {:merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers, :merged_folders=>merged_folders}
         options_for_upload[:name] = options[:name] if options[:name]
-        SimpleWorker.service.upload(rfile, subclass.name, options_for_upload)
+        SimpleWorker.service.upload(rfile, project_id, subclass.name, options_for_upload)
         self.class.instance_variable_set(:@uploaded, true)
       else
         SimpleWorker.logger.debug 'Already uploaded for ' + self.class.name
