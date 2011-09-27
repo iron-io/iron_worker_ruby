@@ -468,9 +468,12 @@ end
     end
 
     def get_log(job_id, options={})
-      hash_to_send = {}
-      uri = "projects/" + get_project_id(options) + "/jobs/" + job_id
-      ret = get(uri, hash_to_send)
+      log(job_id, options)
+    end
+
+    def log(task_id, options={})
+      data = {}
+      ret = get("#{project_url_prefix(get_project_id(options))}jobs/#{task_id}/log", data, :parse=>false)
       ret
     end
 
@@ -491,14 +494,6 @@ end
     def set_progress(task_id, data)
       data={"data"=>data, "task_id"=>task_id}
       post("task/setstatus", data)
-    end
-
-    def log(task_id)
-      data = {"task_id"=>task_id}
-      ret = get("task/log", data, {:parse=>false})
-#            puts ' ret=' + ret.inspect
-#            ret["log"] = Base64.decode64(ret["log"])
-      ret
     end
 
 
