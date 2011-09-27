@@ -30,14 +30,22 @@ module SimpleWorker
     #  host: endpoint url for service
     class Client
 
-      attr_accessor :host, :token, :version
+      attr_accessor :host, :port, :token, :version, :config
 
       def initialize(host, token, options={})
         @host = host
+        @config = options[:config]
+        @port = options[:port] || @config.port || 80
         @token = token
         @version = options[:version]
         @logger = options[:logger]
 
+      end
+
+      def url(command_path)
+        url = "http://#{host}:#{port}/#{@version}/#{command_path}"
+        @logger.debug "url: " + url.to_s
+        url
       end
 
       def process_ex(ex)
@@ -53,11 +61,11 @@ module SimpleWorker
       def get(method, params={}, options={})
         #begin
 #                ClientHelper.run_http(host, access_key, secret_key, :get, method, nil, params)
-          fullURL = url(method)
-          allParams = add_params(method,params)
+          full_url = url(method)
+          all_params = add_params(method,params)
 
-          urlPlusParams = append_params(fullURL, allParams)
-          resp = RestClient.get(urlPlusParams, headers)
+          url_plus_params = append_params(full_url, all_params)
+          resp = RestClient.get(url_plus_params, headers)
 
           parse_response(resp, options)
         
@@ -70,10 +78,10 @@ module SimpleWorker
 
       def post_file(method, file, params={}, options={})
         begin
-          params.delete("runtime")
-          params["runtime"]='ruby'
-          params.delete("file_name")
-          params["file_name"] = "runner.rb"
+          #params.delete("runtime")
+          #params["runtime"]='ruby'
+          #params.delete("file_name")
+          #params["file_name"] = "runner.rb"
           data = add_params(method, params).to_json
           @logger.debug "data = " + data
           @logger.debug "params = " + params.inspect
@@ -121,11 +129,6 @@ module SimpleWorker
         end
       end
 
-      def url(command_path)
-        url = host + command_path
-        url
-      end
-
       def add_params(command_path, hash)
         v = version || "2.0"
         ts = SimpleWorker::Api::Signatures.generate_timestamp(Time.now.gmtime)
@@ -137,7 +140,7 @@ module SimpleWorker
         host += "?"
         i = 0
         params.each_pair do |k, v|
-          puts "k=#{k} v=#{v}"
+          #puts "k=#{k} v=#{v}"
           host += "&" if i > 0
           host += k + "=" + (v.is_a?(String) ? CGI.escape(v) : v.to_s)
           i +=1

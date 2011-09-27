@@ -11,8 +11,9 @@ module SimpleWorker
   # for you before running your worker.
   class Config
     attr_accessor :token,
-        :project_id,
+                  :project_id,
                   :host,
+                  :port,
                   :global_attributes,
                   :models,
                   :mailers,

@@ -19,7 +19,7 @@ class TestBase < Test::Unit::TestCase
 
   def setup
     @config = YAML::load_file("config.yml")
-    #puts @config.inspect
+    puts @config.inspect
     @token = @config['simple_worker']['token']
     @project_id = @config['simple_worker']['project_id']
 
@@ -28,6 +28,7 @@ class TestBase < Test::Unit::TestCase
       config.token = @token
       config.project_id = @project_id
       config.host = @config['simple_worker']['host']
+      config.port = @config['simple_worker']['port']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
     end
