@@ -361,6 +361,11 @@ end
       if !data.is_a?(Array)
         data = [data]
       end
+      # Now we need to add class_name to the payload
+      data.each do |d|
+        d['class_name'] = class_name
+        d['access_key'] = class_name
+      end
       name = options[:name] || class_name
       hash_to_send = {}
       hash_to_send["payload"] = data
