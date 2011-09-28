@@ -1,5 +1,3 @@
-gem 'test-unit'
-require 'test/unit'
 require_relative 'test_base'
 require 'active_record'
 require_relative 'cool_worker'
@@ -21,6 +19,7 @@ class SimpleWorkerTests < TestBase
         response_hash_single = tw.queue
       rescue => ex
         puts ex.message
+        raise ex
       end
     end
 

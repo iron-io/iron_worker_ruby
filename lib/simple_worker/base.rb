@@ -151,6 +151,7 @@ module SimpleWorker
       # puts 'run_local'
       set_auto_attributes
       init_database
+	  init_mailer
       begin
         run
       rescue => ex
@@ -159,6 +160,14 @@ module SimpleWorker
         else
           raise ex
         end
+      end
+    end
+
+	def init_mailer
+      if SimpleWorker.config.mailer
+        require 'action_mailer'
+         ActionMailer::Base.raise_delivery_errors = true
+         ActionMailer::Base.smtp_settings = (SimpleWorker.config.mailer)
       end
     end
 
@@ -338,7 +347,7 @@ module SimpleWorker
       SimpleWorker.logger.debug "Looking for merged_workers in #{worker.class.name}: #{merged_workers.inspect}"
       ret = {}
       if merged_workers && merged_workers.size > 0
-        merged_workers.each do |mw|
+        merged_workers.each_pair do |k, mw|
           SimpleWorker.logger.debug "merged worker found in #{worker.class.name}: #{mw.inspect}"
           ret[mw[:name]] = mw
         end
@@ -380,7 +389,7 @@ module SimpleWorker
 
         merged, rfile, subclass = SimpleWorker::Base.extract_superclasses_merges(self, merged)
 #if SimpleWorker.config.auto_merge
-        puts "Auto merge Enabled"
+#        puts "Auto merge Enabled"
 #if SimpleWorker.config.models
 #  SimpleWorker.config.models.each do |m|
 #    merged[m] = m

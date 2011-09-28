@@ -1,0 +1,13 @@
+simple_worker:
+   access_key: MY_ACCESS_KEY
+   secret_key: MY_SECRET_KEY
+
+database:
+    adapter: mysql2
+    host: ec2-ABC.compute-1.amazonaws.com
+    port: 3062
+    database: MY_DB
+    username: MY_USER
+    password: MY_PASS
+
+

@@ -1,12 +1,3 @@
-KNOWN ISSUES IN NEW VERSION
-=====
-
-- Cancel chain will not work because we don't have parent task it. Do we need it though?
-We could just allow kill all by class name and that would be sufficient? (see runner.rb add_sw_params)
-
-
-
-
 Getting Started
 ===============
 
@@ -272,6 +263,23 @@ You could easily merge mailers you're using in your application.
 
 if you already set auto_merge=true all your mailers already merged.
 
+Configuring a Mailer Connection
+
+If you are using Rails 3,your action_mailer connection would be configured automatically from your config
+
+For non Rails 3 or if you want to use different mailer configs, you should add the following to your SimpleWorker config:
+
+    config.mailer = {
+        :address => "smtp.gmail.com",
+        :port => 587,
+        :domain => 'gmail.com',
+        :user_name => GMAIL_USERNAME
+        :password => GMAIL_PASSWORD
+        :authentication => 'plain',
+        :enable_starttls_auto => true}
+
+Then before you job is run, SimpleWorker will establish the ActionMailer connection.
+
 Merging Gems
 ---------------------
 
@@ -288,6 +296,18 @@ This allows you to use any gem you'd like with SimpleWorker. This uses the same 
 
 
 [Check here for more info on merge_gem](http://support.simpleworker.com/kb/working-with-simpleworker/merging-gems-into-your-worker).
+
+
+Job Timeout
+--------------
+
+By default, each job has 60 minutes (3600 seconds to complete). If you know that your job should take less than that, you can specify a timeout explicitly:
+
+    worker.queue(:timeout=>1800)
+
+This will kill your job if it is running more than 1800 seconds, or half an hour.
+
+
 
 Global Merging
 --------------

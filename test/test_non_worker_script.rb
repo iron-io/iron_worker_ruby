@@ -1,8 +1,5 @@
 # This is a test for running a simple ruby script, not using the Base class.
-
-gem 'test/unit'
-require 'test/unit'
-require 'test_base'
+require_relative 'test_base'
 
 class ScriptTest < TestBase
 

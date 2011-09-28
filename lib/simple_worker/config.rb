@@ -19,6 +19,7 @@ module SimpleWorker
                   :mailers,
                   #:gems, # todo: move anything that uses this to merged_gems
                   :database,
+                  :mailer,
                   :extra_requires,
                   #:auto_merge,
                   :server_gems,
@@ -70,6 +71,10 @@ module SimpleWorker
             c2.database = Rails.configuration.database_configuration[Rails.env]
           else
             #puts 'NOT DOING ACTIVERECORD'
+          end
+
+          if defined?(ActionMailer) && ActionMailer::Base.smtp_settings
+            c2.mailer = ActionMailer::Base.smtp_settings
           end
           c2.merged_gems.merge!(get_required_gems) if defined?(Bundler)
           SimpleWorker.logger.debug "MODELS " + c2.models.inspect
@@ -147,6 +152,7 @@ module SimpleWorker
       config_data['token'] = token
       config_data['project_id'] = project_id
       config_data['database'] = self.database if self.database
+      config_data['mailer'] = self.mailer if self.mailer
       config_data['global_attributes'] = self.global_attributes if self.global_attributes
       config_data['host'] = self.host if self.host
       config_data
@@ -225,13 +231,14 @@ module SimpleWorker
       gem_info = {:name=>gem_name, :merge=>true}
       if options.is_a?(Hash)
         gem_info.merge!(options)
+        if options[:include_dirs]
+          gem_info[:include_dirs] = options[:include_dirs].is_a?(Array) ? options[:include_dirs] : [options[:include_dirs]]
+        end
       else
         gem_info[:version] = options
       end
       gem_info[:require] ||= gem_name
-      if options[:include_dirs]
-        gem_info[:include_dirs] = options[:include_dirs].is_a?(Array) ? options[:include_dirs] : [options[:include_dirs]]
-      end
+
       path = SimpleWorker::Service.get_gem_path(gem_info)
       SimpleWorker.logger.debug "Gem path=#{path}"
       if !path

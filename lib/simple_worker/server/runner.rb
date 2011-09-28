@@ -12,6 +12,18 @@ def init_database_connection(sw_config)
   end
 end
 
+def init_mailer(sw_config)
+  if sw_config
+    mailer_config = sw_config['mailer']
+    if mailer_config
+      require 'action_mailer'
+       ActionMailer::Base.raise_delivery_errors = true
+       ActionMailer::Base.smtp_settings =  mailer_config
+       ActionMailer::Base.delivery_method = :smtp
+    end
+  end
+end
+
 def get_class_to_run(class_name)
   runner_class = constantize(class_name)
   return runner_class
@@ -57,34 +69,14 @@ def init_worker_service_for_runner(job_data)
     if db_config
       config.database = db_config
     end
+    mailer_config = sw_config['mailer']
+    if mailer_config && config.respond_to?(:mailer)
+      config.mailer = mailer_config
+    end
     config.global_attributes = sw_config['global_attributes'] if sw_config['global_attributes']
   end
 end
 
-# Find environment (-e)
-dirname = ""
-i = 0
-job_data_file = run_data_file = nil
-puts "args for single file=" + ARGV.inspect
-ARGV.each do |arg|
-  if arg == "-d"
-    # the user's writable directory
-    dirname = ARGV[i+1]
-  end
-  if arg == "-j"
-    # path to job data
-    job_data_file = ARGV[i+1]
-  end
-  if arg == "-p"
-    # path to run data
-    run_data_file = ARGV[i+1]
-  end
-  i+=1
-end
-
-# Change to user directory
-puts 'dirname=' + dirname.inspect
-Dir.chdir(dirname)
 
 run_data = JSON.load(File.open(run_data_file))
 # Load in job data
@@ -93,8 +85,8 @@ job_data.merge!(run_data)
 puts 'job_data=' + job_data.inspect
 
 sw_config = job_data['sw_config']
-begin
   init_database_connection(sw_config)
+  init_mailer(sw_config)
   SimpleWorker.disable_queueing()
   runner_class = get_class_to_run(job_data['class_name'])
   SimpleWorker.running_class = runner_class
@@ -104,7 +96,3 @@ begin
 
 # Let's run it!
   runner_return_data = runner.run
-rescue Exception => ex
-  $stderr.puts "_error_from_sw_"
-  raise ex
-end
