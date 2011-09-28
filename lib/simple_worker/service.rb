@@ -93,7 +93,6 @@ module SimpleWorker
         gem = gems.first
         gem.full_gem_path
       else
-        SimpleWorker.logger.warn "Gem file was not found for #{gem_name}, continuing anyways."
         return nil
       end
     end
@@ -254,7 +253,7 @@ end
           merged_gems.each_pair do |k, gem|
             next unless gem[:merge]
 #            puts 'gem=' + gem.inspect
-            path = gem[:path] # get_gem_path(gem)
+            path = gem[:path]
             if path
               SimpleWorker.logger.debug "Collecting gem #{path}"
               paths_to_use = ["#{path}/*", "#{path}/lib/**/**"]

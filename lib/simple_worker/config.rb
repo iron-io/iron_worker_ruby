@@ -131,6 +131,8 @@ module SimpleWorker
 #              gem_info[:no_require] = true
             end
           end
+        else
+           SimpleWorker.logger.warn "Could not find '#{gem_info[:name]}' specified in Bundler, continuing anyways."
         end
 #        else
 #          SimpleWorker.logger.warn "Could not find gem spec for #{gem_info[:name]}"
@@ -242,7 +244,7 @@ module SimpleWorker
       path = SimpleWorker::Service.get_gem_path(gem_info)
       SimpleWorker.logger.debug "Gem path=#{path}"
       if !path
-        raise "Gem path not found for #{gem_name}"
+        raise "Gem '#{gem_name}' not found."
       end
       gem_info[:path] = path
       gem_info
