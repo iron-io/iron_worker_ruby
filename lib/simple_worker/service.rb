@@ -131,7 +131,7 @@ module SimpleWorker
 dirname = ''
 i = 0
 job_data_file = run_data_file = nil
-puts \"args for single file=\" + ARGV.inspect
+#puts \"args for single file=\" + ARGV.inspect
 ARGV.each do |arg|
   if arg == \"-d\"
     # the user's writable directory
@@ -149,7 +149,7 @@ ARGV.each do |arg|
 end
 
 # Change to user directory
-puts 'dirname=' + dirname.inspect
+#puts 'dirname=' + dirname.inspect
 Dir.chdir(dirname)
 ")
 
