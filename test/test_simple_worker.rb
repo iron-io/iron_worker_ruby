@@ -35,11 +35,7 @@ class SimpleWorkerTests < TestBase
 
     response_hash_single = nil
     5.times do |i|
-      begin
         response_hash_single = tw.queue
-      rescue => ex
-        puts ex.message
-      end
     end
 
     puts 'response_hash=' + response_hash_single.inspect
@@ -50,6 +46,7 @@ class SimpleWorkerTests < TestBase
       sleep 2
     end
 
+    puts 'LOG=' + tw.get_log
     assert tw.status["status"] == "complete"
 
   end

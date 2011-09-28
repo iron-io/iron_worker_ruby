@@ -1,4 +1,4 @@
-#bump.
+#bump....
 require_relative 'test_worker_2'
 
 class TestWorker3 < TestWorker2

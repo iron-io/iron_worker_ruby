@@ -1,5 +1,4 @@
-
-# Bump....
+# Bump.......
 class TestWorker2 < SimpleWorker::Base
 
     merge File.join(File.dirname(__FILE__), 'models', 'model_1.rb')
