@@ -349,7 +349,7 @@ end
     end
 
     def project_url_prefix(project_id = 0)
-      SimpleWorker.logger.info "project_url_prefix, project_id = " + project_id.inspect
+      # SimpleWorker.logger.info "project_url_prefix, project_id = " + project_id.inspect
       if project_id == 0
         return false
         project_id = config.project_id

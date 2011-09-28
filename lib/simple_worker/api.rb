@@ -44,7 +44,7 @@ module SimpleWorker
 
       def url(command_path)
         url = "http://#{host}:#{port}/#{@version}/#{command_path}"
-        @logger.debug "url: " + url.to_s
+        # @logger.debug "url: " + url.to_s
         url
       end
 

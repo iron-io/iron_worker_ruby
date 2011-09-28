@@ -82,7 +82,7 @@ run_data = JSON.load(File.open(run_data_file))
 # Load in job data
 job_data = JSON.load(File.open(job_data_file))
 job_data.merge!(run_data)
-puts 'job_data=' + job_data.inspect
+SimpleWorker.logger.debug 'job_data=' + job_data.inspect
 
 sw_config = job_data['sw_config']
   init_database_connection(sw_config)
