@@ -175,18 +175,9 @@ module SimpleWorker
     end
 
     def add_sw_params(hash_to_send)
-      hash_to_send["sw_access_key"] = self.access_key
-      hash_to_send["sw_secret_key"] = self.secret_key
+      hash_to_send["token"] = self.config['token']
+      hash_to_send["project_id"] = self.config['project_id']
       hash_to_send["api_version"] = SimpleWorker.api_version
-      #if defined?(SimpleWorker::SingleRunner)
-      #  #puts "IN SINGLE RUNNER"
-      #  runners = ObjectSpace.each_object(SimpleWorker::SingleRunner)
-      #  if runners
-      #    single_runner = runners.first
-      #    #puts "PUTTING PARENT TASK ID #{single_runner.instance_variable_get(:@parent_task_id)|| single_runner.instance_variable_get(:@task_id)}"
-      #    hash_to_send["sw_parent_task_id"] =single_runner.instance_variable_get(:@parent_task_id)|| single_runner.instance_variable_get(:@task_id)
-      #  end
-      #end
     end
   end
 
