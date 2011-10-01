@@ -22,7 +22,7 @@ module SimpleWorker
       end
       options[:version] = SimpleWorker.api_version
       options[:logger] = SimpleWorker.logger
-      super("api2.simpleworker.com", token, options)
+      super("tq-aws-us-east-1.iron.io", token, options)
       self.host = self.config.host if self.config && self.config.host
       self.config.merge_gem('simple_worker')#automerge simple worker gem
       SimpleWorker.logger.info 'SimpleWorker initialized.'
