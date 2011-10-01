@@ -1,4 +1,4 @@
-
+# bump..
 class GemDependencyWorker < SimpleWorker::Base
 
   merge_gem "signature"

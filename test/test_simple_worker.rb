@@ -21,21 +21,21 @@ class SimpleWorkerTests < TestBase
     tw.times = 3
     tw.x = true
 
-      # schedule up a task
-      #        start_at = 10.seconds.since
-      #        response_hash_single = tw.schedule(:start_at=>start_at, :run_every=>30, :run_times=>3)
-      #        puts 'response_hash=' + response_hash_single.inspect
-      #
-      #        10.times do |i|
-      #            puts "status #{i}: " + tw.schedule_status.inspect
-      #        end
+    # schedule up a task
+    #        start_at = 10.seconds.since
+    #        response_hash_single = tw.schedule(:start_at=>start_at, :run_every=>30, :run_times=>3)
+    #        puts 'response_hash=' + response_hash_single.inspect
+    #
+    #        10.times do |i|
+    #            puts "status #{i}: " + tw.schedule_status.inspect
+    #        end
 
-      # queue up a task
+    # queue up a task
     puts 'queuing ' + tw.inspect
 
     response_hash_single = nil
     5.times do |i|
-        response_hash_single = tw.queue
+      response_hash_single = tw.queue
     end
 
     puts 'response_hash=' + response_hash_single.inspect
@@ -76,6 +76,21 @@ class SimpleWorkerTests < TestBase
 
   end
 
+  def test_set_progress
+    worker = TestWorker.new
+    worker.s3_key = "abc"
+    worker.times = 10
+    worker.queue
+    status = worker.wait_until_complete
+    p status
+    log = worker.get_log
+    puts 'log: ' + log
+    assert log.include?("running at 5")
+    assert status["status"] == "complete"
+    assert status["percent"] > 0
+
+  end
+
   def test_exceptions
     worker = TestWorker.new
     worker.queue
@@ -83,7 +98,6 @@ class SimpleWorkerTests < TestBase
     assert status["status"] == "error"
     assert status["msg"].present?
   end
-
 
 
   def test_require_relative_merge

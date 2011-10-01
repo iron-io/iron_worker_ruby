@@ -175,8 +175,8 @@ module SimpleWorker
     end
 
     def add_sw_params(hash_to_send)
-      hash_to_send["token"] = self.config['token']
-      hash_to_send["project_id"] = self.config['project_id']
+      hash_to_send["token"] = self.config.token
+      hash_to_send["project_id"] = self.config.project_id
       hash_to_send["api_version"] = SimpleWorker.api_version
     end
   end

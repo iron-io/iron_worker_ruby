@@ -1,4 +1,4 @@
-
+# bump..
 class CoolWorker < SimpleWorker::Base
   attr_accessor :array_of_models
   merge 'cool_model'

@@ -26,7 +26,8 @@ module SimpleWorker
                   :merged,
                   :unmerged,
                   :merged_gems,
-                  :unmerged_gems
+                  :unmerged_gems,
+        :force_upload
 
 
     def initialize
@@ -157,6 +158,7 @@ module SimpleWorker
       config_data['mailer'] = self.mailer if self.mailer
       config_data['global_attributes'] = self.global_attributes if self.global_attributes
       config_data['host'] = self.host if self.host
+      config_data['port'] = self.port if self.port
       config_data
     end
 

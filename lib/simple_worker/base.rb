@@ -378,34 +378,17 @@ module SimpleWorker
         end
       end
 
-#      puts 'upload_if_needed ' + self.class.name
-# Todo, watch for this file changing or something so we can reupload (if in dev env)
-      unless uploaded?
+      if !uploaded?
         unmerged = self.class.instance_variable_get(:@unmerged)
         merged_gems = self.class.instance_variable_get(:@merged_gems)
         merged_mailers = self.class.instance_variable_get(:@merged_mailers)
         merged_folders = self.class.instance_variable_get(:@merged_folders)
-#        puts 'merged1=' + merged.inspect
-
         merged, rfile, subclass = SimpleWorker::Base.extract_superclasses_merges(self, merged)
-#if SimpleWorker.config.auto_merge
-#        puts "Auto merge Enabled"
-#if SimpleWorker.config.models
-#  SimpleWorker.config.models.each do |m|
-#    merged[m] = m
-#  end
-#end
         merged_mailers = merged_mailers.merge(SimpleWorker.config.mailers) if SimpleWorker.config.mailers
-#SimpleWorker.config.gems.each do |gem|
-#  merged_gems[gem[:name]] = gem
-#end
-#end
         unless merged_gems.size == 0
           merged_gems = gems_to_merge(merged_gems)
-          #merged_gems.uniq!
         end
-#merged.uniq!
-#        merged_mailers.uniq!
+
         options_for_upload = {:merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers, :merged_folders=>merged_folders}
         options_for_upload.merge!(options)
         SimpleWorker.service.upload(rfile, subclass.name, options_for_upload)
@@ -413,7 +396,6 @@ module SimpleWorker
       else
         SimpleWorker.logger.debug 'Already uploaded for ' + self.class.name
       end
-
 
       after_upload
     end

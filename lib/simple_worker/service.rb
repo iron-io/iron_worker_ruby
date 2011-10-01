@@ -46,7 +46,7 @@ module SimpleWorker
 # Check for code changes.
       md5 = Digest::MD5.hexdigest(File.read(filename))
       new_code = false
-      if md5 != existing_md5
+      if self.config.force_upload || md5 != existing_md5
         SimpleWorker.logger.info "Uploading #{class_name}, code modified."
         File.open(md5_f, 'w') { |f| f.write(md5) }
         new_code = true
@@ -420,7 +420,7 @@ end
       hash_to_send["class_name"] = class_name unless hash_to_send["class_name"]
       hash_to_send["name"] = class_name unless hash_to_send["name"]
       uri = project_url_prefix(get_project_id(options)) + "jobs"
-      SimpleWorker.logger.info 'queue_raw , uri = ' + uri
+      SimpleWorker.logger.debug 'queue_raw , uri = ' + uri
       ret = post(uri, hash_to_send)
       ret
     end
@@ -523,10 +523,10 @@ end
       ret
     end
 
-    # data is a hash, should include 'percent' and 'message'
-    def set_progress(task_id, data)
-      data={"data"=>data, "task_id"=>task_id}
-      post("task/setstatus", data)
+    # data is a hash, should include 'percent' and 'msg'
+    def set_progress(task_id, options={})
+      #data={"data"=>data, "task_id"=>task_id}
+      post("#{project_url_prefix(get_project_id(options))}jobs/#{task_id}/progress", options)
     end
 
 

@@ -65,7 +65,7 @@ def init_worker_service_for_runner(job_data)
     config.project_id = sw_config['project_id']
     #puts 'Setting host to ' + host.inspect
     config.host = sw_config['host'] if sw_config['host']
-    config.host = sw_config['port'] if sw_config['port']
+    config.port = sw_config['port'] if sw_config['port']
     db_config = sw_config['database']
     if db_config
       config.database = db_config

@@ -1,8 +1,11 @@
-require 'mysql2'
-require 'active_record'
 # bump..........
+
+require 'mysql2'
+
 class DbWorker < SimpleWorker::Base
+  merge_gem 'active_record'
   merge 'db_model'
+
 
   def run
 

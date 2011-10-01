@@ -5,7 +5,6 @@ begin
   require File.join(File.dirname(__FILE__), '../lib/simple_worker')
 rescue Exception => ex
   puts "Could NOT load current simple_worker: " + ex.message
-  #require 'simple_worker'
   raise ex
 end
 
@@ -31,6 +30,7 @@ class TestBase < Test::Unit::TestCase
       config.port = @config['simple_worker']['port']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
+      config.force_upload = true
     end
   end
 
