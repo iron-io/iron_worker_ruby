@@ -24,6 +24,7 @@ module SimpleWorker
       options[:logger] = SimpleWorker.logger
       super("api2.simpleworker.com", token, options)
       self.host = self.config.host if self.config && self.config.host
+      self.config.merge_gem('simple_worker')#automerge simple worker gem
       SimpleWorker.logger.info 'SimpleWorker initialized.'
       SimpleWorker.logger.debug ' host = ' + self.host.inspect
     end
@@ -90,7 +91,7 @@ module SimpleWorker
       SimpleWorker.logger.debug 'gems found=' + gems.inspect
       gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
-        gem = gems.first
+        gem = gems.last
         gem.full_gem_path
       else
         return nil
