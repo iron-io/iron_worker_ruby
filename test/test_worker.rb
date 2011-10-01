@@ -1,4 +1,4 @@
-# Bump....
+# Bump...............
 class TestWorker < SimpleWorker::Base
 
     attr_accessor :s3_key, :times
@@ -10,7 +10,7 @@ class TestWorker < SimpleWorker::Base
         @times.times do |i|
             log 'running at ' + i.to_s
             sleep 1
-            set_progress(:percent=> (i / @times * 100))
+            set_progress(:percent=> (1.0 * i / @times * 100).round, :msg=>"getting there...")
         end
     end
 

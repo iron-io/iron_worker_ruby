@@ -1,4 +1,4 @@
-# Bump.......
+# Bump..................
 class TestWorker2 < SimpleWorker::Base
 
     merge File.join(File.dirname(__FILE__), 'models', 'model_1.rb')
@@ -9,7 +9,6 @@ class TestWorker2 < SimpleWorker::Base
     attr_accessor :s3_key, :times, :x
 
 
-    #TEST dsd
     def who_am_i2?
         return self.class.name
     end
@@ -29,20 +28,20 @@ class TestWorker2 < SimpleWorker::Base
 
         second_workers = []
         now = Time.now
-        10.times do |i|
-            second_worker = SecondWorker.new
-            second_worker.start_time = now
-            second_worker.num = i
-            second_worker.queue
-            second_workers << second_worker
-        end
-
-        10.times do |i|
-            second_workers.each do |sw|
-                puts sw.to_s
-                puts sw.status["status"].to_s
-            end
-        end
+        #10.times do |i|
+        #    second_worker = SecondWorker.new
+        #    second_worker.start_time = now
+        #    second_worker.num = i
+        #    second_worker.queue
+        #    second_workers << second_worker
+        #end
+        #
+        #10.times do |i|
+        #    second_workers.each do |sw|
+        #        puts sw.to_s
+        #        puts sw.status["status"].to_s
+        #    end
+        #end
     end
 
     def set_complete(params=nil)
