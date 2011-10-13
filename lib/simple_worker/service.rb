@@ -125,6 +125,11 @@ module SimpleWorker
       #tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
       tmp_file = File.join(Dir.tmpdir(), 'runner.rb')
       File.open(tmp_file, "w") do |f|
+        File.open(File.join(File.dirname(__FILE__), "server", 'runner.rb'), 'r') do |fr|
+          while line = fr.gets
+            f.write line
+          end
+        end
         f.write("begin\n")#error handling block start
         f.write("
 # Find environment (-e)
@@ -147,12 +152,44 @@ ARGV.each do |arg|
   end
   i+=1
 end
+require 'json'
 
+")
+        # require merged gems
+         merged_gems.each_pair do |k, gem|
+          SimpleWorker.logger.debug "Bundling gem #{gem[:name]}..."
+          if gem[:merge]
+            f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
+          end
+#              unless gem[:no_require]
+          SimpleWorker.logger.debug 'writing requires: ' + gem[:require].inspect
+          if gem[:require].nil?
+            gem[:require] = []
+          elsif gem[:require].is_a?(String)
+            gem[:require] = [gem[:require]]
+          end
+          SimpleWorker.logger.debug "gem[:require]: " + gem[:require].inspect
+          gem[:require].each do |r|
+            SimpleWorker.logger.debug 'adding require to file ' + r.to_s
+            f.write "require '#{r}'\n"
+          end
+#              end
+         end
+
+        # load job data
+f.write("
 # Change to user directory
 #puts 'dirname=' + dirname.inspect
 Dir.chdir(dirname)
+run_data = JSON.load(File.open(run_data_file))
+# Load in job data
+job_data = JSON.load(File.open(job_data_file))
+job_data.merge!(run_data)
+#puts 'job_data=' + job_data.inspect
+sw_config = job_data['sw_config']
+init_database_connection(sw_config)
+init_mailer(sw_config)
 ")
-
 
         f.write("require 'simple_worker'\n")
 
@@ -180,25 +217,6 @@ end
           f.write "ActionMailer::Base.prepend_view_path('templates')\n"
         end
         #if SimpleWorker.config.auto_merge
-        merged_gems.each_pair do |k, gem|
-          SimpleWorker.logger.debug "Bundling gem #{gem[:name]}..."
-          if gem[:merge]
-            f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
-          end
-#              unless gem[:no_require]
-          SimpleWorker.logger.debug 'writing requires: ' + gem[:require].inspect
-          if gem[:require].nil?
-            gem[:require] = []
-          elsif gem[:require].is_a?(String)
-            gem[:require] = [gem[:require]]
-          end
-          SimpleWorker.logger.debug "gem[:require]: " + gem[:require].inspect
-          gem[:require].each do |r|
-            SimpleWorker.logger.debug 'adding require to file ' + r.to_s
-            f.write "require '#{r}'\n"
-          end
-#              end
-        end
 
         if SimpleWorker.config.extra_requires
           SimpleWorker.config.extra_requires.each do |r|
@@ -224,11 +242,20 @@ end
         #f.write File.open(filename, 'r') { |mo| mo.read }
         f.write("require_relative '#{File.basename(filename)}'")
 
-        File.open(File.join(File.dirname(__FILE__), "server", 'runner.rb'), 'r') do |fr|
-          while line = fr.gets
-            f.write line
-          end
-        end
+
+
+        f.write("
+  SimpleWorker.disable_queueing()
+  runner_class = get_class_to_run(job_data['class_name'])
+  SimpleWorker.running_class = runner_class
+  runner = init_runner(runner_class, job_data, dirname)
+  init_worker_service_for_runner(job_data)
+  SimpleWorker.enable_queueing()
+
+# Let's run it!
+  runner_return_data = runner.run
+")
+
         #error handling block - end
         f.write("\nrescue Exception => ex
                 $stderr.puts '_error_from_sw_'

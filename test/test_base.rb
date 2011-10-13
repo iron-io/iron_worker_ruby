@@ -17,8 +17,9 @@ require_relative "test_worker_3"
 class TestBase < Test::Unit::TestCase
 
   def setup
-    @config = YAML::load_file(File.join(File.dirname(__FILE__), "config.yml"))
-    puts @config.inspect
+    @config = YAML::load_file(File.expand_path(File.join("~", "Dropbox", "configs", "simple_worker_gem", "test", "config.yml")))
+#    @config = YAML::load_file(File.join(File.dirname(__FILE__), "config.yml"))
+    puts "config: " + @config.inspect
     @token = @config['simple_worker']['token']
     @project_id = @config['simple_worker']['project_id']
 

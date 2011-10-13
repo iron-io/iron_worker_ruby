@@ -1,6 +1,5 @@
 # This is the file that gets executed on the server.
 
-
 def init_database_connection(sw_config)
   if sw_config
     db_config = sw_config['database']
@@ -78,22 +77,3 @@ def init_worker_service_for_runner(job_data)
   end
 end
 
-# SimpleWorker.logger.level ==  Logger::DEBUG
-run_data = JSON.load(File.open(run_data_file))
-# Load in job data
-job_data = JSON.load(File.open(job_data_file))
-job_data.merge!(run_data)
-SimpleWorker.logger.debug 'job_data=' + job_data.inspect
-
-sw_config = job_data['sw_config']
-init_database_connection(sw_config)
-init_mailer(sw_config)
-SimpleWorker.disable_queueing()
-runner_class = get_class_to_run(job_data['class_name'])
-SimpleWorker.running_class = runner_class
-runner = init_runner(runner_class, job_data, dirname)
-init_worker_service_for_runner(job_data)
-SimpleWorker.enable_queueing()
-
-# Let's run it!
-runner_return_data = runner.run

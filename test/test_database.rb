@@ -20,7 +20,9 @@ class SimpleWorkerTests < TestBase
 
     status = wait_for_task(dbw)
     puts 'status: ' + status.inspect
-    puts 'log=' + dbw.get_log
+    puts "\n\n\nLOG START:"
+    puts dbw.get_log
+    puts "LOG END\n\n\n"
     assert status["status"] == "complete"
 
 
