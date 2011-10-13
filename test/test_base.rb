@@ -26,8 +26,8 @@ class TestBase < Test::Unit::TestCase
     SimpleWorker.configure do |config|
       config.token = @token
       config.project_id = @project_id
-      config.host = @config['simple_worker']['host']
-      config.port = @config['simple_worker']['port']
+      config.host = @config['simple_worker']['host'] if @config['simple_worker']['host']
+      config.port = @config['simple_worker']['port'] if @config['simple_worker']['port']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
       config.force_upload = true

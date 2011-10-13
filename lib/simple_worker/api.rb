@@ -73,10 +73,12 @@ module SimpleWorker
       def post_file(method, file, params={}, options={})
         begin
           data = add_params(method, params).to_json
+          url = url(method) + "?oauth=" + token
+          @logger.debug "post_file url = " + url
           @logger.debug "data = " + data
           @logger.debug "params = " + params.inspect
           @logger.debug "options = " + options.inspect
-          parse_response RestClient.post(url(method) + "?oauth=" + token, {:data => data, :file => file}, :content_type => 'application/json', :accept => :json), options
+          parse_response RestClient.post(url, {:data => data, :file => file}, :content_type => 'application/json', :accept => :json), options
             #parse_response(RestClient.post(append_params(url(method), add_params(method, params)), {:data => data, :file => file}, :content_type => 'application/json'), options)
         rescue RestClient::Exception => ex
           process_ex(ex)

@@ -343,7 +343,7 @@ end
       }
       #puts 'options for upload=' + options.inspect
       SimpleWorker.logger.info "Uploading now..."
-      ret = post_file("#{project_url_prefix(get_project_id(options))}workers", File.new(package_file), options)
+      ret = post_file("#{project_url_prefix(get_project_id(options))}codes", File.new(package_file), options)
       SimpleWorker.logger.info "Done uploading."
       return ret
     end
@@ -420,7 +420,7 @@ end
       hash_to_send = data
       hash_to_send["class_name"] = class_name unless hash_to_send["class_name"]
       hash_to_send["name"] = class_name unless hash_to_send["name"]
-      uri = project_url_prefix(get_project_id(options)) + "jobs"
+      uri = project_url_prefix(get_project_id(options)) + "tasks"
       SimpleWorker.logger.debug 'queue_raw , uri = ' + uri
       ret = post(uri, hash_to_send)
       ret
@@ -480,9 +480,9 @@ end
       ret
     end
 
-    def get_workers(options={})
+    def get_codes(options={})
       hash_to_send = {}
-      uri = "projects/" + get_project_id(options) + "/workers/"
+      uri = "projects/" + get_project_id(options) + "/codes/"
       ret = get(uri, hash_to_send)
       ret
     end
@@ -496,7 +496,7 @@ end
 
     def get_jobs(options={})
       hash_to_send = {}
-      uri = "projects/" + get_project_id(options) + "/jobs/"
+      uri = "projects/" + get_project_id(options) + "/tasks/"
       ret = get(uri, hash_to_send)
       ret
     end
@@ -507,14 +507,14 @@ end
 
     def log(task_id, options={})
       data = {}
-      ret = get("#{project_url_prefix(get_project_id(options))}jobs/#{task_id}/log", data, :parse=>false)
+      ret = get("#{project_url_prefix(get_project_id(options))}tasks/#{task_id}/log", data, :parse=>false)
       ret
     end
 
 
     def status(task_id, options={})
       data = {"task_id"=>task_id}
-      ret = get("#{project_url_prefix(get_project_id(options))}jobs/#{task_id}", data)
+      ret = get("#{project_url_prefix(get_project_id(options))}tasks/#{task_id}", data)
       ret
     end
 
@@ -527,7 +527,7 @@ end
     # data is a hash, should include 'percent' and 'msg'
     def set_progress(task_id, options={})
       #data={"data"=>data, "task_id"=>task_id}
-      post("#{project_url_prefix(get_project_id(options))}jobs/#{task_id}/progress", options)
+      post("#{project_url_prefix(get_project_id(options))}tasks/#{task_id}/progress", options)
     end
 
 
