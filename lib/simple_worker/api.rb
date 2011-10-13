@@ -39,11 +39,12 @@ module SimpleWorker
         @token = token
         @version = options[:version]
         @logger = options[:logger]
+        @scheme = options[:scheme] || "https"
 
       end
 
       def url(command_path)
-        url = "http://#{host}:#{port}/#{@version}/#{command_path}"
+        url = "#{@scheme}://#{host}:#{port}/#{@version}/#{command_path}"
         # @logger.debug "url: " + url.to_s
         url
       end
