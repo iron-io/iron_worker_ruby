@@ -135,25 +135,20 @@ module SimpleWorker
 # Find environment (-e)
 dirname = ''
 i = 0
-job_data_file = run_data_file = nil
+task_data_file = nil
 #puts \"args for single file=\" + ARGV.inspect
 ARGV.each do |arg|
   if arg == \"-d\"
     # the user's writable directory
     dirname = ARGV[i+1]
   end
-  if arg == \"-j\"
+  if arg == \"-t\"
     # path to job data
-    job_data_file = ARGV[i+1]
-  end
-  if arg == \"-p\"
-    # path to run data
-    run_data_file = ARGV[i+1]
+    task_data_file = ARGV[i+1]
   end
   i+=1
 end
 require 'json'
-
 ")
         # require merged gems
          merged_gems.each_pair do |k, gem|
@@ -181,10 +176,8 @@ f.write("
 # Change to user directory
 #puts 'dirname=' + dirname.inspect
 Dir.chdir(dirname)
-run_data = JSON.load(File.open(run_data_file))
 # Load in job data
-job_data = JSON.load(File.open(job_data_file))
-job_data.merge!(run_data)
+job_data = JSON.load(File.open(task_data_file))
 #puts 'job_data=' + job_data.inspect
 sw_config = job_data['sw_config']
 init_database_connection(sw_config)
@@ -192,7 +185,6 @@ init_mailer(sw_config)
 ")
 
         f.write("require 'simple_worker'\n")
-
 
         # add some rails stuff if using Rails
         if defined?(Rails)

@@ -29,6 +29,7 @@ class TestBase < Test::Unit::TestCase
       config.project_id = @project_id
       config.host = @config['simple_worker']['host'] if @config['simple_worker']['host']
       config.port = @config['simple_worker']['port'] if @config['simple_worker']['port']
+      config.scheme = @config['simple_worker']['scheme'] if @config['simple_worker']['scheme']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
       config.force_upload = true

@@ -33,13 +33,13 @@ module SimpleWorker
       attr_accessor :host, :port, :token, :version, :config
 
       def initialize(host, token, options={})
-        @host = host
         @config = options[:config]
+        @scheme = options[:scheme] || @config.scheme || "https"
+        @host = options[:host] || @config.host || host
         @port = options[:port] || @config.port || 80
-        @token = token
+        @token = options[:token] || @config.token || token
         @version = options[:version]
         @logger = options[:logger]
-        @scheme = options[:scheme] || "https"
 
       end
 

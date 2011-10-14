@@ -12,6 +12,7 @@ module SimpleWorker
   class Config
     attr_accessor :token,
                   :project_id,
+                :scheme,
                   :host,
                   :port,
                   :global_attributes,
