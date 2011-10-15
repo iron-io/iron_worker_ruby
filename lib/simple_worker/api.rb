@@ -93,7 +93,7 @@ module SimpleWorker
         @logger.debug "token = "+ token.inspect
         begin
           url = url(method) + "?oauth=" + token
-          @logger.warn 'post url=' + url
+          @logger.debug 'post url=' + url
           parse_response(RestClient.post(url, add_params(method, params).to_json, headers.merge!({:content_type=>'application/json', :accept => "json"})), options)
         rescue RestClient::Exception => ex
           @logger.warn("Exception in post! #{ex.message}")
