@@ -41,7 +41,7 @@ def constantize(camel_cased_word)
   constant
 end
 
-def init_runner(runner_class, job_data, user_dir)
+def init_runner(runner_class, job_data, user_dir, task_id)
   # ensure initialize takes no arguments
   init_arity = runner_class.instance_method(:initialize).arity
   if init_arity == 0 || init_arity == -1
@@ -50,6 +50,7 @@ def init_runner(runner_class, job_data, user_dir)
     raise SimpleWorker::InvalidWorkerError, "Worker initialize method must accept zero arguments."
   end
   runner = runner_class.new
+  runner.instance_variable_set(:@task_id, task_id)
   runner.instance_variable_set(:@job_data, job_data)
   runner.instance_variable_set(:@sw_config, job_data['sw_config'])
   runner.instance_variable_set(:@user_dir, user_dir)
@@ -62,7 +63,7 @@ def init_worker_service_for_runner(job_data)
     sw_config = job_data['sw_config']
     config.token = sw_config['token']
     config.project_id = sw_config['project_id']
-    #puts 'Setting host to ' + host.inspect
+    config.scheme = sw_config['scheme'] if sw_config['scheme']
     config.host = sw_config['host'] if sw_config['host']
     config.port = sw_config['port'] if sw_config['port']
     db_config = sw_config['database']

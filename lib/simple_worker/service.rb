@@ -136,13 +136,18 @@ module SimpleWorker
 dirname = ''
 i = 0
 task_data_file = nil
+task_id = nil
 #puts \"args for single file=\" + ARGV.inspect
 ARGV.each do |arg|
   if arg == \"-d\"
     # the user's writable directory
     dirname = ARGV[i+1]
   end
-  if arg == \"-t\"
+  if arg == \"-id\"
+    # task_id
+    task_id = ARGV[i+1]
+  end
+  if arg == \"-payload\"
     # path to job data
     task_data_file = ARGV[i+1]
   end
@@ -178,7 +183,7 @@ f.write("
 Dir.chdir(dirname)
 # Load in job data
 job_data = JSON.load(File.open(task_data_file))
-#puts 'job_data=' + job_data.inspect
+puts 'job_data=' + job_data.inspect
 sw_config = job_data['sw_config']
 init_database_connection(sw_config)
 init_mailer(sw_config)
@@ -240,7 +245,7 @@ end
   SimpleWorker.disable_queueing()
   runner_class = get_class_to_run(job_data['class_name'])
   SimpleWorker.running_class = runner_class
-  runner = init_runner(runner_class, job_data, dirname)
+  runner = init_runner(runner_class, job_data, dirname, task_id)
   init_worker_service_for_runner(job_data)
   SimpleWorker.enable_queueing()
 

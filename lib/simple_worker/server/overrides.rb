@@ -98,7 +98,8 @@ module SimpleWorker
     end
 
     def set_progress(hash)
-      SimpleWorker.service.set_progress(@job_data["task_id"], hash)
+      #puts 'set_progress self=' + self.inspect
+      SimpleWorker.service.set_progress(self.task_id, hash)
     end
 
     def something

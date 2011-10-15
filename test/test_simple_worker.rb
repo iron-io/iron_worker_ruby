@@ -21,15 +21,6 @@ class SimpleWorkerTests < TestBase
     tw.times = 3
     tw.x = true
 
-    # schedule up a task
-    #        start_at = 10.seconds.since
-    #        response_hash_single = tw.schedule(:start_at=>start_at, :run_every=>30, :run_times=>3)
-    #        puts 'response_hash=' + response_hash_single.inspect
-    #
-    #        10.times do |i|
-    #            puts "status #{i}: " + tw.schedule_status.inspect
-    #        end
-
     # queue up a task
     puts 'queuing ' + tw.inspect
 
@@ -40,11 +31,7 @@ class SimpleWorkerTests < TestBase
 
     puts 'response_hash=' + response_hash_single.inspect
     puts 'task_id=' + tw.task_id
-    10.times do |i|
-      puts "status #{i}: " + tw.status.inspect
-      break if tw.status["status"] == "complete"
-      sleep 2
-    end
+    status = tw.wait_until_complete
 
     puts 'LOG=' + tw.get_log
     assert tw.status["status"] == "complete"
