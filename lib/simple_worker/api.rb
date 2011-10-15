@@ -36,7 +36,7 @@ module SimpleWorker
         @config = options[:config]
         @scheme = options[:scheme] || @config.scheme || "https"
         @host = options[:host] || @config.host || host
-        @port = options[:port] || @config.port || 80
+        @port = options[:port] || @config.port || 443
         @token = options[:token] || @config.token || token
         @version = options[:version]
         @logger = options[:logger]
