@@ -12,9 +12,11 @@ class ProgressWorker < SimpleWorker::Base
         log 's3_key instance_variable = ' + self.s3_key.to_s
 
         @times.times do |i|
-            log 'running at ' + i.to_s
+            log 'loop ' + i.to_s
             sleep 1
-            set_progress(:percent=> (1.0 * i / @times * 100).round, :msg=>"getting there...")
+            progress = (1.0 * i / @times * 100).round
+            puts 'Setting progress to ' + progress.to_s
+            set_progress(:percent=> progress, :msg=>"getting there...")
         end
     end
 

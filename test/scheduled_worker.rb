@@ -7,7 +7,7 @@ end
 
 class ScheduledWorker < SimpleWorker::Base
 
-    def scheduled_run(data=nil)
+    def run
         log "This is scheduled yes it is"
         log data.inspect
     end

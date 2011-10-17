@@ -381,7 +381,7 @@ end
       "projects/#{project_id}/"
     end
 
-    def wait_until_complete(task_id)
+    def wait_until_complete(task_id, options={})
       tries = 0
       status = nil
       sleep 1
@@ -463,16 +463,15 @@ end
     def schedule(class_name, data, schedule)
       puts "Scheduling #{class_name}..."
       raise "Schedule must be a hash." if !schedule.is_a? Hash
-#            if !data.is_a?(Array)
-#                data = [data]
-#            end
       hash_to_send = {}
       hash_to_send["payload"] = data
-      hash_to_send["class_name"] = class_name
+      hash_to_send["name"] = class_name unless hash_to_send["name"]
+      hash_to_send["class_name"] = class_name unless hash_to_send["class_name"]
       hash_to_send["schedule"] = schedule
       add_sw_params(hash_to_send)
 #            puts ' about to send ' + hash_to_send.inspect
-      ret = post("scheduler/schedule", hash_to_send)
+      uri = project_url_prefix(get_project_id(data)) + "schedules"
+      ret = post(uri, hash_to_send)
       ret
     end
 
@@ -544,7 +543,7 @@ end
 
     def schedule_status(schedule_id)
       data = {"schedule_id"=>schedule_id}
-      ret = get("scheduler/status", data)
+      ret = get("#{project_url_prefix(get_project_id(options))}scheduler/status", data)
       ret
     end
 

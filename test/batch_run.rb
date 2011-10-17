@@ -8,7 +8,8 @@ class QuickRun < TestBase
 
   def test_worker
     tasks = []
-    500.times do |i|
+    100.times do |i|
+      puts "#{i}"
       worker = ProgressWorker.new
       #worker = OneLineWorker.new
       #    worker = MergingWorker.new
@@ -17,7 +18,8 @@ class QuickRun < TestBase
       tasks << worker
     end
 
-    tasks.each do |task|
+    tasks.each_with_index do |task, i|
+      puts "#{i}"
       status = task.wait_until_complete
       p status
       puts "\n\n\nLOG START:"
