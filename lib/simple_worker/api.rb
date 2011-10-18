@@ -1,6 +1,19 @@
 require 'rest_client'
+require 'patron'
 
 module SimpleWorker
+
+  class Error < StandardError
+    def initialize(msg, options={})
+      super(msg)
+      @options = options
+    end
+
+    def status
+      @options[:status]
+    end
+  end
+
   module Api
 
     module Signatures
@@ -30,7 +43,7 @@ module SimpleWorker
     #  host: endpoint url for service
     class Client
 
-      attr_accessor :host, :port, :token, :version, :config
+      attr_accessor :scheme, :host, :port, :token, :version, :config
 
       def initialize(host, token, options={})
         @config = options[:config]
@@ -41,10 +54,25 @@ module SimpleWorker
         @version = options[:version]
         @logger = options[:logger]
 
+        @base_url = "#{@scheme}://#{@host}:#{@port}/#{@version}"
+
+        sess = Patron::Session.new
+        sess.timeout = 10
+        sess.base_url = @base_url
+        sess.headers['User-Agent'] = 'IronMQ Ruby Client'
+        #sess.enable_debug "/tmp/patron.debug"
+        @http_sess = sess
+
+
+      end
+
+
+      def base_url
+        @base_url
       end
 
       def url(command_path)
-        url = "#{@scheme}://#{host}:#{port}/#{@version}/#{command_path}"
+        url = "#{base_url}/#{command_path}"
         # @logger.debug "url: " + url.to_s
         url
       end
@@ -59,15 +87,32 @@ module SimpleWorker
         raise exception
       end
 
+      def check_response(response, options={})
+        status = response.status
+        body = response.body
+        res = nil
+        unless options[:parse] == false
+          res = JSON.parse(body)
+        end
+        if status < 400
+
+        else
+          raise SimpleWorker::Error.new((res ? "#{status}: #{res["msg"]}" : "#{status} Error! parse=false so no msg"), :status=>status)
+        end
+        res || body
+      end
+
       def get(method, params={}, options={})
         full_url = url(method)
         all_params = add_params(method, params)
-
         url_plus_params = append_params(full_url, all_params)
         @logger.debug 'get url=' + url_plus_params
-        resp = RestClient.get(url_plus_params, headers)
-
-        parse_response(resp, options)
+        response = @http_sess.request(:get, url_plus_params,
+                                      {},
+                                      {})
+        check_response(response, options)
+        body = response.body
+        parse_response(body, options)
 
       end
 
@@ -79,9 +124,9 @@ module SimpleWorker
           @logger.debug "data = " + data
           @logger.debug "params = " + params.inspect
           @logger.debug "options = " + options.inspect
-          parse_response RestClient.post(url, {:data => data, :file => file}, :content_type => 'application/json', :accept => :json), options
-            #parse_response(RestClient.post(append_params(url(method), add_params(method, params)), {:data => data, :file => file}, :content_type => 'application/json'), options)
-        rescue RestClient::Exception => ex
+          # todo: replace with patron
+          parse_response(RestClient.post(append_params(url(method), add_params(method, params)), {:data => data, :file => file}, :content_type => 'application/json'), options)
+        rescue Exception => ex
           process_ex(ex)
         end
       end
@@ -94,8 +139,12 @@ module SimpleWorker
         begin
           url = url(method) + "?oauth=" + token
           @logger.debug 'post url=' + url
-          parse_response(RestClient.post(url, add_params(method, params).to_json, headers.merge!({:content_type=>'application/json', :accept => "json"})), options)
-        rescue RestClient::Exception => ex
+          response = @http_sess.post(url, add_params(method, params).to_json, {"Content-Type" => 'application/json'})
+          check_response(response)
+          @logger.debug 'response: ' + response.inspect
+          body = response.body
+          parse_response(body, options)
+        rescue Exception => ex
           @logger.warn("Exception in post! #{ex.message}")
           @logger.warn(ex.backtrace.join("\n"))
           process_ex(ex)
@@ -105,6 +154,7 @@ module SimpleWorker
 
       def put(method, body, options={})
         begin
+          # todo: replace with patron
           parse_response RestClient.put(url(method), add_params(method, body).to_json, headers), options
         rescue RestClient::Exception => ex
           process_ex(ex)
@@ -113,6 +163,7 @@ module SimpleWorker
 
       def delete(method, params={}, options={})
         begin
+          # todo: replace with patron
           parse_response RestClient.delete(append_params(url(method), add_params(method, params))), options
         rescue RestClient::Exception => ex
           process_ex(ex)
