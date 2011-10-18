@@ -412,7 +412,7 @@ end
       queue(class_name, data, options)
     end
 
-    # class_name: The class name of a previously upload class, eg: MySuperWorker
+    # name: The name of previously upload worker code, eg: MySuperWorker
     # data: Arbitrary hash of your own data that your task will need to run.
     def queue(class_name, data={}, options={})
       puts "Queuing #{class_name}..."
