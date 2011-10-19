@@ -261,9 +261,7 @@ You could easily merge mailers you're using in your application.
     #or
     merge_mailer 'mailer_file', {:path_to_templates=>"templates_path"}#if you're using mailer outside of rails with custom templates path
 
-if you already set auto_merge=true all your mailers already merged.
-
-Configuring a Mailer Connection
+### Configuring a Mailer Connection
 
 If you are using Rails 3,your action_mailer connection would be configured automatically from your config
 
