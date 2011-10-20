@@ -80,6 +80,14 @@ Let's say someone does something in your app and you want to send an email about
 
 This will send it off to the SimpleWorker cloud.
 
+To queue worker without uploading you could try to do following:
+
+    data[:attr_encoded] = Base64.encode64({'@to'=>'example@email.com'}.to_json)
+    data[:sw_config] = SimpleWorker.config.get_atts_to_send
+    SimpleWorker.service.queue('EmailWorker', data)
+
+
+
 Setting Priority
 ----------------------------------------------
 
