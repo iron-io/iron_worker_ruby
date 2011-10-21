@@ -1,6 +1,6 @@
 simple_worker:
-   access_key: MY_ACCESS_KEY
-   secret_key: MY_SECRET_KEY
+   token: MY_TOKEN
+   project_id: MY_PROJECT_ID
 
 database:
     adapter: mysql2

@@ -3,7 +3,7 @@ require 'patron'
 
 module SimpleWorker
 
-  class Error < StandardError
+  class RequestError < StandardError
     def initialize(msg, options={})
       super(msg)
       @options = options
@@ -97,7 +97,7 @@ module SimpleWorker
         if status < 400
 
         else
-          raise SimpleWorker::Error.new((res ? "#{status}: #{res["msg"]}" : "#{status} Error! parse=false so no msg"), :status=>status)
+          raise SimpleWorker::RequestError.new((res ? "#{status}: #{res["msg"]}" : "#{status} Error! parse=false so no msg"), :status=>status)
         end
         res || body
       end
@@ -139,11 +139,16 @@ module SimpleWorker
         begin
           url = url(method) + "?oauth=" + token
           @logger.debug 'post url=' + url
-          response = @http_sess.post(url, add_params(method, params).to_json, {"Content-Type" => 'application/json'})
+          json = add_params(method, params).to_json
+          @logger.debug 'body=' + json
+          response = @http_sess.post(url, json, {"Content-Type" => 'application/json'})
           check_response(response)
           @logger.debug 'response: ' + response.inspect
           body = response.body
           parse_response(body, options)
+        rescue SimpleWorker::RequestError => ex
+          # let it throw, came from check_response
+          raise ex
         rescue Exception => ex
           @logger.warn("Exception in post! #{ex.message}")
           @logger.warn(ex.backtrace.join("\n"))

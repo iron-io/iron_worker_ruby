@@ -212,9 +212,8 @@ module SimpleWorker
       upload_if_needed(options)
 
       response = SimpleWorker.service.queue(self.class.name, sw_get_data, options)
-#            puts 'queue response=' + response.inspect
-#      @task_set_id = response["task_set_id"]
-      @task_id = response["task_id"]
+      SimpleWorker.service.logger.debug 'queue response=' + response.inspect
+      @task_id = response["tasks"][0]["id"]
       response
     end
 
@@ -270,8 +269,8 @@ module SimpleWorker
       upload_if_needed(schedule)
 
       response = SimpleWorker.service.schedule(self.class.name, sw_get_data, schedule)
-#            puts 'schedule response=' + response.inspect
-      @schedule_id = response["schedule_id"]
+      SimpleWorker.service.logger.debug 'schedule response=' + response.inspect
+      @schedule_id = response["schedules"][0]["id"]
       response
     end
 

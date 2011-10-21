@@ -398,7 +398,7 @@ end
 
     def add_sw_params(hash_to_send)
       # todo: remove secret key??  Can use worker service from within a worker without it now
-      hash_to_send["token"] = self.token
+      hash_to_send["oauth"] = self.token
       hash_to_send["api_version"] = SimpleWorker.api_version
     end
 
@@ -408,42 +408,46 @@ end
       end
     end
 
-    def enqueue(class_name, data={}, options={})
-      queue(class_name, data, options)
+    def enqueue(name, data={}, options={})
+      queue(name, data, options)
     end
 
     # name: The name of previously upload worker code, eg: MySuperWorker
     # data: Arbitrary hash of your own data that your task will need to run.
-    def queue(class_name, data={}, options={})
-      puts "Queuing #{class_name}..."
+    def queue(name, data={}, options={})
+      puts "Queuing #{name}..."
       check_config
       if !data.is_a?(Array)
         data = [data]
       end
       # Now we need to add class_name to the payload
       data.each do |d|
-        d['class_name'] = class_name
+        d['class_name'] = name
       end
-      name = options[:name] || class_name
+      name = options[:name] || name
       hash_to_send = {}
-      hash_to_send["payload"] = data
-      hash_to_send["class_name"] = class_name
-      hash_to_send["name"] = name
-      hash_to_send["priority"] = options[:priority] if options[:priority]
+      tasks = []
+      task = {}
+      task["payload"] = data.to_json
+      task["code_name"] = name
+      task["priority"] = options[:priority] if options[:priority]
+      task["timeout"] = options[:timeout] if options[:timeout]
+      tasks << task
       hash_to_send["options"] = options
+      hash_to_send["tasks"] = tasks
       add_sw_params(hash_to_send)
       if defined?(RAILS_ENV)
         # todo: REMOVE THIS
         hash_to_send["rails_env"] = RAILS_ENV
       end
-      return queue_raw(class_name, hash_to_send, options)
+      return queue_raw(name, hash_to_send, options)
     end
 
-    def queue_raw(class_name, data={}, options={})
+    def queue_raw(name, data={}, options={})
       params = nil
       hash_to_send = data
-      hash_to_send["class_name"] = class_name unless hash_to_send["class_name"]
-      hash_to_send["name"] = class_name unless hash_to_send["name"]
+      #hash_to_send["class_name"] = name unless hash_to_send["class_name"]
+      hash_to_send["name"] = name unless hash_to_send["name"]
       uri = project_url_prefix(get_project_id(options)) + "tasks"
       SimpleWorker.logger.debug 'queue_raw , uri = ' + uri
       ret = post(uri, hash_to_send)
@@ -460,14 +464,16 @@ end
     #     - end_at:        Scheduled task will stop running after this date (optional, if ommitted, runs forever or until cancelled)
     #     - run_times:     Task will run exactly :run_times. For instance if :run_times is 5, then the task will run 5 times.
     #
-    def schedule(class_name, data, schedule)
-      puts "Scheduling #{class_name}..."
+    def schedule(name, data, schedule)
+      puts "Scheduling #{name}..."
       raise "Schedule must be a hash." if !schedule.is_a? Hash
       hash_to_send = {}
-      hash_to_send["payload"] = data
-      hash_to_send["name"] = class_name unless hash_to_send["name"]
-      hash_to_send["class_name"] = class_name unless hash_to_send["class_name"]
-      hash_to_send["schedule"] = schedule
+      schedules = []
+      schedule["payload"] = data.to_json
+      schedule["name"] = name unless schedule["name"]
+      schedule["code_name"] = name unless schedule["code_name"]
+      schedules << schedule
+      hash_to_send["schedules"] = schedules
       add_sw_params(hash_to_send)
 #            puts ' about to send ' + hash_to_send.inspect
       uri = project_url_prefix(get_project_id(data)) + "schedules"
@@ -541,9 +547,9 @@ end
       ret
     end
 
-    def schedule_status(schedule_id)
+    def schedule_status(schedule_id, options={})
       data = {"schedule_id"=>schedule_id}
-      ret = get("#{project_url_prefix(get_project_id(options))}scheduler/status", data)
+      ret = get("#{project_url_prefix(get_project_id(options))}schedules/#{schedule_id}", data)
       ret
     end
 
