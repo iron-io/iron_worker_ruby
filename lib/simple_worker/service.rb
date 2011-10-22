@@ -25,9 +25,8 @@ module SimpleWorker
       super("worker-aws-us-east-1.iron.io", token, options)
       self.host = self.config.host if self.config && self.config.host
       # automerge simple worker gem and dependenices
-      self.config.merge_gem('simple_worker')
       self.config.merge_gem('rest-client')
-      self.config.merge_gem('patron')
+      self.config.merge_gem('simple_worker')
       SimpleWorker.logger.info 'SimpleWorker initialized.'
       SimpleWorker.logger.debug ' host = ' + self.host.inspect
     end
@@ -126,11 +125,7 @@ module SimpleWorker
       #tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
       tmp_file = File.join(Dir.tmpdir(), 'runner.rb')
       File.open(tmp_file, "w") do |f|
-        File.open(File.join(File.dirname(__FILE__), "server", 'runner.rb'), 'r') do |fr|
-          while line = fr.gets
-            f.write line
-          end
-        end
+
         f.write("begin\n")#error handling block start
         f.write("
 # Find environment (-e)
@@ -176,6 +171,13 @@ require 'json'
           end
 #              end
          end
+
+        
+        File.open(File.join(File.dirname(__FILE__), "server", 'runner.rb'), 'r') do |fr|
+          while line = fr.gets
+            f.write line
+          end
+        end
 
         # load job data
 f.write("
