@@ -10,7 +10,7 @@ class QuickRun < TestBase
     worker = TestWorker.new
     worker.schedule(:start_at=>10.seconds.from_now)
     status = wait_for_task(worker)
-    assert status["status"] == "error"
+    assert status["status"] == "complete"
     assert status["msg"].present?
   end
 

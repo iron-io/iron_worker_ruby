@@ -22,9 +22,12 @@ module SimpleWorker
       end
       options[:version] = SimpleWorker.api_version
       options[:logger] = SimpleWorker.logger
-      super("tq-aws-us-east-1.iron.io", token, options)
+      super("worker-aws-us-east-1.iron.io", token, options)
       self.host = self.config.host if self.config && self.config.host
-      self.config.merge_gem('simple_worker')#automerge simple worker gem
+      # automerge simple worker gem and dependenices
+      self.config.merge_gem('simple_worker')
+      self.config.merge_gem('rest-client')
+      self.config.merge_gem('patron')
       SimpleWorker.logger.info 'SimpleWorker initialized.'
       SimpleWorker.logger.debug ' host = ' + self.host.inspect
     end
@@ -35,8 +38,6 @@ module SimpleWorker
     def upload(filename, class_name, options={})
       name = options[:name] || class_name
       project_id = get_project_id(options)
-#      puts "Uploading #{class_name}"
-# check whether it should upload again
       tmp = Dir.tmpdir()
       md5file = "simple_worker_#{class_name.gsub("::", ".")}_#{token[0, 8]}.md5"
       existing_md5 = nil
@@ -44,7 +45,7 @@ module SimpleWorker
       if File.exists?(md5_f)
         existing_md5 = IO.read(md5_f)
       end
-# Check for code changes.
+      # Check for code changes.
       md5 = Digest::MD5.hexdigest(File.read(filename))
       new_code = false
       if self.config.force_upload || md5 != existing_md5
