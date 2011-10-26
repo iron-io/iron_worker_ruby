@@ -154,10 +154,10 @@ require 'json'
                            # require merged gems
         merged_gems.each_pair do |k, gem|
           SimpleWorker.logger.debug "Bundling gem #{gem[:name]}..."
-          f.write "sw_gem_path = File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
           if gem[:merge]
-            #f.write "$LOAD_PATH << sw_gem_path\n"
+            f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
           end
+          #              unless gem[:no_require]
           SimpleWorker.logger.debug 'writing requires: ' + gem[:require].inspect
           if gem[:require].nil?
             gem[:require] = []
@@ -166,8 +166,8 @@ require 'json'
           end
           SimpleWorker.logger.debug "gem[:require]: " + gem[:require].inspect
           gem[:require].each do |r|
-            SimpleWorker.logger.debug 'Adding require runner file: ' + r.to_s
-            f.write "require sw_gem_path + '/#{r}'\n"
+            SimpleWorker.logger.debug 'adding require to file ' + r.to_s
+            f.write "require '#{r}'\n"
           end
         end
 
