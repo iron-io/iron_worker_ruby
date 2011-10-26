@@ -187,11 +187,8 @@ Dir.chdir(dirname)
 job_data = JSON.load(File.open(task_data_file))
 puts 'job_data=' + job_data.inspect
 sw_config = job_data['sw_config']
-init_database_connection(sw_config)
-init_mailer(sw_config)
 ")
 
-        f.write("require 'simple_worker'\n")
 
         # add some rails stuff if using Rails
         if defined?(Rails)
@@ -206,22 +203,18 @@ end
 "
         end
 
-        if SimpleWorker.config.database && !SimpleWorker.config.database.empty?
-          f.write "require 'active_record'\n"
-        end
-
-        if merged_mailers && !merged_mailers.empty?
-          # todo: isn't 'action_mailer already required in railtie?
-          f.write "require 'action_mailer'\n"
-          f.write "ActionMailer::Base.prepend_view_path('templates')\n"
-        end
-        #if SimpleWorker.config.auto_merge
-
         if SimpleWorker.config.extra_requires
           SimpleWorker.config.extra_requires.each do |r|
             f.write "require '#{r}'\n"
           end
         end
+        if merged_mailers && !merged_mailers.empty?
+          # todo: isn't 'action_mailer already required in railtie?
+          f.write "require 'action_mailer'\n"
+          f.write "init_mailer(sw_config)\n"
+          f.write "ActionMailer::Base.prepend_view_path('templates')\n"
+        end
+        f.write "init_database_connection(sw_config)"
 
         File.open(File.join(File.dirname(__FILE__), 'server', 'overrides.rb'), 'r') do |fr|
           while line = fr.gets
