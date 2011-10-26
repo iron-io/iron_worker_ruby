@@ -36,6 +36,12 @@ class TestBase < Test::Unit::TestCase
     end
   end
 
+  def puts_log(worker)
+    puts "LOG START:"
+    puts worker.get_log
+    puts ":LOG END"
+  end
+
   def wait_for_task(params={})
     tries = 0
     status = nil

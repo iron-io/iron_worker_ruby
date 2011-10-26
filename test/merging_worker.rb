@@ -3,6 +3,7 @@
 class MergingWorker < SimpleWorker::Base
 
   merge_gem 'mini_fb'
+  merge_gem 'carrierwave', :require=>['carrierwave', 'carrierwave/orm/activerecord']
   merge_folder './models'
 
   merge 'cool_model'

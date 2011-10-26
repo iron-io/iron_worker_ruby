@@ -10,8 +10,8 @@ class SimpleWorkerTests < TestBase
     worker.queue
     status = worker.wait_until_complete
     p status
+    puts_log(worker)
     assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
-    puts worker.get_log
   end
 
   def test_new_worker_style

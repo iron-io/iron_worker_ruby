@@ -126,7 +126,7 @@ module SimpleWorker
       tmp_file = File.join(Dir.tmpdir(), 'runner.rb')
       File.open(tmp_file, "w") do |f|
 
-        f.write("begin\n")#error handling block start
+        f.write("begin\n") #error handling block start
         f.write("
 # Find environment (-e)
 dirname = ''
@@ -151,13 +151,13 @@ ARGV.each do |arg|
 end
 require 'json'
 ")
-        # require merged gems
-         merged_gems.each_pair do |k, gem|
+                           # require merged gems
+        merged_gems.each_pair do |k, gem|
           SimpleWorker.logger.debug "Bundling gem #{gem[:name]}..."
+          f.write "sw_gem_path = File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
           if gem[:merge]
-            f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
+            #f.write "$LOAD_PATH << sw_gem_path\n"
           end
-#              unless gem[:no_require]
           SimpleWorker.logger.debug 'writing requires: ' + gem[:require].inspect
           if gem[:require].nil?
             gem[:require] = []
@@ -166,13 +166,12 @@ require 'json'
           end
           SimpleWorker.logger.debug "gem[:require]: " + gem[:require].inspect
           gem[:require].each do |r|
-            SimpleWorker.logger.debug 'adding require to file ' + r.to_s
-            f.write "require '#{r}'\n"
+            SimpleWorker.logger.debug 'Adding require runner file: ' + r.to_s
+            f.write "require sw_gem_path + '/#{r}'\n"
           end
-#              end
-         end
+        end
 
-        
+
         File.open(File.join(File.dirname(__FILE__), "server", 'runner.rb'), 'r') do |fr|
           while line = fr.gets
             f.write line
@@ -180,7 +179,7 @@ require 'json'
         end
 
         # load job data
-f.write("
+        f.write("
 # Change to user directory
 #puts 'dirname=' + dirname.inspect
 Dir.chdir(dirname)
@@ -241,7 +240,6 @@ end
         #end
         #f.write File.open(filename, 'r') { |mo| mo.read }
         f.write("require_relative '#{File.basename(filename)}'")
-
 
 
         f.write("
@@ -424,18 +422,18 @@ end
         data = [data]
       end
       # Now we need to add class_name to the payload
+      tasks = []
       data.each do |d|
-        d['class_name'] = name
+        d['class_name'] = name unless d['class_name']
+        task = {}
+        task["payload"] = d.to_json
+        task["code_name"] = name
+        task["priority"] = options[:priority] if options[:priority]
+        task["timeout"] = options[:timeout] if options[:timeout]
+        tasks << task
       end
       name = options[:name] || name
       hash_to_send = {}
-      tasks = []
-      task = {}
-      task["payload"] = data.to_json
-      task["code_name"] = name
-      task["priority"] = options[:priority] if options[:priority]
-      task["timeout"] = options[:timeout] if options[:timeout]
-      tasks << task
       hash_to_send["options"] = options
       hash_to_send["tasks"] = tasks
       add_sw_params(hash_to_send)

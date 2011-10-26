@@ -41,11 +41,16 @@ module SimpleWorker
       def merge_gem(gem_name, options={})
         gem_info = SimpleWorker::MergeHelper.create_gem_info(gem_name, options)
         @merged_gems[gem_name.to_s] = gem_info
-        #puts 'before require ' + (options[:require] || gem_name)
-        begin
-          require gem_info[:require]
-        rescue LoadError=>ex
-          raise "Gem #{gem_name} was found, but we could not load the file '#{options[:require] || gem_name}.rb'. You may need to use :require=>x.........."
+        reqs = gem_info[:require].is_a?(Array) ? gem_info[:require] : [gem_info[:require]]
+        reqs.each do |r|
+          r2 = "#{gem_info[:path]}/lib/#{r}"
+          begin
+            puts 'requiring ' + r2
+            require r2
+          rescue LoadError=>ex
+            SimpleWorker.logger.error "Error requiring gem #{r}: #{ex.message}"
+            raise "Gem #{gem_name} was found, but we could not load the file '#{r2}'. You may need to use :require=>x.........."
+          end
         end
       end
 
@@ -151,7 +156,7 @@ module SimpleWorker
       # puts 'run_local'
       set_auto_attributes
       init_database
-	  init_mailer
+      init_mailer
       begin
         run
       rescue => ex
@@ -163,11 +168,11 @@ module SimpleWorker
       end
     end
 
-	def init_mailer
+    def init_mailer
       if SimpleWorker.config.mailer
         require 'action_mailer'
-         ActionMailer::Base.raise_delivery_errors = true
-         ActionMailer::Base.smtp_settings = (SimpleWorker.config.mailer)
+        ActionMailer::Base.raise_delivery_errors = true
+        ActionMailer::Base.smtp_settings = (SimpleWorker.config.mailer)
       end
     end
 
@@ -407,6 +412,7 @@ module SimpleWorker
       self.instance_variables.each do |iv|
         payload[iv] = instance_variable_get(iv)
       end
+      data['class_name'] = self.class.name
       data[:attr_encoded] = Base64.encode64(payload.to_json)
       data[:file_name] = File.basename(self.class.instance_variable_get(:@caller_file))
       if defined?(Rails)
