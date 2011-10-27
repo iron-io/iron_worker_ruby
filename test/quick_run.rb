@@ -8,6 +8,7 @@ class QuickRun < TestBase
 
   def test_worker
     worker = ProgressWorker.new
+    worker.s3_key = "YOOOOO"
     #worker = OneLineWorker.new
 #    worker = MergingWorker.new
     #worker = PrawnWorker.new

@@ -234,7 +234,6 @@ end
         #f.write File.open(filename, 'r') { |mo| mo.read }
         f.write("require_relative '#{File.basename(filename)}'")
 
-
         f.write("
   SimpleWorker.disable_queueing()
   runner_class = get_class_to_run(job_data['class_name'])
