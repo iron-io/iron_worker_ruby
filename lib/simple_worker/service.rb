@@ -396,8 +396,8 @@ end
     end
 
     def check_config
-      if self.config.nil? || self.config.token.nil?
-        raise "Invalid SimpleWorker configuration, no access key specified."
+      if self.config.nil? || self.config.token.nil? || self.config.project_id.nil?
+        raise "Invalid SimpleWorker configuration, token and project_id required."
       end
     end
 

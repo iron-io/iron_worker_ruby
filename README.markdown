@@ -18,6 +18,7 @@ You really just need your token, which you can get [here][2]
 
     SimpleWorker.configure do |config|
         config.token = TOKEN
+        config.project_id = MY_PROJECT_ID
     end
     
 Generate a Worker with Rails

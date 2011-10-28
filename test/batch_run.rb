@@ -15,11 +15,14 @@ class BatchRun < TestBase
     test_runner = nil
     jobs = []
 
-    executor = Concur::Executor.new_thread_pool_executor(10)
-    500.times do |i|
+    worker = OneLineWorker2.new
+    worker.upload
+
+    executor = Concur::Executor.new_thread_pool_executor(50)
+    10000.times do |i|
       jobs << executor.execute do
         begin
-          worker = OneLineWorker.new
+          worker = OneLineWorker2.new
           puts "queueing #{i}"
           response_hash = worker.queue(:priority=>(@config[:priority] || 0))
           puts "response_hash #{i} = " + response_hash.inspect
