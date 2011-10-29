@@ -52,7 +52,7 @@ module SimpleWorker
         @port = options[:port] || @config.port || 443
         @token = options[:token] || @config.token || token
         @version = options[:version]
-        @logger = options[:logger]
+        #@logger = options[:logger]
 
         @base_url = "#{@scheme}://#{@host}:#{@port}/#{@version}"
 
@@ -78,9 +78,10 @@ module SimpleWorker
       end
 
       def process_ex(ex)
+        logger.error "EX #{ex.class.name}: #{ex.message}"
         body = ex.http_body
-        @logger.debug 'EX http_code: ' + ex.http_code.to_s
-        @logger.debug 'EX BODY=' + body.to_s
+        logger.debug 'EX http_code: ' + ex.http_code.to_s
+        logger.debug 'EX BODY=' + body.to_s
         decoded_ex = JSON.parse(body)
         exception = Exception.new(ex.message + ": " + decoded_ex["msg"])
         exception.set_backtrace(decoded_ex["backtrace"].split(",")) if decoded_ex["backtrace"]
@@ -106,7 +107,7 @@ module SimpleWorker
         full_url = url(method)
         all_params = add_params(method, params)
         url_plus_params = append_params(full_url, all_params)
-        @logger.debug 'get url=' + url_plus_params
+        logger.debug 'get url=' + url_plus_params
         response = @http_sess.request(:get, url_plus_params,
                                       {},
                                       {})
@@ -120,38 +121,38 @@ module SimpleWorker
         begin
           data = add_params(method, params).to_json
           url = url(method) + "?oauth=" + token
-          @logger.debug "post_file url = " + url
-          @logger.debug "data = " + data
-          @logger.debug "params = " + params.inspect
-          @logger.debug "options = " + options.inspect
+          logger.debug "post_file url = " + url
+          logger.debug "data = " + data
+          logger.debug "params = " + params.inspect
+          logger.debug "options = " + options.inspect
           # todo: replace with patron
           parse_response(RestClient.post(append_params(url(method), add_params(method, params)), {:data => data, :file => file}, :content_type => 'application/json'), options)
-        rescue Exception => ex
+        rescue RestClient::Exception => ex
           process_ex(ex)
         end
       end
 
       def post(method, params={}, options={})
-        @logger.debug "params = " + params.inspect
-        @logger.debug "options = " + options.inspect
-        @logger.debug "params.payload = " + params[:payload].inspect
-        @logger.debug "token = "+ token.inspect
+        logger.debug "params = " + params.inspect
+        logger.debug "options = " + options.inspect
+        logger.debug "params.payload = " + params[:payload].inspect
+        logger.debug "token = "+ token.inspect
         begin
           url = url(method) + "?oauth=" + token
-          @logger.debug 'post url=' + url
+          logger.debug 'post url=' + url
           json = add_params(method, params).to_json
-          @logger.debug 'body=' + json
+          logger.debug 'body=' + json
           response = @http_sess.post(url, json, {"Content-Type" => 'application/json'})
           check_response(response)
-          @logger.debug 'response: ' + response.inspect
+          logger.debug 'response: ' + response.inspect
           body = response.body
           parse_response(body, options)
         rescue SimpleWorker::RequestError => ex
           # let it throw, came from check_response
           raise ex
         rescue Exception => ex
-          @logger.warn("Exception in post! #{ex.message}")
-          @logger.warn(ex.backtrace.join("\n"))
+          logger.warn("Exception in post! #{ex.message}")
+          logger.warn(ex.backtrace.join("\n"))
           process_ex(ex)
         end
       end
