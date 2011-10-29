@@ -72,9 +72,8 @@ module SimpleWorker
       end
 
       def url(command_path)
-        url = "#{base_url}/#{command_path}"
         # @logger.debug "url: " + url.to_s
-        url
+        "/#{command_path}"
       end
 
       def process_ex(ex)
