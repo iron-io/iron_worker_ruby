@@ -126,7 +126,6 @@ module SimpleWorker
       tmp_file = File.join(Dir.tmpdir(), 'runner.rb')
       File.open(tmp_file, "w") do |f|
 
-        f.write("begin\n") #error handling block start
         f.write("
 # Find environment (-e)
 dirname = ''
@@ -154,10 +153,7 @@ require 'json'
                            # require merged gems
         merged_gems.each_pair do |k, gem|
           SimpleWorker.logger.debug "Bundling gem #{gem[:name]}..."
-          if gem[:merge]
-            f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
-          end
-          #              unless gem[:no_require]
+          f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
           SimpleWorker.logger.debug 'writing requires: ' + gem[:require].inspect
           if gem[:require].nil?
             gem[:require] = []
@@ -245,13 +241,6 @@ end
 # Let's run it!
   runner_return_data = runner.run
 ")
-
-        #error handling block - end
-        f.write("\nrescue Exception => ex
-                $stderr.puts '_error_from_sw_'
-                 raise ex
-                end
-                ")
 
       end
       #puts 'funner.rb=' + tmp_file

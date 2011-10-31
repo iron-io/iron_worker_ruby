@@ -12,7 +12,7 @@ module SimpleWorker
   class Config
     attr_accessor :token,
                   :project_id,
-                :scheme,
+                  :scheme,
                   :host,
                   :port,
                   :global_attributes,
@@ -28,7 +28,7 @@ module SimpleWorker
                   :unmerged,
                   :merged_gems,
                   :unmerged_gems,
-        :force_upload
+                  :force_upload
 
 
     def initialize
@@ -134,7 +134,7 @@ module SimpleWorker
             end
           end
         else
-           SimpleWorker.logger.warn "Could not find '#{gem_info[:name]}' specified in Bundler, continuing anyways."
+          SimpleWorker.logger.warn "Could not find '#{gem_info[:name]}' specified in Bundler, continuing anyways."
         end
 #        else
 #          SimpleWorker.logger.warn "Could not find gem spec for #{gem_info[:name]}"
