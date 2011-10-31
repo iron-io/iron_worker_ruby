@@ -1,5 +1,5 @@
 # bump......
-class OneLineWorker2 < SimpleWorker::Base
+class OneLineWorker3 < SimpleWorker::Base
 
   def run
     puts "hello world!"

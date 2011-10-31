@@ -76,6 +76,13 @@ module SimpleWorker
         "/#{command_path}"
       end
 
+      # Used for RestClient ones that haven't been converted to patron yet
+       def url_full(command_path)
+        url = "#{base_url}/#{command_path}"
+        # @logger.debug "url: " + url.to_s
+        url
+      end
+
       def process_ex(ex)
         logger.error "EX #{ex.class.name}: #{ex.message}"
         body = ex.http_body
@@ -119,13 +126,13 @@ module SimpleWorker
       def post_file(method, file, params={}, options={})
         begin
           data = add_params(method, params).to_json
-          url = url(method) + "?oauth=" + token
+          url = url_full(method)
           logger.debug "post_file url = " + url
           logger.debug "data = " + data
           logger.debug "params = " + params.inspect
           logger.debug "options = " + options.inspect
           # todo: replace with patron
-          parse_response(RestClient.post(append_params(url(method), add_params(method, params)), {:data => data, :file => file}, :content_type => 'application/json'), options)
+          parse_response(RestClient.post(append_params(url, add_params(method, params)), {:data => data, :file => file}, :content_type => 'application/json'), options)
         rescue RestClient::Exception => ex
           process_ex(ex)
         end
@@ -160,7 +167,7 @@ module SimpleWorker
       def put(method, body, options={})
         begin
           # todo: replace with patron
-          parse_response RestClient.put(url(method), add_params(method, body).to_json, headers), options
+          parse_response RestClient.put(url_full(method), add_params(method, body).to_json, headers), options
         rescue RestClient::Exception => ex
           process_ex(ex)
         end
@@ -169,7 +176,7 @@ module SimpleWorker
       def delete(method, params={}, options={})
         begin
           # todo: replace with patron
-          parse_response RestClient.delete(append_params(url(method), add_params(method, params))), options
+          parse_response RestClient.delete(append_params(url_full(method), add_params(method, params))), options
         rescue RestClient::Exception => ex
           process_ex(ex)
         end

@@ -20,10 +20,6 @@ class ProgressWorker < SimpleWorker::Base
         end
     end
 
-    def set_complete(params=nil)
-        log 'SET COMPLETE YAY!' + params[:task_set_id]
-    end
-
 
 end
 

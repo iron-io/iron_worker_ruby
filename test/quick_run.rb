@@ -17,9 +17,11 @@ class QuickRun < TestBase
     status = worker.wait_until_complete
     p status
     puts "\n\n\nLOG START:"
-    puts worker.get_log
+    log = worker.get_log
+    puts log
     puts "LOG END\n\n\n"
     assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
+    assert log.include?(worker.s3_key)
   end
 
 end
