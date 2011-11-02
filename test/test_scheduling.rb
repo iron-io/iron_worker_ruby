@@ -22,6 +22,12 @@ class SimpleWorkerTests < TestBase
     puts "run_count=#{status["run_count"]}"
     assert status["run_count"] > 5
     assert status["run_count"] < 20
+
+    worker.schedule(:start_at => 2.seconds.since, :run_every => 5, :run_times => 5)
+    status = wait_for_task(worker)
+    assert status["status"] == "complete"
+    puts "run_count=#{status["run_count"]}"
+    assert status["run_count"] == 5
   end
 
 end
