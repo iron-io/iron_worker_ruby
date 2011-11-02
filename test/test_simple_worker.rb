@@ -2,6 +2,7 @@ require_relative 'test_base'
 require_relative 'cool_worker'
 require_relative 'cool_model'
 require_relative 'gem_dependency_worker'
+require_relative 'fail_worker'
 
 class SimpleWorkerTests < TestBase
 
@@ -24,13 +25,21 @@ class SimpleWorkerTests < TestBase
     # queue up a task
     puts 'queuing ' + tw.inspect
 
-    response_hash_single = nil
+    response_hash = nil
     5.times do |i|
-      response_hash_single = tw.queue
+      response_hash = tw.queue
     end
 
-    puts 'response_hash=' + response_hash_single.inspect
+    puts 'response_hash=' + response_hash.inspect
     puts 'task_id=' + tw.task_id
+
+    assert response_hash["msg"]
+    assert response_hash["status_code"]
+    assert response_hash["tasks"]
+    assert response_hash["status_code"] == 200
+    assert response_hash["tasks"][0]["id"].length == 24, "length is #{response_hash["tasks"][0]["id"].length}"
+    assert response_hash["tasks"][0]["id"] == tw.task_id
+
     status = tw.wait_until_complete
 
     puts 'LOG=' + tw.get_log
@@ -79,7 +88,7 @@ class SimpleWorkerTests < TestBase
   end
 
   def test_exceptions
-    worker = TestWorker.new
+    worker = FailWorker.new
     worker.queue
     status = wait_for_task(worker)
     assert status["status"] == "error"

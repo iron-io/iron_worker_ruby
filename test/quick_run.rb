@@ -16,6 +16,8 @@ class QuickRun < TestBase
 
     status = worker.wait_until_complete
     p status
+    p status["error_class"]
+    p status["msg"]
     puts "\n\n\nLOG START:"
     log = worker.get_log
     puts log

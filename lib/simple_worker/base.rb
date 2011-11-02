@@ -6,6 +6,7 @@ module SimpleWorker
   class Base
 
     attr_accessor :task_set_id, :task_id, :schedule_id
+    attr_reader :response
 
     class << self
       attr_accessor :subclass, :caller_file
@@ -218,6 +219,7 @@ module SimpleWorker
 
       response = SimpleWorker.service.queue(self.class.name, sw_get_data, options)
       SimpleWorker.service.logger.debug 'queue response=' + response.inspect
+      @response = response
       @task_id = response["tasks"][0]["id"]
       response
     end
