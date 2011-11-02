@@ -63,7 +63,8 @@ This will send it off to the SimpleWorker cloud.
 Full Documentation
 -----------------
 
-SimpleWorker can do so much more so be sure to [read the full documentation here](http://docs.simpleworker.com).
+Now that you've got your first worker running, be sure to [check out the full documentation](http://docs.simpleworker.com).
+SimpleWorker can do so much more!
 
 Discussion Group
 ----------------------
