@@ -48,7 +48,7 @@ class TestBase < Test::Unit::TestCase
     sleep 1
     while  tries < 60
       status = status_for(params)
-      puts 'status = ' + status.inspect
+      puts "status: #{status['status']} -- " + status.inspect
       if status["status"] == "complete" || status["status"] == "error"
         break
       end
