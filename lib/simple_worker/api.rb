@@ -1,5 +1,5 @@
 require 'rest_client'
-require 'patron'
+require 'typhoeus'
 
 module SimpleWorker
 
@@ -56,14 +56,6 @@ module SimpleWorker
 
         @base_url = "#{@scheme}://#{@host}:#{@port}/#{@version}"
 
-        sess = Patron::Session.new
-        sess.timeout = 10
-        sess.base_url = @base_url
-        sess.headers['User-Agent'] = 'IronMQ Ruby Client'
-        #sess.enable_debug "/tmp/patron.debug"
-        @http_sess = sess
-
-
       end
 
 
@@ -76,12 +68,20 @@ module SimpleWorker
         "/#{command_path}"
       end
 
-      # Used for RestClient ones that haven't been converted to patron yet
-       def url_full(command_path)
+      def url_full(command_path)
         url = "#{base_url}/#{command_path}"
         # @logger.debug "url: " + url.to_s
         url
       end
+
+
+    def common_req_hash
+      {
+          :headers=>{"Content-Type" => 'application/json',
+                     "Authorization"=>"OAuth #{@token}",
+                     "User-Agent"=>"SimpleWorker Ruby Client"}
+      }
+    end
 
       def process_ex(ex)
         logger.error "EX #{ex.class.name}: #{ex.message}"
@@ -94,9 +94,18 @@ module SimpleWorker
         raise exception
       end
 
+
       def check_response(response, options={})
-        status = response.status
+        # response.code    # http status code
+        #response.time    # time in seconds the request took
+        #response.headers # the http headers
+        #response.headers_hash # http headers put into a hash
+        #response.body    # the response body
+        status = response.code
         body = response.body
+        # todo: check content-type == application/json before parsing
+        logger.debug "response code=" + status.to_s
+        logger.debug "response body=" + body.inspect
         res = nil
         unless options[:parse] == false
           res = JSON.parse(body)
@@ -110,13 +119,16 @@ module SimpleWorker
       end
 
       def get(method, params={}, options={})
-        full_url = url(method)
-        all_params = add_params(method, params)
-        url_plus_params = append_params(full_url, all_params)
-        logger.debug 'get url=' + url_plus_params
-        response = @http_sess.request(:get, url_plus_params,
-                                      {},
-                                      {})
+        full_url = url_full(method)
+        #all_params = add_params(method, params)
+        #url_plus_params = append_params(full_url, all_params)
+        logger.debug 'get url=' + full_url
+        req_hash = common_req_hash
+        req_hash[:params] = params
+        response = Typhoeus::Request.get(full_url, req_hash) # could let typhoeus add params, using :params=>x
+        #response = @http_sess.request(:get, url_plus_params,
+        #                              {},
+        #                              {})
         check_response(response, options)
         body = response.body
         parse_response(body, options)
@@ -131,7 +143,7 @@ module SimpleWorker
           logger.debug "data = " + data
           logger.debug "params = " + params.inspect
           logger.debug "options = " + options.inspect
-          # todo: replace with patron
+          # todo: replace with typhoeus
           parse_response(RestClient.post(append_params(url, add_params(method, params)), {:data => data, :file => file}, :content_type => 'application/json'), options)
         rescue RestClient::Exception => ex
           process_ex(ex)
@@ -144,11 +156,14 @@ module SimpleWorker
         logger.debug "params.payload = " + params[:payload].inspect
         logger.debug "token = "+ token.inspect
         begin
-          url = url(method) + "?oauth=" + token
+          url = url_full(method)
           logger.debug 'post url=' + url
           json = add_params(method, params).to_json
           logger.debug 'body=' + json
-          response = @http_sess.post(url, json, {"Content-Type" => 'application/json'})
+          req_hash = common_req_hash
+          req_hash[:body] = json
+          response = Typhoeus::Request.post(url, req_hash)
+          #response = @http_sess.post(url, json, {"Content-Type" => 'application/json'})
           check_response(response)
           logger.debug 'response: ' + response.inspect
           body = response.body
@@ -156,7 +171,7 @@ module SimpleWorker
         rescue SimpleWorker::RequestError => ex
           # let it throw, came from check_response
           raise ex
-        rescue Exception => ex
+        rescue RestClient::Exception => ex
           logger.warn("Exception in post! #{ex.message}")
           logger.warn(ex.backtrace.join("\n"))
           process_ex(ex)
@@ -166,7 +181,7 @@ module SimpleWorker
 
       def put(method, body, options={})
         begin
-          # todo: replace with patron
+          # todo: replace with typhoeus
           parse_response RestClient.put(url_full(method), add_params(method, body).to_json, headers), options
         rescue RestClient::Exception => ex
           process_ex(ex)
@@ -175,7 +190,7 @@ module SimpleWorker
 
       def delete(method, params={}, options={})
         begin
-          # todo: replace with patron
+          # todo: replace with typhoeus
           parse_response RestClient.delete(append_params(url_full(method), add_params(method, params))), options
         rescue RestClient::Exception => ex
           process_ex(ex)

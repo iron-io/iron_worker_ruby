@@ -221,7 +221,7 @@ end
           f.write "init_mailer(sw_config)\n"
           f.write "ActionMailer::Base.prepend_view_path('templates')\n"
         end
-        f.write "init_database_connection(sw_config)"
+        f.write "init_database_connection(sw_config)\n"
 
         merged.each_pair do |k, v|
           if v[:extname] == ".rb"
@@ -233,7 +233,7 @@ end
         end
         #end
         #f.write File.open(filename, 'r') { |mo| mo.read }
-        f.write("require_relative '#{File.basename(filename)}'")
+        f.write("require_relative '#{File.basename(filename)}'\n")
 
         f.write("
   runner_class = get_class_to_run(job_data['class_name'])

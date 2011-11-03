@@ -12,7 +12,7 @@ Jeweler::Tasks.new do |gemspec|
   gemspec.files = FileList['init.rb', 'lib/**/*.rb', 'rails/**/*.rb']
   gemspec.add_dependency 'zip'
   gemspec.add_dependency 'rest-client'
-  gemspec.add_dependency 'patron'
+  gemspec.add_dependency 'typhoeus'
   gemspec.required_ruby_version = '>= 1.9'
 end
 Jeweler::GemcutterTasks.new
