@@ -185,6 +185,11 @@ puts 'job_data=' + job_data.inspect
 sw_config = job_data['sw_config']
 ")
 
+# Now we must disable queuing while loading up classes
+f.write("
+SimpleWorker.disable_queueing()
+")
+
 
         # add some rails stuff if using Rails
         if defined?(Rails)
@@ -231,11 +236,12 @@ end
         f.write("require_relative '#{File.basename(filename)}'")
 
         f.write("
-  SimpleWorker.disable_queueing()
   runner_class = get_class_to_run(job_data['class_name'])
   SimpleWorker.running_class = runner_class
   runner = init_runner(runner_class, job_data, dirname, task_id)
   init_worker_service_for_runner(job_data)
+
+  # Now reenable after loading
   SimpleWorker.enable_queueing()
 
 # Let's run it!
