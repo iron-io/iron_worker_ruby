@@ -167,6 +167,17 @@ require 'json'
           end
         end
 
+            File.open(File.join(File.dirname(__FILE__), 'server', 'overrides.rb'), 'r') do |fr|
+          while line = fr.gets
+            f.write line
+          end
+        end
+
+        # Now we must disable queuing while loading up classes. This is from the overrides.rb file
+f.write("
+SimpleWorker.disable_queueing()
+")
+
 
         File.open(File.join(File.dirname(__FILE__), "server", 'runner.rb'), 'r') do |fr|
           while line = fr.gets
@@ -183,11 +194,6 @@ Dir.chdir(dirname)
 job_data = JSON.load(File.open(task_data_file))
 puts 'job_data=' + job_data.inspect
 sw_config = job_data['sw_config']
-")
-
-# Now we must disable queuing while loading up classes
-f.write("
-SimpleWorker.disable_queueing()
 ")
 
 
@@ -216,12 +222,6 @@ end
           f.write "ActionMailer::Base.prepend_view_path('templates')\n"
         end
         f.write "init_database_connection(sw_config)"
-
-        File.open(File.join(File.dirname(__FILE__), 'server', 'overrides.rb'), 'r') do |fr|
-          while line = fr.gets
-            f.write line
-          end
-        end
 
         merged.each_pair do |k, v|
           if v[:extname] == ".rb"
