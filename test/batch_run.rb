@@ -11,7 +11,7 @@ class BatchRun < TestBase
 
     SimpleWorker.logger.level = Logger::INFO
 
-    worker = OneLineWorker3.new
+    worker = OneLineWorker.new
     worker.upload
 
     jobs = []
@@ -19,7 +19,7 @@ class BatchRun < TestBase
     100.times do |i|
       jobs << executor.execute do
         begin
-          worker2 = OneLineWorker3.new
+          worker2 = OneLineWorker.new
           puts "queueing #{i}"
           response_hash = worker2.queue(:priority=>(@config[:priority] || 0))
           puts "response_hash #{i} = " + response_hash.inspect

@@ -1,6 +1,6 @@
 require 'rake/dsl_definition' # temporary I think?
 require 'rake/testtask'
-require 'jeweler'
+require 'jeweler2'
 
 Jeweler::Tasks.new do |gemspec|
   gemspec.name = "simple_worker"
