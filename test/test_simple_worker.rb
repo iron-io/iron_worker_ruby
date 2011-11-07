@@ -6,6 +6,11 @@ require_relative 'fail_worker'
 
 class SimpleWorkerTests < TestBase
 
+  def test_old_gem_error_message
+    assert_raise SimpleWorker.config.access_key = "abc"
+    assert_raise SimpleWorker.config.secret_key = "abc"
+  end
+
   def test_gem_merging
     worker = GemDependencyWorker.new
     worker.queue

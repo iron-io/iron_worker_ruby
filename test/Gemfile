@@ -1,4 +1,7 @@
 # These are required for the tests
+
+source 'http://rubygems.org'
+
 gem 'dropbox', '1.2.3'
 gem 'mongoid_i18n'
 gem 'signature'

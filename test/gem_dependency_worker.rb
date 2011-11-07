@@ -3,7 +3,6 @@ class GemDependencyWorker < SimpleWorker::Base
 
   #merge_gem "signature"
   merge_gem "pusher"
-#  merge_gem 'bson_ext'
 
   attr_accessor :some_param
 

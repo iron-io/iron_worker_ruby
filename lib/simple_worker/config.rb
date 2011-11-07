@@ -42,6 +42,12 @@ module SimpleWorker
 
     end
 
+    def access_key=(x)
+      raise "SimpleWorker Config Error: access_key and secret_key are no longer used. The new SimpleWorker gem requires a couple of small configuration changes, please see: http://docs.simpleworker.com/ruby/new-gem-v2-update-guide for information."
+    end
+    def secret_key=(x)
+      raise "SimpleWorker Config Error: access_key and secret_key are no longer used. The new SimpleWorker gem requires a couple of small configuration changes, please see: http://docs.simpleworker.com/ruby/new-gem-v2-update-guide for information."
+    end
 
     @gems_to_skip = ['actionmailer', 'actionpack', 'activemodel', 'activeresource', 'activesupport',
                      'bundler',
