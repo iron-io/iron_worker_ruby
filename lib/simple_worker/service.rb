@@ -194,21 +194,19 @@ Dir.chdir(dirname)
 job_data = JSON.load(File.open(task_data_file))
 puts 'job_data=' + job_data.inspect
 sw_config = job_data['sw_config']
-")
+SimpleWorker.task_data = job_data
 
-
-        # add some rails stuff if using Rails
-        if defined?(Rails)
-          f.write "module Rails
-  def self.version
-    '#{Rails.version}'
-  end
-  def self.env
-    '#{Rails.env}'
+if SimpleWorker.task_data['rails']
+  module ::Rails
+    def self.version
+      SimpleWorker.task_data['rails']['version']
+    end
+    def self.env
+      SimpleWorker.task_data['rails']['env']
+    end
   end
 end
-"
-        end
+")
 
         if SimpleWorker.config.extra_requires
           SimpleWorker.config.extra_requires.each do |r|

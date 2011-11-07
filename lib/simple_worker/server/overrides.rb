@@ -11,6 +11,12 @@ module SimpleWorker
     def running_class
       @running_class
     end
+    def task_data=(td)
+      @task_data = td
+    end
+    def task_data
+      @task_data
+    end
   end
 
   def self.disable_queueing()
