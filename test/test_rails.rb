@@ -26,7 +26,7 @@ class RailsTests < TestBase
     puts log
     puts "LOG END\n\n\n"
     assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
-    
+    assert log.include?("env=" + Rails.env)
 
   end
 

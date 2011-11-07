@@ -8,5 +8,12 @@ class RailsWorker < SimpleWorker::Base
     worker2 = RailsWorker2.new
     worker2.queue
 
+    worker2.wait_until_complete
+    log = worker2.get_log
+    puts "START WORKER2 LOG:"
+    puts log
+    puts "END WORKER2 LOG"
+
+
   end
 end
