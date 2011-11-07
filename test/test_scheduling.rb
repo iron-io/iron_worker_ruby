@@ -30,5 +30,14 @@ class SimpleWorkerTests < TestBase
     assert status["run_count"] == 5
   end
 
+  def test_schedule_cancel
+    worker = OneLineWorker.new
+
+    start_time = Time.now
+    worker.schedule(start_at: 30.seconds.from_now)
+    SimpleWorker.service.cancel_schedule(worker.schedule_id)
+    assert_equal worker.status['status'], 'cancelled'
+  end
+
 end
 
