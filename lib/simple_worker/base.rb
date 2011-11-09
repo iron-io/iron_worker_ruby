@@ -70,7 +70,7 @@ module SimpleWorker
         f2 = SimpleWorker::MergeHelper.check_for_file(mailer, @caller_file)
         basename = File.basename(mailer, f2[:extname])
         path_to_templates = params[:path_to_templates] || File.join(Rails.root, "app/views/#{basename}")
-        @merged_mailers[basename] = {:name=>basename, :path_to_templates=>path_to_templates, :filename => mailer}.merge!(params)
+        @merged_mailers[basename] = {:name=>basename, :path_to_templates=>path_to_templates, :filename => f2[:path]}.merge!(params)
       end
 
       def merge_folder(path)
