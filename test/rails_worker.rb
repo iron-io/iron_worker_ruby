@@ -5,8 +5,12 @@ class RailsWorker < SimpleWorker::Base
 
   def run
     puts "hello rails! env=#{Rails.env}"
-    worker2 = RailsWorker2.new
-    worker2.queue
+    worker2 = nil
+    100.times do |i|
+      worker2 = RailsWorker2.new
+      worker2.x = "yz #{i}"
+      worker2.queue(:priority=>2)
+    end
 
     worker2.wait_until_complete
     log = worker2.get_log

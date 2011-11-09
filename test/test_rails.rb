@@ -15,7 +15,7 @@ class RailsTests < TestBase
 
   def test_env
     worker = RailsWorker.new
-    worker.queue
+    worker.queue(:priority=>2)
 
      status = worker.wait_until_complete
     p status

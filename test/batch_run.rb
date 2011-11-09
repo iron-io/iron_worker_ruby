@@ -21,6 +21,7 @@ class BatchRun < TestBase
         begin
           worker2 = OneLineWorker.new
           puts "queueing #{i}"
+          worker2.x =  "hello payload #{i}"
           response_hash = worker2.queue(:priority=>(@config[:priority] || 0))
           puts "response_hash #{i} = " + response_hash.inspect
           assert response_hash["msg"]

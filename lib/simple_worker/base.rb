@@ -46,7 +46,7 @@ module SimpleWorker
         reqs.each do |r|
           r2 = "#{gem_info[:path]}/lib/#{r}"
           begin
-            puts 'requiring ' + r2
+            SimpleWorker.logger.debug 'requiring ' + r2
             require r2
           rescue LoadError=>ex
             SimpleWorker.logger.error "Error requiring gem #{r}: #{ex.message}"

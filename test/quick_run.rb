@@ -1,17 +1,13 @@
 require_relative 'test_base'
+require_relative 'workers/broken_load_worker'
 require_relative 'one_line_worker'
 require_relative 'merging_worker'
-require_relative 'progress_worker'
-#require_relative 'prawn_worker'
+
 
 class QuickRun < TestBase
 
   def test_worker
-    worker = ProgressWorker.new
-    worker.s3_key = "YOOOOO"
-    #worker = OneLineWorker.new
-#    worker = MergingWorker.new
-    #worker = PrawnWorker.new
+    worker = BrokenLoadWorker.new
     worker.queue
 
     status = worker.wait_until_complete

@@ -44,4 +44,8 @@ class SimpleWorkerTests < TestBase
     assert l.include?("hello.pdf")
   end
 
+  def test_merge_mailer
+
+  end
+
 end

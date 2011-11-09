@@ -3,6 +3,7 @@ require_relative 'cool_worker'
 require_relative 'cool_model'
 require_relative 'gem_dependency_worker'
 require_relative 'fail_worker'
+require_relative 'progress_worker'
 
 class SimpleWorkerTests < TestBase
 
@@ -100,6 +101,22 @@ class SimpleWorkerTests < TestBase
     assert status["msg"].present?
   end
 
+  def test_progress
+    worker = ProgressWorker.new
+    worker.s3_key = "YOOOOO"
+    worker.queue
+
+    status = worker.wait_until_complete
+    p status
+    p status["error_class"]
+    p status["msg"]
+    puts "\n\n\nLOG START:"
+    log = worker.get_log
+    puts log
+    puts "LOG END\n\n\n"
+    assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
+    assert log.include?(worker.s3_key)
+  end
 
 
 end
