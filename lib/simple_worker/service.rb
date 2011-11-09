@@ -467,12 +467,12 @@ end
       ret
     end
 
-    def cancel_schedule(scheduled_task_id)
+    def cancel_schedule(scheduled_task_id, options={})
       raise "Must include a schedule id." if scheduled_task_id.blank?
       hash_to_send = {}
       hash_to_send["schedule_id"] = scheduled_task_id
-      ret = post("scheduler/cancel", hash_to_send)
-      ret
+      uri = "#{project_url_prefix(get_project_id(options))}schedules/#{scheduled_task_id}"
+      delete(uri, hash_to_send)
     end
 
     def get_projects()
