@@ -1,5 +1,5 @@
 require 'rest_client'
-require 'typhoeus'
+require_relative 'uber_client'
 
 module SimpleWorker
 
@@ -55,6 +55,8 @@ module SimpleWorker
         #@logger = options[:logger]
 
         @base_url = "#{@scheme}://#{@host}:#{@port}/#{@version}"
+
+        @uber_client = Uber::Client.new
 
       end
 
@@ -125,7 +127,7 @@ module SimpleWorker
         logger.debug 'get url=' + full_url
         req_hash = common_req_hash
         req_hash[:params] = params
-        response = Typhoeus::Request.get(full_url, req_hash) # could let typhoeus add params, using :params=>x
+        response = @uber_client.get(full_url, req_hash) # could let typhoeus add params, using :params=>x
         #response = @http_sess.request(:get, url_plus_params,
         #                              {},
         #                              {})
@@ -143,7 +145,7 @@ module SimpleWorker
           logger.debug "data = " + data
           logger.debug "params = " + params.inspect
           logger.debug "options = " + options.inspect
-          # todo: replace with typhoeus
+          # todo: replace with uber_client
           parse_response(RestClient.post(append_params(url, add_params(method, params)), {:data => data, :file => file}, :content_type => 'application/json'), options)
         rescue RestClient::Exception => ex
           process_ex(ex)
@@ -162,7 +164,7 @@ module SimpleWorker
           logger.debug 'body=' + json
           req_hash = common_req_hash
           req_hash[:body] = json
-          response = Typhoeus::Request.post(url, req_hash)
+          response = @uber_client.post(url, req_hash)
           #response = @http_sess.post(url, json, {"Content-Type" => 'application/json'})
           check_response(response)
           logger.debug 'response: ' + response.inspect
@@ -181,7 +183,7 @@ module SimpleWorker
 
       def put(method, body, options={})
         begin
-          # todo: replace with typhoeus
+          # todo: replace with uber_client
           parse_response RestClient.put(url_full(method), add_params(method, body).to_json, headers), options
         rescue RestClient::Exception => ex
           process_ex(ex)
@@ -190,7 +192,7 @@ module SimpleWorker
 
       def delete(method, params={}, options={})
         begin
-          # todo: replace with typhoeus
+          # todo: replace with uber_client
           parse_response RestClient.delete(append_params(url_full(method), add_params(method, params))), options
         rescue RestClient::Exception => ex
           process_ex(ex)
