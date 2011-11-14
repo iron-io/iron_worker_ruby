@@ -4,6 +4,7 @@ require_relative 'cool_model'
 require_relative 'gem_dependency_worker'
 require_relative 'fail_worker'
 require_relative 'progress_worker'
+require_relative 'workers/big_gems_worker'
 
 class SimpleWorkerTests < TestBase
 
@@ -116,6 +117,22 @@ class SimpleWorkerTests < TestBase
     puts "LOG END\n\n\n"
     assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
     assert log.include?(worker.s3_key)
+  end
+
+  def test_big_gems_worker
+    worker = BigGemsWorker.new
+    worker.queue
+
+    status = worker.wait_until_complete
+    p status
+    p status["error_class"]
+    p status["msg"]
+    puts "\n\n\nLOG START:"
+    log = worker.get_log
+    puts log
+    puts "LOG END\n\n\n"
+    assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
+    assert log.include?("hello")
   end
 
 

@@ -1,6 +1,6 @@
 
 
-class BrokenLoadWorker < SimpleWorker::Base
+class BigGemsWorker < SimpleWorker::Base
 
   merge_gem 'railties', {:version => '3.1.1', :require => 'rails'}
   require 'mysql2'
