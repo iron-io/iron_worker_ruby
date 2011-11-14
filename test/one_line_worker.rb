@@ -1,6 +1,8 @@
 # bump......
 class OneLineWorker < SimpleWorker::Base
 
+  #merge_gem 'webrobots'
+
   attr_accessor :x
 
   def run
