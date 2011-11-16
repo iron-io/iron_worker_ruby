@@ -1,3 +1,4 @@
 .idea
 pkg
 test/config.yml
+*.sublime-*

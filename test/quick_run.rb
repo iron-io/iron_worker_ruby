@@ -1,13 +1,13 @@
 require_relative 'test_base'
 require_relative 'one_line_worker'
-require_relative 'merging_worker'
-
+require_relative 'workers/qb_worker'
 
 class QuickRun < TestBase
 
   def test_worker
-    1.times do |i|
-      worker = OneLineWorker.new
+    10.times do |i|
+      worker = QbWorker.new
+      worker.x = 10
       worker.queue
 
       status = worker.wait_until_complete

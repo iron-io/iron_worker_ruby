@@ -16,7 +16,7 @@ class BatchRun < TestBase
 
     jobs = []
     executor = Concur::Executor.new_thread_pool_executor(50)
-    100.times do |i|
+    1000.times do |i|
       jobs << executor.execute do
         begin
           worker2 = OneLineWorker.new
