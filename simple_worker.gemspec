@@ -4,14 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = "simple_worker"
-  s.version = "2.0.4"
+  s.name = %q{simple_worker}
+  s.version = "2.0.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Travis Reeder"]
-  s.date = "2011-11-14"
-  s.description = "The official SimpleWorker gem for http://www.simpleworker.com"
-  s.email = "travis@appoxy.com"
+  s.authors = [%q{Travis Reeder}]
+  s.date = %q{2011-11-19}
+  s.description = %q{The official SimpleWorker gem for http://www.simpleworker.com}
+  s.email = %q{travis@appoxy.com}
   s.extra_rdoc_files = [
     "README.markdown"
   ]
@@ -31,11 +31,11 @@ Gem::Specification.new do |s|
     "lib/simple_worker/utils.rb",
     "rails/init.rb"
   ]
-  s.homepage = "http://github.com/appoxy/simple_worker"
-  s.require_paths = ["lib"]
+  s.homepage = %q{http://github.com/appoxy/simple_worker}
+  s.require_paths = [%q{lib}]
   s.required_ruby_version = Gem::Requirement.new(">= 1.9")
-  s.rubygems_version = "1.8.11"
-  s.summary = "The official SimpleWorker gem for http://www.simpleworker.com"
+  s.rubygems_version = %q{1.8.8}
+  s.summary = %q{The official SimpleWorker gem for http://www.simpleworker.com}
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
