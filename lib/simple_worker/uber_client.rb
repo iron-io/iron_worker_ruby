@@ -46,6 +46,13 @@ module Uber
     end
   end
 
+  class TimeoutError < ClientError
+    def initialize(msg=nil)
+      msg ||= "HTTP Request Timed out."
+      super(msg)
+    end
+  end
+
   class Client
 
     def initialize
@@ -54,7 +61,12 @@ module Uber
 
     def get(url, req_hash={})
       if Uber.gem == :typhoeus
+        req_hash[:timeout] ||= 1000
         response = Typhoeus::Request.get(url, req_hash)
+        #p response
+        if response.timed_out?
+          raise TimeoutError
+        end
       else
         begin
           headers = req_hash[:headers] || {}
@@ -70,7 +82,13 @@ module Uber
 
     def post(url, req_hash={})
       if Uber.gem == :typhoeus
+        # todo: should change this timeout to longer if it's for posting file
+        req_hash[:timeout] ||= 1000
         response = Typhoeus::Request.post(url, req_hash)
+        #p response
+        if response.timed_out?
+          raise TimeoutError
+        end
       else
         begin
           headers = req_hash[:headers] || {}

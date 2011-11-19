@@ -5,8 +5,8 @@ require_relative 'workers/qb_worker'
 class QuickRun < TestBase
 
   def test_worker
-    10.times do |i|
-      worker = QbWorker.new
+    1.times do |i|
+      worker = OneLineWorker.new
       worker.x = 10
       worker.queue
 
