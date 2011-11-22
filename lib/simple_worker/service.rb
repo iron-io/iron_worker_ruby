@@ -86,8 +86,9 @@ module SimpleWorker
       gem_name =(gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
       #puts "Searching for #{gem_name}..."
       gems= Gem::Specification.respond_to?(:each) ? Gem::Specification.find_all_by_name(gem_name) : Gem::GemPathSearcher.new.find_all(gem_name)
-      #      gems     = searcher.init_gemspecs.select { |gem| gem.name==gem_name }
-      gems = Gem::GemPathSearcher.new.init_gemspecs.select { |gem| gem.name==gem_name } if !gems || gems.empty?
+      if (!Gem::GemPathSearcher.private_instance_methods.include?(:_deprecated_initialize)) && (!gems || gems.empty?)
+         gems = Gem::GemPathSearcher.new.init_gemspecs.select { |gem| gem.name==gem_name }
+      end
       SimpleWorker.logger.debug 'gems found=' + gems.inspect
       gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
