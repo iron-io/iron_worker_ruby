@@ -68,12 +68,13 @@ module Uber
 
     def get(url, req_hash={})
       if Uber.gem == :typhoeus
-        req_hash[:timeout] ||= 5000
+        req_hash[:connect_timeout] = 1000
+        req_hash[:timeout] ||= 10000
         # puts "REQ_HASH=" + req_hash.inspect
         response = Typhoeus::Request.get(url, req_hash)
         #p response
         if response.timed_out?
-          raise TimeoutError
+          raise TyphoeusTimeoutError.new(response)
         end
       else
         begin
@@ -91,7 +92,8 @@ module Uber
     def post(url, req_hash={})
       if Uber.gem == :typhoeus
         # todo: should change this timeout to longer if it's for posting file
-        req_hash[:timeout] ||= 5000
+        req_hash[:connect_timeout] = 1000
+        req_hash[:timeout] ||= 10000
         # puts "REQ_HASH=" + req_hash.inspect
         response = Typhoeus::Request.post(url, req_hash)
         #p response
