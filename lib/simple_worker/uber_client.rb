@@ -53,6 +53,13 @@ module Uber
     end
   end
 
+  class TyphoeusTimeoutError < TimeoutError
+    def initialize(response)  
+      msg ||= "HTTP Request Timed out. Curl code: #{response.curl_return_code}. Curl error msg: #{response.curl_error_message}."
+      super(msg)
+    end
+  end
+
   class Client
 
     def initialize
@@ -87,7 +94,7 @@ module Uber
         response = Typhoeus::Request.post(url, req_hash)
         #p response
         if response.timed_out?
-          raise TimeoutError
+          raise TyphoeusTimeoutError.new(response)
         end
       else
         begin
