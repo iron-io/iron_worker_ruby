@@ -1,7 +1,7 @@
 # Bump...............
 class ProgressWorker < SimpleWorker::Base
 
-    attr_accessor :s3_key, :times
+    attr_accessor :s3_key, :times, :x
 
     def initialize
       @times = 1

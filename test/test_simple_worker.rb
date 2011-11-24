@@ -117,6 +117,8 @@ class SimpleWorkerTests < TestBase
     puts "LOG END\n\n\n"
     assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
     assert log.include?(worker.s3_key)
+    assert status["percent"]
+    assert status["percent"] > 0
   end
 
   def test_big_gems_worker

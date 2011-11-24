@@ -1,5 +1,6 @@
 require_relative 'test_base'
 require_relative 'one_line_worker'
+require_relative 'progress_worker'
 require_relative 'workers/qb_worker'
 
 class QuickRun < TestBase
@@ -12,8 +13,9 @@ class QuickRun < TestBase
 
       status = worker.wait_until_complete
       p status
-      p status["error_class"]
-      p status["msg"]
+      puts "error_class: #{status["error_class"]}"
+      puts "msg: #{status["msg"]}"
+      puts "percent: #{status["percent"]}"
       puts "\n\n\nLOG START:"
       log = worker.get_log
       puts log
