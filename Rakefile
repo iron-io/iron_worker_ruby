@@ -9,7 +9,7 @@ Jeweler::Tasks.new do |gemspec|
   gemspec.email = "travis@appoxy.com"
   gemspec.homepage = "http://github.com/appoxy/simple_worker"
   gemspec.authors = ["Travis Reeder"]
-  gemspec.files = FileList['init.rb', 'lib/**/*.rb', 'rails/**/*.rb']
+  gemspec.files = FileList['VERSION.yml','init.rb', 'lib/**/*.rb', 'rails/**/*.rb']
   gemspec.add_dependency 'zip'
   gemspec.add_dependency 'rest-client'
   #gemspec.add_dependency 'typhoeus'
