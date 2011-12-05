@@ -1,4 +1,4 @@
-class SimpleWorkerGenerator < Rails::Generators::NamedBase
+class IronWorkerGenerator < Rails::Generators::NamedBase
   source_root File.expand_path("../templates", __FILE__)
  
   desc "Creates a new skeleton worker - NAME is camelized"
