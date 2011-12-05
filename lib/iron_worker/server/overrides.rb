@@ -2,18 +2,22 @@
 
 module IronWorker
 
-  class InvalidWorkerError < StandardError; end
+  class InvalidWorkerError < StandardError;
+  end
 
   class << self
     def running_class=(rc)
       @running_class = rc
     end
+
     def running_class
       @running_class
     end
+
     def task_data=(td)
       @task_data = td
     end
+
     def task_data
       @task_data
     end
@@ -31,34 +35,35 @@ module IronWorker
     @queueing_enabled
   end
 
+  class Config
+
+    def merge(file)
+    end
+
+    def unmerge(file)
+    end
+
+    def merge_gem(gem_name, options={})
+    end
+
+    def unmerge_gem(gem_name)
+    end
+
+    def merge_folder(path)
+    end
+
+
+  end
+
 
   class Base
 
     class << self
 
       def merge(*files)
-        #files.each do |file|
-        #  file = file.to_s
-        #  unless file.end_with?(".rb")
-        #    file << ".rb"
-        #  end
-        #  #puts 'code_dir=' + code_dir.inspect
-        #  filename = File.join(code_dir, File.basename(file))
-        #  #puts "merge #{filename}"
-        #  #puts "FILENAME #{filename}"
-        #  require filename if File.exist?(filename) # for backwards compatability
-        #end
-
       end
 
-
       def merge_folder(path)
-        #puts "PATH=#{path}"
-        #puts "#{code_dir}/#{Digest::MD5.hexdigest(path)}/**/*.rb"
-        #Dir["#{code_dir}/#{Digest::MD5.hexdigest(path)}/**/*.rb"].each do |f|
-        #  puts "requiring #{f.inspect}"
-        #  require f if File.exist?(f)
-        #end
       end
 
       def unmerge(*files)
@@ -66,22 +71,9 @@ module IronWorker
       end
 
       def merge_mailer(mailer, params=nil)
-        #merge(mailer)
       end
 
       def merge_gem(gem, version=nil)
-        #gem_info = {:name=>gem}
-        #if version.is_a?(Hash)
-        #  gem_info.merge!(version)
-        #else
-        #  gem_info[:version] = version
-        #end
-        #gem_name =(gem.match(/^[a-zA-Z0-9\-_]+/)[0])
-        #$LOAD_PATH << File.join(code_dir, "/gems/#{gem_name}") #backwards compatibility, should be removed later
-        #$LOAD_PATH << File.join(code_dir, "/gems/#{gem_name}/lib")
-        #                                                       # what's the diff here? This one seems more common: $:.unshift File.join(File.dirname(__FILE__), "/gems/#{gem_name}")
-        #                                                       #puts 'gem_info = ' + gem_info.inspect
-        #require gem_info[:require] || gem_name
       end
 
       def merge_worker(file, class_name)

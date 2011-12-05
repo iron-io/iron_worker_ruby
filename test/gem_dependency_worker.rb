@@ -1,7 +1,7 @@
 # bump..
 class GemDependencyWorker < IronWorker::Base
 
-  #merge_gem "signature"
+  merge_gem "signature"
   merge_gem "pusher"
 
   attr_accessor :some_param

@@ -9,8 +9,12 @@ require_relative 'progress_worker'
 class IronWorkerTests < TestBase
 
   def test_old_gem_error_message
-    assert_raise IronWorker.config.access_key = "abc"
-    assert_raise IronWorker.config.secret_key = "abc"
+    assert_raise do
+      IronWorker.config.access_key = "abc"
+    end
+    assert_raise do
+      assert_raise IronWorker.config.secret_key = "abc"
+    end
   end
 
   def test_gem_merging
