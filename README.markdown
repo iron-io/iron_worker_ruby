@@ -1,22 +1,22 @@
 Getting Started
 ===============
 
-[Sign up for a SimpleWorker account][1], it's free to try!
+[Sign up for a IronWorker account][1], it's free to try!
 
-[1]: http://www.simpleworker.com/
+[1]: http://www.iron.io/
 
-Install SimpleWorker Gem
+Install IronWorker Gem
 ------------------------
 
-    gem install simple_worker
+    gem install iron_worker
 
-Configure SimpleWorker
+Configure IronWorker
 ----------------------
 
 You really just need your token, which you can get [here][2]
-[2]: http://simpleworker.com/tokens 
+[2]: http://hud.iron.io/tokens
 
-    SimpleWorker.configure do |config|
+    IronWorker.configure do |config|
         config.token = TOKEN
         config.project_id = MY_PROJECT_ID
     end
@@ -26,9 +26,9 @@ Write a Worker
 
 Here's an example worker that sends an email:
 
-    require 'simple_worker'
+    require 'iron_worker'
 
-    class HelloWorker < SimpleWorker::Base
+    class HelloWorker < IronWorker::Base
 
         attr_accessor :name
 
@@ -47,9 +47,9 @@ Let's say someone does something in your app and you want to send an email about
     worker.name = "Travis"
     worker.run_local
 
-Once you've got it working locally, the next step is to run it on the SimpleWorker cloud.
+Once you've got it working locally, the next step is to run it on the IronWorker cloud.
 
-Queue up your Worker on the SimpleWorker Cloud
+Queue up your Worker on the IronWorker Cloud
 ----------------------------------------------
 
 Let's say someone does something in your app and you want to send an email about it.
@@ -58,15 +58,15 @@ Let's say someone does something in your app and you want to send an email about
     worker.name = "Travis"
     worker.queue
 
-This will send it off to the SimpleWorker cloud.
+This will send it off to the IronWorker cloud.
 
 Full Documentation
 -----------------
 
-Now that you've got your first worker running, be sure to [check out the full documentation](http://docs.simpleworker.com).
-SimpleWorker can do so much more!
+Now that you've got your first worker running, be sure to [check out the full documentation](http://docs.iron.io).
+IronWorker can do so much more!
 
 Discussion Group
 ----------------------
 
-Join the discussion group at: https://groups.google.com/forum/?hl=en#!forum/simple_worker
+Join the discussion group at: https://groups.google.com/forum/#!forum/ironworker-users

@@ -2,7 +2,7 @@ require_relative 'test_base'
 require_relative 'one_line_worker'
 require 'active_support/core_ext'
 
-class SimpleWorkerTests < TestBase
+class IronWorkerTests < TestBase
 
   def test_scheduler
     worker = OneLineWorker.new
@@ -35,7 +35,7 @@ class SimpleWorkerTests < TestBase
 
     start_time = Time.now
     worker.schedule(start_at: 30.seconds.from_now)
-    SimpleWorker.service.cancel_schedule(worker.schedule_id)
+    IronWorker.service.cancel_schedule(worker.schedule_id)
     assert_equal worker.status['status'], 'cancelled'
   end
 

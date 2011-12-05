@@ -1,11 +1,11 @@
 require_relative 'test_base'
 require_relative 'db_worker'
 require_relative 'db_model'
-class SimpleWorkerTests < TestBase
+class IronWorkerTests < TestBase
 
   def setup
     super
-    SimpleWorker.config.database = @config['database']
+    IronWorker.config.database = @config['database']
   end
 
   def test_active_record

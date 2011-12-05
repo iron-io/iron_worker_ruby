@@ -1,5 +1,5 @@
 # bump..
-class SecondWorker < SimpleWorker::Base
+class SecondWorker < IronWorker::Base
     attr_accessor :start_time, :num
 
     merge_worker 'third_worker.rb', 'ThirdWorker'

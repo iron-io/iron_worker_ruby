@@ -1,11 +1,11 @@
-require_relative 'simple_worker/utils'
-require_relative 'simple_worker/service'
-require_relative 'simple_worker/base'
-require_relative 'simple_worker/config'
-require_relative 'simple_worker/used_in_worker'
+require_relative 'iron_worker/utils'
+require_relative 'iron_worker/service'
+require_relative 'iron_worker/base'
+require_relative 'iron_worker/config'
+require_relative 'iron_worker/used_in_worker'
 
 
-module SimpleWorker
+module IronWorker
   @@logger = Logger.new(STDOUT)
   @@logger.level = Logger::INFO
 
@@ -17,7 +17,7 @@ module SimpleWorker
     def configure()
       yield(config)
       if config && config.token
-        SimpleWorker.service ||= Service.new(config.token, :config=>config)
+        IronWorker.service ||= Service.new(config.token, :config=>config)
       else
         @@logger.warn "No token specified in configure, be sure to set it!"
       end
@@ -42,8 +42,8 @@ if defined?(Rails)
 #  puts 'Rails=' + Rails.inspect
 #  puts 'vers=' + Rails::VERSION::MAJOR.inspect
   if Rails::VERSION::MAJOR == 2
-    require_relative 'simple_worker/rails2_init.rb'
+    require_relative 'iron_worker/rails2_init.rb'
   else
-    require_relative 'simple_worker/railtie'
+    require_relative 'iron_worker/railtie'
   end
 end

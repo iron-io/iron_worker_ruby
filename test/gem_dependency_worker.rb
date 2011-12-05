@@ -1,5 +1,5 @@
 # bump..
-class GemDependencyWorker < SimpleWorker::Base
+class GemDependencyWorker < IronWorker::Base
 
   #merge_gem "signature"
   merge_gem "pusher"

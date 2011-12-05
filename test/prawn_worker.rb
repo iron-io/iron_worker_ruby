@@ -1,6 +1,6 @@
 # bump.............
 
-class PrawnWorker < SimpleWorker::Base
+class PrawnWorker < IronWorker::Base
 
   merge 'resources/something.yml'
   merge_gem 'prawn', :include_dirs=>['data']

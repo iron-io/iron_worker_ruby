@@ -1,5 +1,5 @@
 require 'json'
-SimpleWorker.merge_gem 'rest-client'
+IronWorker.merge_gem 'rest-client'
 
 # load data
 job_data = JSON.load(File.open(File.join(ENV['user_dir'], 'job_data.json')))

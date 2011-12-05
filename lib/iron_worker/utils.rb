@@ -1,4 +1,4 @@
-module SimpleWorker
+module IronWorker
 
   module Utils
 

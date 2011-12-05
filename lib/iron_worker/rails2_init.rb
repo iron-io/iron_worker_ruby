@@ -1,5 +1,5 @@
 #puts "Initializing list of Rails models..."
-SimpleWorker.configure do |config|
+IronWorker.configure do |config|
   path = File.join(Rails.root, 'app/models/*.rb')
 #  puts 'path=' + path
   config.models = Dir.glob(path)

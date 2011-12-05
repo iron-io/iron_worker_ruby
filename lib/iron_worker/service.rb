@@ -6,9 +6,9 @@ require 'json'
 
 require_relative 'api'
 
-module SimpleWorker
+module IronWorker
 
-  class Service < SimpleWorker::Api::Client
+  class Service < IronWorker::Api::Client
 
     attr_accessor :config
 
@@ -16,19 +16,19 @@ module SimpleWorker
       if options[:config]
         self.config = options[:config]
       else
-        c = SimpleWorker::Config.new unless self.config
+        c = IronWorker::Config.new unless self.config
         c.token = token
         self.config = c
       end
-      options[:version] = SimpleWorker.api_version
-      options[:logger] = SimpleWorker.logger
+      options[:version] = IronWorker.api_version
+      options[:logger] = IronWorker.logger
       super("worker-aws-us-east-1.iron.io", token, options)
       self.host = self.config.host if self.config && self.config.host
       # automerge simple worker gem and dependenices
       self.config.merge_gem('rest-client')
-      self.config.merge_gem('simple_worker')
-      SimpleWorker.logger.info 'SimpleWorker initialized.'
-      SimpleWorker.logger.debug ' host = ' + self.host.inspect
+      self.config.merge_gem('iron_worker')
+      IronWorker.logger.info 'IronWorker initialized.'
+      IronWorker.logger.debug ' host = ' + self.host.inspect
     end
 
     # Options:
@@ -38,7 +38,7 @@ module SimpleWorker
       name = options[:name] || class_name
       project_id = get_project_id(options)
       tmp = Dir.tmpdir()
-      md5file = "simple_worker_#{class_name.gsub("::", ".")}_#{token[0, 8]}.md5"
+      md5file = "iron_worker_#{class_name.gsub("::", ".")}_#{token[0, 8]}.md5"
       existing_md5 = nil
       md5_f = File.join(tmp, md5file)
       if File.exists?(md5_f)
@@ -49,7 +49,7 @@ module SimpleWorker
       md5 = Digest::MD5.hexdigest(File.read(filename))
       new_code = false
       if self.config.force_upload || md5 != existing_md5
-        SimpleWorker.logger.info "Uploading #{class_name}, code modified."
+        IronWorker.logger.info "Uploading #{class_name}, code modified."
         File.open(md5_f, 'w') { |f| f.write(md5) }
         new_code = true
         # todo: delete md5 file if error occurs during upload process
@@ -79,7 +79,7 @@ module SimpleWorker
     end
 
     def logger
-      SimpleWorker.logger
+      IronWorker.logger
     end
 
     def self.get_gem_path(gem_info)
@@ -90,7 +90,7 @@ module SimpleWorker
       if (!Gem::GemPathSearcher.private_instance_methods.include?(:_deprecated_initialize)) && (!gems || gems.empty?)
         gems = Gem::GemPathSearcher.new.init_gemspecs.select { |gem| gem.name==gem_name }
       end
-      SimpleWorker.logger.debug 'gems found=' + gems.inspect
+      IronWorker.logger.debug 'gems found=' + gems.inspect
       gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
         gem = gems.last
@@ -102,27 +102,27 @@ module SimpleWorker
 
     def build_merged_file(filename, merged, unmerge, merged_gems, merged_mailers, merged_folders)
 
-      merge = SimpleWorker.config.merged.dup
+      merge = IronWorker.config.merged.dup
       merge.merge!(merged) if merged
       if unmerge
         unmerge.each_pair do |x, y|
           deleted = merge.delete x
-          SimpleWorker.logger.debug "Unmerging #{x}. Success? #{deleted}"
+          IronWorker.logger.debug "Unmerging #{x}. Success? #{deleted}"
         end
       end
       merged = merge
-      SimpleWorker.logger.debug 'merged=' + merged.inspect
+      IronWorker.logger.debug 'merged=' + merged.inspect
 
-      merged_gems = merged_gems.merge(SimpleWorker.config.merged_gems)
-      SimpleWorker.logger.debug 'merged_gems=' + merged_gems.inspect
-      SimpleWorker.config.unmerged_gems.each_pair do |k, v|
-        SimpleWorker.logger.debug 'unmerging gem=' + k.inspect
+      merged_gems = merged_gems.merge(IronWorker.config.merged_gems)
+      IronWorker.logger.debug 'merged_gems=' + merged_gems.inspect
+      IronWorker.config.unmerged_gems.each_pair do |k, v|
+        IronWorker.logger.debug 'unmerging gem=' + k.inspect
         merged_gems.delete(k)
       end
-      SimpleWorker.logger.debug 'merged_gems_after=' + merged_gems.inspect
+      IronWorker.logger.debug 'merged_gems_after=' + merged_gems.inspect
 
       merged_mailers ||= {}
-      merged_mailers = merged_mailers.merge(SimpleWorker.config.mailers) if SimpleWorker.config.mailers
+      merged_mailers = merged_mailers.merge(IronWorker.config.mailers) if IronWorker.config.mailers
 
       #tmp_file = File.join(Dir.tmpdir(), File.basename(filename))
       tmp_file = File.join(Dir.tmpdir(), 'runner.rb')
@@ -154,17 +154,17 @@ require 'json'
 ")
         # require merged gems
         merged_gems.each_pair do |k, gem|
-          SimpleWorker.logger.debug "Bundling gem #{gem[:name]}..."
+          IronWorker.logger.debug "Bundling gem #{gem[:name]}..."
           f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
-          SimpleWorker.logger.debug 'writing requires: ' + gem[:require].inspect
+          IronWorker.logger.debug 'writing requires: ' + gem[:require].inspect
           if gem[:require].nil?
             gem[:require] = []
           elsif gem[:require].is_a?(String)
             gem[:require] = [gem[:require]]
           end
-          SimpleWorker.logger.debug "gem[:require]: " + gem[:require].inspect
+          IronWorker.logger.debug "gem[:require]: " + gem[:require].inspect
           gem[:require].each do |r|
-            SimpleWorker.logger.debug 'adding require to file ' + r.to_s
+            IronWorker.logger.debug 'adding require to file ' + r.to_s
             f.write "require '#{r}'\n"
           end
         end
@@ -177,7 +177,7 @@ require 'json'
 
         # Now we must disable queuing while loading up classes. This is from the overrides.rb file
         f.write("
-SimpleWorker.disable_queueing()
+IronWorker.disable_queueing()
 ")
 
 
@@ -196,22 +196,22 @@ Dir.chdir(dirname)
 job_data = JSON.load(File.open(task_data_file))
 puts 'job_data=' + job_data.inspect
 sw_config = job_data['sw_config']
-SimpleWorker.task_data = job_data
+IronWorker.task_data = job_data
 
-if SimpleWorker.task_data['rails']
+if IronWorker.task_data['rails']
   module ::Rails
     def self.version
-      SimpleWorker.task_data['rails']['version']
+      IronWorker.task_data['rails']['version']
     end
     def self.env
-      SimpleWorker.task_data['rails']['env']
+      IronWorker.task_data['rails']['env']
     end
   end
 end
 ")
 
-        if SimpleWorker.config.extra_requires
-          SimpleWorker.config.extra_requires.each do |r|
+        if IronWorker.config.extra_requires
+          IronWorker.config.extra_requires.each do |r|
             f.write "require '#{r}'\n"
           end
         end
@@ -237,12 +237,12 @@ end
 
         f.write("
   runner_class = get_class_to_run(job_data['class_name'])
-  SimpleWorker.running_class = runner_class
+  IronWorker.running_class = runner_class
   runner = init_runner(runner_class, job_data, dirname, task_id)
   init_worker_service_for_runner(job_data)
 
   # Now reenable after loading
-  SimpleWorker.enable_queueing()
+  IronWorker.enable_queueing()
 
 # Let's run it!
   runner_return_data = runner.run
@@ -268,28 +268,28 @@ end
 #            puts 'gem=' + gem.inspect
             path = gem[:path]
             if path
-              SimpleWorker.logger.debug "Collecting gem #{path}"
+              IronWorker.logger.debug "Collecting gem #{path}"
               paths_to_use = ["#{path}/*", "#{path}/lib/**/**"]
               if gem[:include_dirs]
-                SimpleWorker.logger.debug "including extra dirs: " + gem[:include_dirs].inspect
+                IronWorker.logger.debug "including extra dirs: " + gem[:include_dirs].inspect
                 gem[:include_dirs].each do |dir|
                   paths_to_use << "#{path}/#{dir}/**/**"
                 end
               end
-              SimpleWorker.logger.debug 'paths_to_use: ' + paths_to_use.inspect
+              IronWorker.logger.debug 'paths_to_use: ' + paths_to_use.inspect
               Dir.glob(paths_to_use).each do |file|
                 # todo: could check if directory and it not lib, skip it
-                SimpleWorker.logger.debug 'file for gem=' + file.inspect
+                IronWorker.logger.debug 'file for gem=' + file.inspect
 #                puts 'gem2=' + gem.inspect
                 zdest = "gems/#{gem[:name]}/#{file.sub(path+'/', '')}"
 #                puts 'gem file=' + file.to_s
-                SimpleWorker.logger.debug 'zip dest=' + zdest
+                IronWorker.logger.debug 'zip dest=' + zdest
                 f.add(zdest, file)
               end
             else
               if gem[:auto_merged]
                 # todo: should only continue if the gem was auto merged.
-                SimpleWorker.logger.warn "Gem #{gem[:name]} #{gem[:version]} was not found, continuing anyways."
+                IronWorker.logger.warn "Gem #{gem[:name]} #{gem[:version]} was not found, continuing anyways."
               else
                 raise "Gem #{gem[:name]} #{gem[:version]} was not found. This will occour when gem_name.gemspec is not the same as the gems primary require."
               end
@@ -299,26 +299,26 @@ end
         end
         if merged_folders && merged_folders.size > 0
           merged_folders.each do |folder, files|
-            SimpleWorker.logger.debug "Collecting folder #{folder}"
+            IronWorker.logger.debug "Collecting folder #{folder}"
             if files and files.size>0
               files.each do |file|
                 zdest = "#{Digest::MD5.hexdigest(folder)}/#{file.sub(':', '_').sub('/', '_')}"
-                SimpleWorker.logger.debug 'put file to=' + zdest
+                IronWorker.logger.debug 'put file to=' + zdest
                 f.add(zdest, file)
               end
             end
           end
         end
 
-        SimpleWorker.logger.debug "merge=" + merge.inspect
+        IronWorker.logger.debug "merge=" + merge.inspect
         merge.each_pair do |k, v|
-          SimpleWorker.logger.debug "merging k=#{k.inspect} v=#{v.inspect} into #{filename}"
+          IronWorker.logger.debug "merging k=#{k.inspect} v=#{v.inspect} into #{filename}"
           f.add(File.basename(v[:path]), v[:path])
         end
         if merged_mailers && merged_mailers.size > 0
           # puts " MERGED MAILERS" + merged_mailers.inspect
           merged_mailers.each_pair do |k, mailer|
-            SimpleWorker.logger.debug "Collecting mailer #{mailer[:name]}"
+            IronWorker.logger.debug "Collecting mailer #{mailer[:name]}"
             f.add(File.basename(mailer[:filename]), mailer[:filename])
             path = mailer[:path_to_templates]
             Dir["#{path}/**/**"].each do |file|
@@ -346,7 +346,7 @@ end
     # options:
     #   :runtime => 'ruby', 'python', 'node', 'java', 'go'
     def upload_code(name, package_file, exec_file, options={})
-      SimpleWorker.logger.info 'file size to upload: ' + File.size(package_file).to_s
+      IronWorker.logger.info 'file size to upload: ' + File.size(package_file).to_s
       options = {
           "name"=>name,
           "standalone"=>true,
@@ -354,14 +354,14 @@ end
           "file_name"=> exec_file # File.basename(filename)
       }
       #puts 'options for upload=' + options.inspect
-      SimpleWorker.logger.info "Uploading now..."
+      IronWorker.logger.info "Uploading now..."
       ret = post_file("#{project_url_prefix(get_project_id(options))}codes", File.new(package_file), options)
-      SimpleWorker.logger.info "Done uploading."
+      IronWorker.logger.info "Done uploading."
       return ret
     end
 
     def project_url_prefix(project_id = 0)
-      # SimpleWorker.logger.info "project_url_prefix, project_id = " + project_id.inspect
+      # IronWorker.logger.info "project_url_prefix, project_id = " + project_id.inspect
       if project_id == 0
         return false
         project_id = config.project_id
@@ -387,12 +387,12 @@ end
     def add_sw_params(hash_to_send)
       # todo: remove secret key??  Can use worker service from within a worker without it now
       hash_to_send["oauth"] = self.token
-      hash_to_send["api_version"] = SimpleWorker.api_version
+      hash_to_send["api_version"] = IronWorker.api_version
     end
 
     def check_config
       if self.config.nil? || self.config.token.nil? || self.config.project_id.nil?
-        raise "Invalid SimpleWorker configuration, token and project_id required."
+        raise "Invalid IronWorker configuration, token and project_id required."
       end
     end
 
@@ -437,7 +437,7 @@ end
       #hash_to_send["class_name"] = name unless hash_to_send["class_name"]
       hash_to_send["name"] = name unless hash_to_send["name"]
       uri = project_url_prefix(get_project_id(options)) + "tasks"
-      SimpleWorker.logger.debug 'queue_raw , uri = ' + uri
+      IronWorker.logger.debug 'queue_raw , uri = ' + uri
       ret = post(uri, hash_to_send)
       ret
     end

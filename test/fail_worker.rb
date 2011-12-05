@@ -1,5 +1,5 @@
 # bump......
-class FailWorker < SimpleWorker::Base
+class FailWorker < IronWorker::Base
 
   def run
     puts "I am about to fail..."

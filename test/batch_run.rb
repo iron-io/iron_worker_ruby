@@ -9,7 +9,7 @@ class BatchRun < TestBase
 
   def test_concur_batch
 
-    SimpleWorker.logger.level = Logger::INFO
+    IronWorker.logger.level = Logger::INFO
 
     worker = OneLineWorker.new
     worker.upload
@@ -104,7 +104,7 @@ class BatchRun < TestBase
     #  puts "LOG END\n\n\n"
     #  assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
     #end
-    SimpleWorker.logger.level = Logger::DEBUG
+    IronWorker.logger.level = Logger::DEBUG
 
   end
 

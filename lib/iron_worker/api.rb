@@ -1,7 +1,7 @@
 require 'rest_client'
 require_relative 'uber_client'
 
-module SimpleWorker
+module IronWorker
 
   class RequestError < StandardError
     def initialize(msg, options={})
@@ -81,7 +81,7 @@ module SimpleWorker
       {
           :headers=>{"Content-Type" => 'application/json',
                      "Authorization"=>"OAuth #{@token}",
-                     "User-Agent"=>"SimpleWorker Ruby Client"}
+                     "User-Agent"=>"IronWorker Ruby Client"}
       }
     end
 
@@ -115,7 +115,7 @@ module SimpleWorker
         if status < 400
 
         else
-          raise SimpleWorker::RequestError.new((res ? "#{status}: #{res["msg"]}" : "#{status} Error! parse=false so no msg"), :status=>status)
+          raise IronWorker::RequestError.new((res ? "#{status}: #{res["msg"]}" : "#{status} Error! parse=false so no msg"), :status=>status)
         end
         res || body
       end
@@ -170,7 +170,7 @@ module SimpleWorker
           logger.debug 'response: ' + response.inspect
           body = response.body
           parse_response(body, options)
-        rescue SimpleWorker::RequestError => ex
+        rescue IronWorker::RequestError => ex
           # let it throw, came from check_response
           raise ex
         rescue RestClient::Exception => ex
@@ -217,7 +217,7 @@ module SimpleWorker
       end
 
       def headers
-        user_agent = "SimpleWorker Ruby Client"
+        user_agent = "IronWorker Ruby Client"
         headers = {'User-Agent' => user_agent}
       end
 

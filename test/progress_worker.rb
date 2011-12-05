@@ -1,5 +1,5 @@
 # Bump...............
-class ProgressWorker < SimpleWorker::Base
+class ProgressWorker < IronWorker::Base
 
     attr_accessor :s3_key, :times, :x
 

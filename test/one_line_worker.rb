@@ -1,5 +1,5 @@
 # bump......
-class OneLineWorker < SimpleWorker::Base
+class OneLineWorker < IronWorker::Base
 
   #merge_gem 'webrobots'
 

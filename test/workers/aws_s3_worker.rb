@@ -1,5 +1,5 @@
 # bump..
-class AwsS3Worker < SimpleWorker::Base
+class AwsS3Worker < IronWorker::Base
 
   merge_gem "aws-s3", :require => 'aws/s3'
 

@@ -1,6 +1,6 @@
 # This is used when a bad worker is uploaded.
 
-module SimpleWorker
+module IronWorker
 
   class InvalidWorkerError < StandardError; end
 
@@ -94,7 +94,7 @@ module SimpleWorker
       true
     end
 
-    #:todo remove this method later, when new simple_worker gem will be released
+    #:todo remove this method later, when new iron_worker gem will be released
     def is_local?
       !is_remote?
     end
@@ -105,7 +105,7 @@ module SimpleWorker
 
     def set_progress(hash)
       #puts 'set_progress self=' + self.inspect
-      SimpleWorker.service.set_progress(self.task_id, hash)
+      IronWorker.service.set_progress(self.task_id, hash)
     end
 
     def something
@@ -140,28 +140,28 @@ module SimpleWorker
     alias_method :orig_status, :status
 
     def queue(options={})
-      if SimpleWorker.queueing_enabled? && (!same_clazz? || options[:recursive])
+      if IronWorker.queueing_enabled? && (!same_clazz? || options[:recursive])
         orig_queue(options)
 #        data = sw_get_data()
 #        queue_other(self.class.name, data)
       else
-        log (SimpleWorker.queueing_enabled? ? "WARNING: Recursion detected in queueing, pass in :recursive=>true to bypass this." : "Queuing disabled while loading.")
+        log (IronWorker.queueing_enabled? ? "WARNING: Recursion detected in queueing, pass in :recursive=>true to bypass this." : "Queuing disabled while loading.")
       end
     end
 
     def schedule(schedule)
-      if SimpleWorker.queueing_enabled? && (!same_clazz? || schedule[:recursive])
+      if IronWorker.queueing_enabled? && (!same_clazz? || schedule[:recursive])
         orig_schedule(schedule)
 #        data = sw_get_data()
 #        schedule_other(self.class.name, data, schedule)
       else
-        log (SimpleWorker.queueing_enabled? ? "WARNING: Recursion detected in scheduling." : "Scheduling disabled while loading.")
+        log (IronWorker.queueing_enabled? ? "WARNING: Recursion detected in scheduling." : "Scheduling disabled while loading.")
       end
 
     end
 
     def status
-      if SimpleWorker.queueing_enabled?
+      if IronWorker.queueing_enabled?
         orig_status
       else
         log "Status disabled while loading."
@@ -169,13 +169,13 @@ module SimpleWorker
     end
 
     def same_clazz?
-      SimpleWorker.running_class == self.class
+      IronWorker.running_class == self.class
     end
 
   end
 
 
-  class Service < SimpleWorker::Api::Client
+  class Service < IronWorker::Api::Client
     def upload(filename, class_name, options={})
       #puts "Skipping upload, We don't upload from run.rb!"
       # don't upload, should already be here.
@@ -184,7 +184,7 @@ module SimpleWorker
     def add_sw_params(hash_to_send)
       hash_to_send["token"] = self.config.token
       hash_to_send["project_id"] = self.config.project_id
-      hash_to_send["api_version"] = SimpleWorker.api_version
+      hash_to_send["api_version"] = IronWorker.api_version
     end
   end
 

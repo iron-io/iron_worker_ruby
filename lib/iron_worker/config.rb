@@ -1,13 +1,13 @@
-module SimpleWorker
+module IronWorker
 
 
-  # Config is used to setup the SimpleWorker client.
+  # Config is used to setup the IronWorker client.
   # You must set the access_key and secret_key.
   #
   # config.global_attributes allows you to specify attributes that will automatically be set on every worker,
   #    this is good for database connection information or things that will be used across the board.
   #
-  # config.database configures a database connection. If specified like ActiveRecord, SimpleWorker will automatically establish a connection
+  # config.database configures a database connection. If specified like ActiveRecord, IronWorker will automatically establish a connection
   # for you before running your worker.
   class Config
     attr_accessor :token,
@@ -43,10 +43,10 @@ module SimpleWorker
     end
 
     def access_key=(x)
-      raise "SimpleWorker Config Error: access_key and secret_key are no longer used. The new SimpleWorker gem requires a couple of small configuration changes, please see: http://docs.simpleworker.com/ruby/new-gem-v2-update-guide for information."
+      raise "IronWorker Config Error: access_key and secret_key are no longer used. The new IronWorker gem requires a couple of small configuration changes, please see: http://docs.IronWorker.com/ruby/new-gem-v2-update-guide for information."
     end
     def secret_key=(x)
-      raise "SimpleWorker Config Error: access_key and secret_key are no longer used. The new SimpleWorker gem requires a couple of small configuration changes, please see: http://docs.simpleworker.com/ruby/new-gem-v2-update-guide for information."
+      raise "IronWorker Config Error: access_key and secret_key are no longer used. The new IronWorker gem requires a couple of small configuration changes, please see: http://docs.IronWorker.com/ruby/new-gem-v2-update-guide for information."
     end
 
     @gems_to_skip = ['actionmailer', 'actionpack', 'activemodel', 'activeresource', 'activesupport',
@@ -63,9 +63,9 @@ module SimpleWorker
 
     def auto_merge=(b)
       if b
-        SimpleWorker.logger.info "Initializing SimpleWorker for Rails 3..."
+        IronWorker.logger.info "Initializing IronWorker for Rails 3..."
         start_time = Time.now
-        SimpleWorker.configure do |c2|
+        IronWorker.configure do |c2|
           models_path = File.join(Rails.root, 'app/models/*.rb')
           models = Dir.glob(models_path)
           c2.models = models
@@ -85,29 +85,29 @@ module SimpleWorker
             c2.mailer = ActionMailer::Base.smtp_settings
           end
           c2.merged_gems.merge!(get_required_gems) if defined?(Bundler)
-          SimpleWorker.logger.debug "MODELS " + c2.models.inspect
-          SimpleWorker.logger.debug "MAILERS " + c2.mailers.inspect
-          SimpleWorker.logger.debug "DATABASE " + c2.database.inspect
-          #SimpleWorker.logger.debug "GEMS " + c2.gems.inspect
+          IronWorker.logger.debug "MODELS " + c2.models.inspect
+          IronWorker.logger.debug "MAILERS " + c2.mailers.inspect
+          IronWorker.logger.debug "DATABASE " + c2.database.inspect
+          #IronWorker.logger.debug "GEMS " + c2.gems.inspect
         end
         end_time = Time.now
-        SimpleWorker.logger.info "SimpleWorker initialized. Duration: #{((end_time.to_f-start_time.to_f) * 1000.0).to_i} ms"
+        IronWorker.logger.info "IronWorker initialized. Duration: #{((end_time.to_f-start_time.to_f) * 1000.0).to_i} ms"
       end
     end
 
 
     def get_required_gems
       gems_in_gemfile = Bundler.environment.dependencies.select { |d| d.groups.include?(:default) }
-      SimpleWorker.logger.debug 'gems in gemfile=' + gems_in_gemfile.inspect
+      IronWorker.logger.debug 'gems in gemfile=' + gems_in_gemfile.inspect
       gems = {}
       specs = Bundler.load.specs
-      SimpleWorker.logger.debug 'Bundler specs=' + specs.inspect
-      SimpleWorker.logger.debug "gems_to_skip=" + self.class.gems_to_skip.inspect
+      IronWorker.logger.debug 'Bundler specs=' + specs.inspect
+      IronWorker.logger.debug "gems_to_skip=" + self.class.gems_to_skip.inspect
       specs.each do |spec|
-        SimpleWorker.logger.debug 'spec.name=' + spec.name.inspect
-        SimpleWorker.logger.debug 'spec=' + spec.inspect
+        IronWorker.logger.debug 'spec.name=' + spec.name.inspect
+        IronWorker.logger.debug 'spec=' + spec.inspect
         if self.class.gems_to_skip.include?(spec.name)
-          SimpleWorker.logger.debug "Skipping #{spec.name}"
+          IronWorker.logger.debug "Skipping #{spec.name}"
           next
         end
 #        next if dep.name=='rails' #monkey patch
@@ -117,33 +117,33 @@ module SimpleWorker
 # Now find dependency in gemfile in case user set the require
         dep = gems_in_gemfile.find { |g| g.name == gem_info[:name] }
         if dep
-          SimpleWorker.logger.debug 'dep found in gemfile: ' + dep.inspect
-          SimpleWorker.logger.debug 'autorequire=' + dep.autorequire.inspect
+          IronWorker.logger.debug 'dep found in gemfile: ' + dep.inspect
+          IronWorker.logger.debug 'autorequire=' + dep.autorequire.inspect
           gem_info[:require] = dep.autorequire if dep.autorequire
 #        spec = specs.find { |g| g.name==gem_info[:name] }
         end
         gem_info[:version] = spec.version.to_s
         gems[gem_info[:name]] = gem_info
-        path = SimpleWorker::Service.get_gem_path(gem_info)
+        path = IronWorker::Service.get_gem_path(gem_info)
         if path
           gem_info[:path] = path
           if gem_info[:require].nil? && dep
             # see if we should try to require this in our worker
             require_path = gem_info[:path] + "/lib/#{gem_info[:name]}.rb"
-            SimpleWorker.logger.debug "require_path=" + require_path
+            IronWorker.logger.debug "require_path=" + require_path
             if File.exists?(require_path)
-              SimpleWorker.logger.debug "File exists for require"
+              IronWorker.logger.debug "File exists for require"
               gem_info[:require] = gem_info[:name]
             else
-              SimpleWorker.logger.debug "no require"
+              IronWorker.logger.debug "no require"
 #              gem_info[:no_require] = true
             end
           end
         else
-          SimpleWorker.logger.warn "Could not find '#{gem_info[:name]}' specified in Bundler, continuing anyways."
+          IronWorker.logger.warn "Could not find '#{gem_info[:name]}' specified in Bundler, continuing anyways."
         end
 #        else
-#          SimpleWorker.logger.warn "Could not find gem spec for #{gem_info[:name]}"
+#          IronWorker.logger.warn "Could not find gem spec for #{gem_info[:name]}"
 #          raise "Could not find gem spec for #{gem_info[:name]}"
 #        end
       end
@@ -153,7 +153,7 @@ module SimpleWorker
     def get_server_gems
       return []
       # skipping this now, don't want any server dependencies if possible
-      self.server_gems = SimpleWorker.service.get_server_gems unless self.server_gems
+      self.server_gems = IronWorker.service.get_server_gems unless self.server_gems
       self.server_gems
     end
 
@@ -171,7 +171,7 @@ module SimpleWorker
     end
 
     def merge(file)
-      f2 = SimpleWorker::MergeHelper.check_for_file(file, caller[2])
+      f2 = IronWorker::MergeHelper.check_for_file(file, caller[2])
       fbase = f2[:basename]
       ret = f2
       @merged[fbase] = ret
@@ -179,7 +179,7 @@ module SimpleWorker
     end
 
     def unmerge(file)
-      f2 = SimpleWorker::MergeHelper.check_for_file(file, caller[2])
+      f2 = IronWorker::MergeHelper.check_for_file(file, caller[2])
       fbase = f2[:basename]
       @unmerged[fbase] =f2
       @merged.delete(fbase)
@@ -187,7 +187,7 @@ module SimpleWorker
 
     # Merge a gem globally here
     def merge_gem(gem_name, options={})
-      merged_gems[gem_name.to_s] = SimpleWorker::MergeHelper.create_gem_info(gem_name, options)
+      merged_gems[gem_name.to_s] = IronWorker::MergeHelper.create_gem_info(gem_name, options)
     end
 
     # Unmerge a global gem
@@ -206,7 +206,7 @@ module SimpleWorker
     # callerr is original file that is calling the merge function, ie: your worker.
     # See Base for examples.
     def self.check_for_file(f, callerr)
-      SimpleWorker.logger.debug 'Checking for ' + f.to_s
+      IronWorker.logger.debug 'Checking for ' + f.to_s
       f = f.to_str
       f_ext = File.extname(f)
       if f_ext.empty?
@@ -251,8 +251,8 @@ module SimpleWorker
       end
       gem_info[:require] ||= gem_name
 
-      path = SimpleWorker::Service.get_gem_path(gem_info)
-      SimpleWorker.logger.debug "Gem path=#{path}"
+      path = IronWorker::Service.get_gem_path(gem_info)
+      IronWorker.logger.debug "Gem path=#{path}"
       if !path
         raise "Gem '#{gem_name}' not found."
       end

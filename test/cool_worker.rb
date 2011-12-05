@@ -1,5 +1,5 @@
 # bump..
-class CoolWorker < SimpleWorker::Base
+class CoolWorker < IronWorker::Base
   attr_accessor :array_of_models
   merge 'cool_model'
 

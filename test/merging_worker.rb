@@ -1,6 +1,6 @@
 # bump.......................
 
-class MergingWorker < SimpleWorker::Base
+class MergingWorker < IronWorker::Base
 
   merge_gem 'mini_fb'
   #merge_gem 'carrierwave', :require=>['carrierwave', 'carrierwave/orm/activerecord']

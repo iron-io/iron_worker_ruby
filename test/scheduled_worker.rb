@@ -1,11 +1,11 @@
 begin
-    require File.join(File.dirname(__FILE__), '../lib/simple_worker')
+    require File.join(File.dirname(__FILE__), '../lib/iron_worker')
 rescue Exception
-    require 'simple_worker'
+    require 'iron_worker'
 end
 
 
-class ScheduledWorker < SimpleWorker::Base
+class ScheduledWorker < IronWorker::Base
 
     def run
         log "This is scheduled yes it is"

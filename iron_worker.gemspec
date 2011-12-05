@@ -4,7 +4,7 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = "simple_worker"
+  s.name = "iron_worker"
   s.version = "2.0.9"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
@@ -16,22 +16,22 @@ Gem::Specification.new do |s|
     "README.markdown"
   ]
   s.files = [
-    "lib/generators/simple_worker/simple_worker_generator.rb",
-    "lib/simple_worker.rb",
-    "lib/simple_worker/api.rb",
-    "lib/simple_worker/base.rb",
-    "lib/simple_worker/config.rb",
-    "lib/simple_worker/rails2_init.rb",
-    "lib/simple_worker/railtie.rb",
-    "lib/simple_worker/server/overrides.rb",
-    "lib/simple_worker/server/runner.rb",
-    "lib/simple_worker/service.rb",
-    "lib/simple_worker/uber_client.rb",
-    "lib/simple_worker/used_in_worker.rb",
-    "lib/simple_worker/utils.rb",
+    "lib/generators/iron_worker/iron_worker_generator.rb",
+    "lib/iron_worker.rb",
+    "lib/iron_worker/api.rb",
+    "lib/iron_worker/base.rb",
+    "lib/iron_worker/config.rb",
+    "lib/iron_worker/rails2_init.rb",
+    "lib/iron_worker/railtie.rb",
+    "lib/iron_worker/server/overrides.rb",
+    "lib/iron_worker/server/runner.rb",
+    "lib/iron_worker/service.rb",
+    "lib/iron_worker/uber_client.rb",
+    "lib/iron_worker/used_in_worker.rb",
+    "lib/iron_worker/utils.rb",
     "rails/init.rb"
   ]
-  s.homepage = "http://github.com/appoxy/simple_worker"
+  s.homepage = "http://github.com/appoxy/iron_worker"
   s.require_paths = ["lib"]
   s.required_ruby_version = Gem::Requirement.new(">= 1.9")
   s.rubygems_version = "1.8.11"

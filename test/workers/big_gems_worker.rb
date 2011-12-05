@@ -1,6 +1,7 @@
 
+RMAGICK_BYPASS_VERSION_TEST = true
 
-class BigGemsWorker < SimpleWorker::Base
+class BigGemsWorker < IronWorker::Base
 
   merge_gem 'railties', {:version => '3.1.1', :require => 'rails'}
   require 'mysql2'

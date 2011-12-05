@@ -3,7 +3,7 @@
 class Model2
     attr_accessor :heidi, :ho
 
-    include SimpleWorker::UsedInWorker
+    include IronWorker::UsedInWorker
 
     def say_hello
         log "Hi there sir"

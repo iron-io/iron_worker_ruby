@@ -47,7 +47,7 @@ def init_runner(runner_class, job_data, user_dir, task_id)
   if init_arity == 0 || init_arity == -1
     # good. -1 can be if it's not defined at all
   else
-    raise SimpleWorker::InvalidWorkerError, "Worker initialize method must accept zero arguments."
+    raise IronWorker::InvalidWorkerError, "Worker initialize method must accept zero arguments."
   end
   runner = runner_class.new
   runner.instance_variable_set(:@task_id, task_id)
@@ -59,7 +59,7 @@ def init_runner(runner_class, job_data, user_dir, task_id)
 end
 
 def init_worker_service_for_runner(job_data)
-  SimpleWorker.configure do |config|
+  IronWorker.configure do |config|
     sw_config = job_data['sw_config']
     config.token = sw_config['token']
     config.project_id = sw_config['project_id']

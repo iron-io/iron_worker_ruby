@@ -1,13 +1,13 @@
 # see http://api.rubyonrails.org/classes/Rails/Railtie.html
 
-require 'simple_worker'
+require 'iron_worker'
 require 'rails'
 
-module SimpleWorker
+module IronWorker
   class Railtie < Rails::Railtie
 
 
-    initializer "simple_worker.configure_rails_initialization" do |app|
+    initializer "iron_worker.configure_rails_initialization" do |app|
 
     end
 

@@ -1,5 +1,5 @@
 # bump......
-class RailsWorker < SimpleWorker::Base
+class RailsWorker < IronWorker::Base
 
   merge_worker 'rails_worker2', 'RailsWorker2'
 

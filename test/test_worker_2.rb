@@ -1,5 +1,5 @@
 # Bump..................
-class TestWorker2 < SimpleWorker::Base
+class TestWorker2 < IronWorker::Base
 
     merge File.join(File.dirname(__FILE__), 'models', 'model_1.rb')
     unmerge 'models/model_2.rb'

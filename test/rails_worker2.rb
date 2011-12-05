@@ -1,6 +1,6 @@
 
 # bump......
-class RailsWorker2 < SimpleWorker::Base
+class RailsWorker2 < IronWorker::Base
   attr_accessor :x
 
   def run

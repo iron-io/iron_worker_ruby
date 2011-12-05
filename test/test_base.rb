@@ -2,13 +2,13 @@ gem 'test-unit'
 require 'test/unit'
 require 'yaml'
 begin
-  require File.join(File.dirname(__FILE__), '../lib/simple_worker')
+  require File.join(File.dirname(__FILE__), '../lib/iron_worker')
 rescue Exception => ex
-  puts "Could NOT load current simple_worker: " + ex.message
+  puts "Could NOT load current iron_worker: " + ex.message
   raise ex
 end
 
-SimpleWorker.logger.level = Logger::DEBUG
+IronWorker.logger.level = Logger::DEBUG
 
 require_relative "test_worker"
 require_relative "test_worker_2"
@@ -17,19 +17,19 @@ require_relative "test_worker_3"
 class TestBase < Test::Unit::TestCase
 
   def setup
-    @config = YAML::load_file(File.expand_path(File.join("~", "Dropbox", "configs", "simple_worker_gem", "test", "config.yml")))
+    @config = YAML::load_file(File.expand_path(File.join("~", "Dropbox", "configs", "iron_worker_gem", "test", "config.yml")))
 #    @config = YAML::load_file(File.join(File.dirname(__FILE__), "config.yml"))
     puts "config: " + @config.inspect
-    @token = @config['simple_worker']['token']
-    @project_id = @config['simple_worker']['project_id']
+    @token = @config['iron_worker']['token']
+    @project_id = @config['iron_worker']['project_id']
 
     # new style
-    SimpleWorker.configure do |config|
+    IronWorker.configure do |config|
       config.token = @token
       config.project_id = @project_id
-      config.host = @config['simple_worker']['host'] if @config['simple_worker']['host']
-      config.port = @config['simple_worker']['port'] if @config['simple_worker']['port']
-      config.scheme = @config['simple_worker']['scheme'] if @config['simple_worker']['scheme']
+      config.host = @config['iron_worker']['host'] if @config['iron_worker']['host']
+      config.port = @config['iron_worker']['port'] if @config['iron_worker']['port']
+      config.scheme = @config['iron_worker']['scheme'] if @config['iron_worker']['scheme']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
       config.force_upload = true

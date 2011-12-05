@@ -2,7 +2,7 @@
 
 require 'mysql2'
 
-class DbWorker < SimpleWorker::Base
+class DbWorker < IronWorker::Base
   merge_gem 'activerecord', :require=>'active_record'
   merge 'db_model'
 

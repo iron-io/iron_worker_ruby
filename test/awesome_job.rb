@@ -1,5 +1,5 @@
 # bump..
-class AwesomeJob < SimpleWorker::Base
+class AwesomeJob < IronWorker::Base
   merge_gem 'dropbox', '1.2.3'
 
   # todo: this one causes a stack level too deep error??

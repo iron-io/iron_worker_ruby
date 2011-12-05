@@ -1,4 +1,4 @@
-class RunningBackWorker < SimpleWorker::Base
+class RunningBackWorker < IronWorker::Base
   
   attr_accessor :i
   def run

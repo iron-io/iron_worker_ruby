@@ -4,13 +4,13 @@ require_relative 'cool_model'
 require_relative 'gem_dependency_worker'
 require_relative 'fail_worker'
 require_relative 'progress_worker'
-require_relative 'workers/big_gems_worker'
+#require_relative 'workers/big_gems_worker'
 
-class SimpleWorkerTests < TestBase
+class IronWorkerTests < TestBase
 
   def test_old_gem_error_message
-    assert_raise SimpleWorker.config.access_key = "abc"
-    assert_raise SimpleWorker.config.secret_key = "abc"
+    assert_raise IronWorker.config.access_key = "abc"
+    assert_raise IronWorker.config.secret_key = "abc"
   end
 
   def test_gem_merging
@@ -73,7 +73,7 @@ class SimpleWorkerTests < TestBase
     cool.queue
     status = wait_for_task(cool)
     assert status["status"] == "complete"
-    log = SimpleWorker.service.log(cool.task_id)
+    log = IronWorker.service.log(cool.task_id)
     puts 'log=' + log.inspect
     assert log.length > 10
 
@@ -122,6 +122,9 @@ class SimpleWorkerTests < TestBase
   end
 
   def test_big_gems_worker
+
+    raise "BigGemWorker DOESN'T WORK, remove this raise when fixed."
+
     worker = BigGemsWorker.new
     worker.queue
 

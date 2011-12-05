@@ -1,5 +1,5 @@
 # Bump...............
-class TestWorker < SimpleWorker::Base
+class TestWorker < IronWorker::Base
 
     attr_accessor :s3_key, :times
 
