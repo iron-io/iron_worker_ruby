@@ -5,17 +5,18 @@
 
 Gem::Specification.new do |s|
   s.name = "iron_worker"
-  s.version = "2.0.9"
+  s.version = "2.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder"]
-  s.date = "2011-11-24"
-  s.description = "The official IronWorker gem for http://www.iron.io"
-  s.email = "travis@appoxy.com"
+  s.date = "2011-12-05"
+  s.description = "The official IronWorker gem for IronWorker by Iron.io. http://www.iron.io"
+  s.email = "travis@iron.io"
   s.extra_rdoc_files = [
     "README.markdown"
   ]
   s.files = [
+    "VERSION.yml",
     "lib/generators/iron_worker/iron_worker_generator.rb",
     "lib/iron_worker.rb",
     "lib/iron_worker/api.rb",
@@ -31,11 +32,11 @@ Gem::Specification.new do |s|
     "lib/iron_worker/utils.rb",
     "rails/init.rb"
   ]
-  s.homepage = "http://github.com/appoxy/iron_worker"
+  s.homepage = "http://www.iron.io"
   s.require_paths = ["lib"]
   s.required_ruby_version = Gem::Requirement.new(">= 1.9")
   s.rubygems_version = "1.8.11"
-  s.summary = "The official IronWorker gem for http://www.iron.io"
+  s.summary = "The official IronWorker gem for IronWorker by Iron.io. http://www.iron.io"
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
