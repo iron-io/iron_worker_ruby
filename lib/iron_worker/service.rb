@@ -499,21 +499,21 @@ end
 
     def get_codes(options={})
       hash_to_send = {}
-      uri = "projects/" + get_project_id(options) + "/codes/"
+      uri = "projects/" + get_project_id(options) + "/codes"
       ret = get(uri, hash_to_send)
       ret
     end
 
     def get_schedules(options={})
       hash_to_send = {}
-      uri = "projects/" + get_project_id(options) + "/schedules/"
+      uri = "projects/" + get_project_id(options) + "/schedules"
       ret = get(uri, hash_to_send)
       ret
     end
 
     def get_jobs(options={})
       hash_to_send = {}
-      uri = "projects/" + get_project_id(options) + "/tasks/"
+      uri = "projects/" + get_project_id(options) + "/tasks"
       ret = get(uri, hash_to_send)
       ret
     end
