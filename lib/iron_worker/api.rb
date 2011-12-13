@@ -54,12 +54,15 @@ module IronWorker
         @version = options[:version]
         #@logger = options[:logger]
 
-        @base_url = "#{@scheme}://#{@host}:#{@port}/#{@version}"
+        reset_base_url
 
         @uber_client = Uber::Client.new
 
       end
 
+      def reset_base_url
+        @base_url = "#{@scheme}://#{@host}:#{@port}/#{@version}"
+      end
 
       def base_url
         @base_url
@@ -77,13 +80,13 @@ module IronWorker
       end
 
 
-    def common_req_hash
-      {
-          :headers=>{"Content-Type" => 'application/json',
-                     "Authorization"=>"OAuth #{@token}",
-                     "User-Agent"=>"IronWorker Ruby Client"}
-      }
-    end
+      def common_req_hash
+        {
+            :headers=>{"Content-Type" => 'application/json',
+                       "Authorization"=>"OAuth #{@token}",
+                       "User-Agent"=>"IronWorker Ruby Client"}
+        }
+      end
 
       def process_ex(ex)
         logger.error "EX #{ex.class.name}: #{ex.message}"

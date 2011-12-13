@@ -107,7 +107,7 @@ module Uber
           response = RestClientResponseWrapper.new(r2)
             # todo: make generic exception
         rescue RestClient::Exception => ex
-          raise RestClientExceptionWrapper(ex)
+          raise RestClientExceptionWrapper.new(ex)
         end
       end
       response

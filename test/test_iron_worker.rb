@@ -4,9 +4,33 @@ require_relative 'cool_model'
 require_relative 'gem_dependency_worker'
 require_relative 'fail_worker'
 require_relative 'progress_worker'
+require_relative 'one_line_worker'
 #require_relative 'workers/big_gems_worker'
 
 class IronWorkerTests < TestBase
+
+  # todo: test both gems
+    #def test_rest_client
+    #  Uber.gem = :rest_client
+    #
+    #  worker = OneLineWorker.new
+    #  worker.queue
+    #
+    #  IronWorker.service.host = "http://www.wlajdfljalsjfklsldf.com/"
+    #  IronWorker.service.reset_base_url
+    #
+    #  status = worker.wait_until_complete
+    #  p status
+    #  p status["error_class"]
+    #  p status["msg"]
+    #  puts "\n\n\nLOG START:"
+    #  log = worker.get_log
+    #  puts log
+    #  puts "LOG END\n\n\n"
+    #  assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
+    #  Uber.gem = :typhoeus
+    #end
+
 
   def test_old_gem_error_message
     assert_raise do
