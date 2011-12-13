@@ -5,7 +5,7 @@ require_relative 'gem_dependency_worker'
 require_relative 'fail_worker'
 require_relative 'progress_worker'
 require_relative 'one_line_worker'
-#require_relative 'workers/big_gems_worker'
+require_relative 'workers/big_gems_worker'
 
 class IronWorkerTests < TestBase
 
@@ -151,7 +151,7 @@ class IronWorkerTests < TestBase
 
   def test_big_gems_worker
 
-    raise "BigGemWorker DOESN'T WORK, remove this raise when fixed."
+    #raise "BigGemWorker DOESN'T WORK, remove this raise when fixed."
 
     worker = BigGemsWorker.new
     worker.queue
