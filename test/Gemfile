@@ -2,7 +2,15 @@
 
 source 'http://rubygems.org'
 
+gem 'test-unit'
+gem 'zip'
+gem 'rest'
+
+gem 'activesupport'
+gem 'simple_record'
 gem 'dropbox', '1.2.3'
 gem 'mongoid_i18n'
 gem 'signature'
 gem 'pusher'
+gem 'carrierwave'
+

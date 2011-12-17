@@ -1,5 +1,4 @@
-require 'rest_client'
-require_relative 'uber_client'
+require 'rest'
 
 module IronWorker
 
@@ -56,7 +55,7 @@ module IronWorker
 
         reset_base_url
 
-        @uber_client = Uber::Client.new
+        @uber_client = Rest::Client.new
 
       end
 

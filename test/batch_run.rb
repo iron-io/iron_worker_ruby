@@ -11,15 +11,17 @@ class BatchRun < TestBase
 
     IronWorker.logger.level = Logger::INFO
 
-    worker = OneLineWorker.new
+    clz = MergingWorker
+
+    worker = clz.new
     worker.upload
 
     jobs = []
     executor = Concur::Executor.new_thread_pool_executor(50)
-    1000.times do |i|
+    100.times do |i|
       jobs << executor.execute do
         begin
-          worker2 = OneLineWorker.new
+          worker2 = clz.new
           puts "queueing #{i}"
           worker2.x =  "hello payload #{i}"
           response_hash = worker2.queue(:priority=>(@config[:priority] || 0))
