@@ -47,22 +47,24 @@ module IronWorker
         existing_md5 = IO.read(md5_f)
       end
 
-      # Check for code changes.
-      md5 = Digest::MD5.hexdigest(File.read(filename))
-      new_code = false
-      if self.config.force_upload || md5 != existing_md5
-        IronWorker.logger.info "Uploading #{class_name}, code modified."
-        File.open(md5_f, 'w') { |f| f.write(md5) }
-        new_code = true
-        # todo: delete md5 file if error occurs during upload process
-      else
-#        puts "#{class_name}: same code, not uploading"
-        return
-      end
 
       begin
 
         zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:merged_mailers], options[:merged_folders])
+
+           # Check for code changes.
+        zipfile =  Zip::ZipFile.open(zip_filename, Zip::ZipFile::CREATE)
+        crc =  zipfile.entries.collect{|x|x.crc}.inject(:+)
+        new_code = false
+        if self.config.force_upload || crc.to_s != existing_md5
+          IronWorker.logger.info "Uploading #{class_name}, code modified."
+          File.open(md5_f, 'w') { |f| f.write(crc) }
+          new_code = true
+          # todo: delete md5 file if error occurs during upload process
+        else
+#        puts "#{class_name}: same code, not uploading"
+          return
+        end
 
         if new_code
           upload_code(name, zip_filename, 'runner.rb', :runtime=>'ruby')
