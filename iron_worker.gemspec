@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "iron_worker"
-  s.version = "2.1.1"
+  s.version = "2.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder"]
-  s.date = "2011-12-05"
+  s.date = "2011-12-18"
   s.description = "The official IronWorker gem for IronWorker by Iron.io. http://www.iron.io"
   s.email = "travis@iron.io"
   s.extra_rdoc_files = [
@@ -27,7 +27,6 @@ Gem::Specification.new do |s|
     "lib/iron_worker/server/overrides.rb",
     "lib/iron_worker/server/runner.rb",
     "lib/iron_worker/service.rb",
-    "lib/iron_worker/uber_client.rb",
     "lib/iron_worker/used_in_worker.rb",
     "lib/iron_worker/utils.rb",
     "rails/init.rb"
@@ -44,19 +43,25 @@ Gem::Specification.new do |s|
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<zip>, [">= 0"])
       s.add_runtime_dependency(%q<rest-client>, [">= 0"])
+      s.add_runtime_dependency(%q<rest>, [">= 0"])
       s.add_runtime_dependency(%q<zip>, [">= 0"])
       s.add_runtime_dependency(%q<rest-client>, [">= 0"])
+      s.add_runtime_dependency(%q<rest>, [">= 0"])
     else
       s.add_dependency(%q<zip>, [">= 0"])
       s.add_dependency(%q<rest-client>, [">= 0"])
+      s.add_dependency(%q<rest>, [">= 0"])
       s.add_dependency(%q<zip>, [">= 0"])
       s.add_dependency(%q<rest-client>, [">= 0"])
+      s.add_dependency(%q<rest>, [">= 0"])
     end
   else
     s.add_dependency(%q<zip>, [">= 0"])
     s.add_dependency(%q<rest-client>, [">= 0"])
+    s.add_dependency(%q<rest>, [">= 0"])
     s.add_dependency(%q<zip>, [">= 0"])
     s.add_dependency(%q<rest-client>, [">= 0"])
+    s.add_dependency(%q<rest>, [">= 0"])
   end
 end
 
