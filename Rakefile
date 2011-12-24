@@ -13,6 +13,7 @@ Jeweler::Tasks.new do |gemspec|
   gemspec.add_dependency 'zip'
   gemspec.add_dependency 'rest-client'
   gemspec.add_dependency 'rest'
+  gemspec.add_dependency 'bundler'
   #gemspec.add_dependency 'typhoeus'
   gemspec.required_ruby_version = '>= 1.9'
 end

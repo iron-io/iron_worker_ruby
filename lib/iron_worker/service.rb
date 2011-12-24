@@ -1,6 +1,7 @@
 require 'base64'
 require 'logger'
 require 'zip'
+require 'bundler'
 require 'rest_client'
 require 'json'
 
@@ -98,10 +99,31 @@ module IronWorker
       gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
         gem = gems.last
-        gem.full_gem_path
+        return gem,gem.full_gem_path
       else
-        return nil
+        return nil,nil
       end
+    end
+
+
+    def gem_dependencies(list_of_gems)
+      deps = []
+      dependendent_gems ={}
+      list_of_gems.each_value do |v|
+        @deps = v[:gemspec].dependencies
+        @deps.each do |d|
+          deps << Bundler::DepProxy.new(d, 'ruby')
+        end
+      end
+      filtered_deps = deps.select { |d| d.type != :development }
+      index = Bundler::Index.new
+      Gem::Specification.all.collect { |s| index<<s }
+      list = Bundler::Resolver.resolve(filtered_deps, index)
+      list.each do |gemspec|
+        next if list_of_gems.keys.include?(gemspec.name)
+        dependendent_gems[gemspec.name] = IronWorker::MergeHelper.create_gem_info(gemspec.name, gemspec.version.version)
+      end
+      dependendent_gems
     end
 
     def build_merged_file(filename, merged, unmerge, merged_gems, merged_mailers, merged_folders)
@@ -124,7 +146,8 @@ module IronWorker
         merged_gems.delete(k)
       end
       IronWorker.logger.debug 'merged_gems_after=' + merged_gems.inspect
-
+      gems_dependencies = IronWorker.config.beta ? gem_dependencies(merged_gems) : {}
+      IronWorker.logger.debug 'gem_dependencies=' + gems_dependencies.inspect
       merged_mailers ||= {}
       merged_mailers = merged_mailers.merge(IronWorker.config.mailers) if IronWorker.config.mailers
 
@@ -156,6 +179,11 @@ ARGV.each do |arg|
 end
 require 'json'
 ")
+        #require gems dependencies
+        gems_dependencies.each_pair do |k, gem|
+          IronWorker.logger.debug "Bundling gem #{gem[:name]}..."
+          f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
+        end
         # require merged gems
         merged_gems.each_pair do |k, gem|
           IronWorker.logger.debug "Bundling gem #{gem[:name]}..."
@@ -265,6 +293,8 @@ end
       #            puts 'merged_file_array=' + merge.inspect
       #File.open(fname2, "w") do |f|
       File.delete(fname2) if File.exist?(fname2)
+      #merging all gems and deps
+      merged_gems.merge!(gems_dependencies)
       Zip::ZipFile.open(fname2, 'w') do |f|
         if merged_gems && merged_gems.size > 0
           merged_gems.each_pair do |k, gem|

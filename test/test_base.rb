@@ -28,6 +28,7 @@ class TestBase < Test::Unit::TestCase
 
     # new style
     IronWorker.configure do |config|
+      config.beta=true
       config.token = @token
       config.project_id = @project_id
       config.host = @config['iron_worker']['host'] if @config['iron_worker']['host']

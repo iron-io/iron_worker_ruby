@@ -28,7 +28,8 @@ module IronWorker
                   :unmerged,
                   :merged_gems,
                   :unmerged_gems,
-                  :force_upload
+                  :force_upload,
+                  :beta
 
 
     def initialize
@@ -249,14 +250,15 @@ module IronWorker
       else
         gem_info[:version] = options
       end
-      gem_info[:require] ||= gem_name
 
-      path = IronWorker::Service.get_gem_path(gem_info)
+      gemspec, path = IronWorker::Service.get_gem_path(gem_info)
       IronWorker.logger.debug "Gem path=#{path}"
       if !path
         raise "Gem '#{gem_name}' not found."
       end
+      gem_info[:gemspec] = gemspec
       gem_info[:path] = path
+      gem_info[:require] ||= gem_name
       gem_info
     end
   end
