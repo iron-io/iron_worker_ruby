@@ -1,6 +1,6 @@
 # bump..
 class AwesomeJob < IronWorker::Base
-  merge_gem 'dropbox', '1.2.3'
+  merge_gem 'dropbox'
 
   # todo: this one causes a stack level too deep error??
 #  merge_gem 'mongoid_i18n', :require => 'mongoid/i18n'

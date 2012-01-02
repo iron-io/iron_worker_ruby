@@ -1,5 +1,5 @@
 #bump...........,...
-require_relative 'test_worker_2'
+require_relative 'iw_test_worker_2'
 
 class TestWorker3 < TestWorker2
 

@@ -12,20 +12,27 @@ rescue Exception => ex
 end
 
 IronWorker.logger.level = Logger::DEBUG
+IronWorker.service=nil
+IronWorker.config.merged_gems={}
 
-require_relative "test_worker"
-require_relative "test_worker_2"
-require_relative "test_worker_3"
+
+require_relative "iw_test_worker"
+require_relative "iw_test_worker_2"
+require_relative "iw_test_worker_3"
 
 class TestBase < Test::Unit::TestCase
 
   def setup
-    @config = YAML::load_file(File.expand_path(File.join("~", "Dropbox", "configs", "iron_worker_gem", "test", "config.yml")))
+    if defined? $abt_config
+      @config = $abt_config
+    else
+      @config =YAML::load_file(File.expand_path(File.join("~", "Dropbox", "configs", "iron_worker_gem", "test", "config.yml")))
+    end
 #    @config = YAML::load_file(File.join(File.dirname(__FILE__), "config.yml"))
     puts "config: " + @config.inspect
+
     @token = @config['iron_worker']['token']
     @project_id = @config['iron_worker']['project_id']
-
     # new style
     IronWorker.configure do |config|
       config.beta=true
@@ -36,6 +43,7 @@ class TestBase < Test::Unit::TestCase
       config.scheme = @config['iron_worker']['scheme'] if @config['iron_worker']['scheme']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
+      config.database = @config["database"]
       config.force_upload = true
     end
   end
