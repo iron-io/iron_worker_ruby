@@ -26,7 +26,7 @@ class TestBase < Test::Unit::TestCase
     if defined? $abt_config
       @config = $abt_config
     else
-      @config =YAML::load_file(File.expand_path(File.join("~", "Dropbox", "configs", "iron_worker_gem", "test", "config.yml")))
+      @config =YAML::load_file(File.expand_path(File.join("~", "Dropbox", "configs", "iron_worker_ruby", "test", "config.yml")))
     end
 #    @config = YAML::load_file(File.join(File.dirname(__FILE__), "config.yml"))
     puts "config: " + @config.inspect
