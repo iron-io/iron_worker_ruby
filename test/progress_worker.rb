@@ -4,7 +4,7 @@ class ProgressWorker < IronWorker::Base
     attr_accessor :s3_key, :times, :x
 
     def initialize
-      @times = 1
+      @times = 10
     end
 
     def run

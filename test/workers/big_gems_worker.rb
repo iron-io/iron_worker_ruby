@@ -4,8 +4,7 @@ RMAGICK_BYPASS_VERSION_TEST = true
 class BigGemsWorker < IronWorker::Base
 
   merge_gem 'activesupport', {:version => '3.1.3', :require=>'active_support/core_ext'}
-  merge_gem 'activesupport', {:version => '3.1.3', :require=>'active_support'}
-  merge_gem 'railties', {:version => '3.1.3', :require => 'rails'}
+  #merge_gem 'railties', {:version => '3.1.3', :require => 'rails'}
   require 'mysql2'
   merge_gem 'activemodel', {:version => '3.1.3', :require=>'active_model'}
   merge_gem 'activemodel', {:version => '3.1.3', :require=>'active_model/secure_password'}

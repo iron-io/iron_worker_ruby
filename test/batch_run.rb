@@ -2,6 +2,7 @@ require_relative 'test_base'
 require_relative 'one_line_worker'
 require_relative 'merging_worker'
 require_relative 'progress_worker'
+require_relative 'workers/mq_worker'
 require 'concur'
 #require_relative 'prawn_worker'
 
@@ -11,19 +12,23 @@ class BatchRun < TestBase
 
     IronWorker.logger.level = Logger::INFO
 
-    clz = MergingWorker
+    clz = MqWorker
 
     worker = clz.new
     worker.upload
 
     jobs = []
-    executor = Concur::Executor.new_thread_pool_executor(50)
-    100.times do |i|
+    executor = Concur::Executor.new_thread_pool_executor(20)
+    1000.times do |i|
       jobs << executor.execute do
         begin
           worker2 = clz.new
           puts "queueing #{i}"
-          worker2.x =  "hello payload #{i}"
+          if clz == MqWorker
+            worker2.config = {:token=>IronWorker.config.token, :project_id=>IronWorker.config.project_id}
+          else
+            worker2.x =  "hello payload #{i}"
+          end
           response_hash = worker2.queue(:priority=>(@config[:priority] || 0))
           puts "response_hash #{i} = " + response_hash.inspect
           assert response_hash["msg"]
@@ -57,7 +62,7 @@ class BatchRun < TestBase
           puts 'status ' + status_response["status"] + ' for ' + status_response.inspect
           puts 'msg=' + status_response["msg"].to_s
           if status_response["status"] == "complete" || status_response["status"] == "error"
-            if status_response["status"] == "error"
+            if true || status_response["status"] == "error"
               puts t.get_log
             end
 

@@ -7,7 +7,7 @@ class QuickRun < TestBase
 
   def test_worker
     1.times do |i|
-      worker = OneLineWorker.new
+      worker = ProgressWorker.new
       worker.x = 10
       worker.queue
 
