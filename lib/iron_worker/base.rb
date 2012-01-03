@@ -214,9 +214,10 @@ module IronWorker
     #                 running worker, it will be rejected unless you set this explicitly so we know you meant to do it.
     def queue(options={})
 #            puts 'in queue'
+
       set_auto_attributes
       upload_if_needed(options)
-
+      IronWorker.service.config.force_upload = IronWorker.service.config.force_upload && is_local?
       response = IronWorker.service.queue(self.class.name, sw_get_data, options)
       IronWorker.service.logger.debug 'queue response=' + response.inspect
       @response = response
