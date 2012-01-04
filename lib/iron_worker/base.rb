@@ -288,7 +288,7 @@ module IronWorker
 
     # Retrieves the log for this worker from the IronWorker service.
     def get_log(options={})
-      IronWorker.service.get_log(task_id, options)
+      IronWorker.service.log(task_id, options)
     end
 
     # Callbacks for developer

@@ -511,41 +511,30 @@ end
       delete(uri, hash_to_send)
     end
 
-    def get_projects()
-      hash_to_send = {}
-      ret = get("projects", hash_to_send)
-      ret
-    end
-
     def get_project_id(options={})
       options[:project_id] || config.project_id
     end
 
-    def get_project(options={})
-      hash_to_send = {}
-
-      ret = get("projects/"+ get_project_id(options) +"/", hash_to_send)
-      #uri = project_url_prefix(id)
-      #puts "get_project, uri = " + uri
-      #ret = get(uri, hash_to_send)
-      ret
-    end
-
-    def get_codes(options={})
+    def codes(options={})
       hash_to_send = {}
       uri = "projects/" + get_project_id(options) + "/codes"
       ret = get(uri, hash_to_send)
       ret
     end
 
-    def get_schedules(options={})
+    def schedules(options={})
       hash_to_send = {}
       uri = "projects/" + get_project_id(options) + "/schedules"
       ret = get(uri, hash_to_send)
       ret
     end
 
-    def get_jobs(options={})
+    def jobs(options={})
+      puts 'Service.jobs is deprecated, use Service.tasks instead'
+      tasks(options)
+    end
+
+    def tasks(options={})
       hash_to_send = {}
       uri = "projects/" + get_project_id(options) + "/tasks"
       ret = get(uri, hash_to_send)
@@ -553,6 +542,7 @@ end
     end
 
     def get_log(job_id, options={})
+      puts 'Service.get_log is deprecated, use Service.log instead'
       log(job_id, options)
     end
 
