@@ -12,7 +12,7 @@ class MqWorker < IronWorker::Base
     @mq = IronMQ::Client.new(:token=>config['token'], :project_id=>config['project_id'], :queue_name=>'mq_worker')
     puts 'putting message on queue'
     resp = @mq.messages.post("Hello world!")
-    p resp.body
+    puts "posted #{resp.id}"
     puts 'getting message from queue'
     resp = @mq.messages.get
     puts 'got: ' + resp.body

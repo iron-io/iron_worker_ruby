@@ -13,13 +13,14 @@ class BatchRun < TestBase
     IronWorker.logger.level = Logger::INFO
 
     clz = MqWorker
+    num_tasks = 1000
 
     worker = clz.new
     worker.upload
 
     jobs = []
     executor = Concur::Executor.new_thread_pool_executor(20)
-    1000.times do |i|
+    num_tasks.times do |i|
       jobs << executor.execute do
         begin
           worker2 = clz.new
