@@ -62,6 +62,16 @@ module IronWorker
       @gems_to_skip
     end
 
+    def bundle=(activate)
+     if activate
+       IronWorker.logger.info "Initializing IronWorker for Bundler..."
+       IronWorker.configure do |c2|
+         c2.merged_gems.merge!(get_required_gems)
+         IronWorker.logger.debug "List of gems from bundler:#{c2.merged_gems.inspect}"
+       end
+     end
+    end
+
     def auto_merge=(b)
       if b
         IronWorker.logger.info "Initializing IronWorker for Rails 3..."
@@ -85,7 +95,7 @@ module IronWorker
           if defined?(ActionMailer) && ActionMailer::Base.smtp_settings
             c2.mailer = ActionMailer::Base.smtp_settings
           end
-          c2.merged_gems.merge!(get_required_gems) if defined?(Bundler)
+          c2.merged_gems.merge!(get_required_gems)
           IronWorker.logger.debug "MODELS " + c2.models.inspect
           IronWorker.logger.debug "MAILERS " + c2.mailers.inspect
           IronWorker.logger.debug "DATABASE " + c2.database.inspect
@@ -98,6 +108,8 @@ module IronWorker
 
 
     def get_required_gems
+      #skipping if bundler not defined or not initialized
+      return {} unless defined?(Bundler) && Bundler.instance_variables.include?(:@setup)
       gems_in_gemfile = Bundler.environment.dependencies.select { |d| d.groups.include?(:default) }
       IronWorker.logger.debug 'gems in gemfile=' + gems_in_gemfile.inspect
       gems = {}
@@ -114,7 +126,8 @@ module IronWorker
 #        next if dep.name=='rails' #monkey patch
         gem_info = {:name=>spec.name, :version=>spec.version}
         gem_info[:auto_merged] = true
-        gem_info[:merge] = true
+        gem_info[:merge] = spec.extensions.length == 0 #merging only non binary gems
+        gem_info[:bypass_require] = true #don't require gem'
 # Now find dependency in gemfile in case user set the require
         dep = gems_in_gemfile.find { |g| g.name == gem_info[:name] }
         if dep
@@ -125,8 +138,9 @@ module IronWorker
         end
         gem_info[:version] = spec.version.to_s
         gems[gem_info[:name]] = gem_info
-        path = IronWorker::Service.get_gem_path(gem_info)
+        gemspec,path = IronWorker::Service.get_gem_path(gem_info)
         if path
+          gem_info[:gemspec] = gemspec
           gem_info[:path] = path
           if gem_info[:require].nil? && dep
             # see if we should try to require this in our worker
