@@ -182,12 +182,12 @@ require 'json'
         #require gems dependencies
         gems_dependencies.each_pair do |k, gem|
           IronWorker.logger.debug "Bundling gem #{gem[:name]}..."
-          f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
+          f.write "$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib'))\n"
         end
         # require merged gems
         merged_gems.each_pair do |k, gem|
           IronWorker.logger.debug "Bundling gem #{gem[:name]}..."
-          f.write "$LOAD_PATH << File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib')\n"
+          f.write "$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib'))\n"
           IronWorker.logger.debug 'writing requires: ' + gem[:require].inspect
           if gem[:require].nil?
             gem[:require] = []
