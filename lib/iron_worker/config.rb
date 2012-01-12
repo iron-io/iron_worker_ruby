@@ -50,17 +50,17 @@ module IronWorker
       raise "IronWorker Config Error: access_key and secret_key are no longer used. The new IronWorker gem requires a couple of small configuration changes, please see: http://docs.IronWorker.com/ruby/new-gem-v2-update-guide for information."
     end
 
-    @gems_to_skip = ['actionmailer', 'actionpack', 'activemodel', 'activeresource', 'activesupport',
-                     'bundler',
-                     'mail',
-                     'mysql2',
-                     'rails',
-                     'tzinfo' # HUGE!
-    ]
+    #@gems_to_skip = ['actionmailer', 'actionpack', 'activemodel', 'activeresource', 'activesupport',
+    #                 'bundler',
+    #                 'mail',
+    #                 'mysql2',
+    #                 'rails',
+    #                 'tzinfo' # HUGE!
+    #]
 
-    def self.gems_to_skip
-      @gems_to_skip
-    end
+    #def self.gems_to_skip
+    #  @gems_to_skip
+    #end
 
     def bundle=(activate)
      if activate
@@ -115,14 +115,14 @@ module IronWorker
       gems = {}
       specs = Bundler.load.specs
       IronWorker.logger.debug 'Bundler specs=' + specs.inspect
-      IronWorker.logger.debug "gems_to_skip=" + self.class.gems_to_skip.inspect
+      #IronWorker.logger.debug "gems_to_skip=" + self.class.gems_to_skip.inspect
       specs.each do |spec|
         IronWorker.logger.debug 'spec.name=' + spec.name.inspect
         IronWorker.logger.debug 'spec=' + spec.inspect
-        if self.class.gems_to_skip.include?(spec.name)
-          IronWorker.logger.debug "Skipping #{spec.name}"
-          next
-        end
+        #if self.class.gems_to_skip.include?(spec.name)
+        #  IronWorker.logger.debug "Skipping #{spec.name}"
+        #  next
+        #end
 #        next if dep.name=='rails' #monkey patch
         gem_info = {:name=>spec.name, :version=>spec.version}
         gem_info[:auto_merged] = true
