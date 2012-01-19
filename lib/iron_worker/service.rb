@@ -227,7 +227,7 @@ IronWorker.disable_queueing()
 Dir.chdir(dirname)
 # Load in job data
 job_data = JSON.load(File.open(task_data_file))
-puts 'job_data=' + job_data.inspect
+#puts 'payload=' + job_data.inspect
 sw_config = job_data['sw_config']
 IronWorker.task_data = job_data
 
