@@ -33,12 +33,38 @@ class IronWorkerTests < TestBase
   def test_schedule_cancel
     puts 'test_schedule_cancel'
     worker = OneLineWorker.new
-
-    start_time = Time.now
     worker.schedule(start_at: 30.seconds.from_now)
     p worker
     IronWorker.service.cancel_schedule(worker.schedule_id)
     assert_equal worker.status['status'], 'cancelled'
+  end
+
+  def test_schedules_paging
+    puts 'test_schedule_cancel'
+    1.times do |i|
+      worker = OneLineWorker.new
+      worker.schedule(start_at: 30.seconds.from_now)
+      p worker
+    end
+    sleep 1
+    page = 0
+    while true
+      puts "page #{page}"
+      schedules = IronWorker.service.schedules(:page=>page)['schedules']
+      page += 1
+      puts 'schedules=' + schedules.inspect
+      puts 'schedules.size=' + schedules.size.to_s
+      if schedules.size == 0
+        return
+      end
+      schedules.each do |s|
+        puts "schedule: #{s['id']} #{s['status']}"
+        if s['status'] != 'scheduled'
+          next
+        end
+        puts 'SCHEDULED!! Cancelling...'
+      end
+    end
   end
 
 end

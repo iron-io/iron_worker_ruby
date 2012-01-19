@@ -517,14 +517,14 @@ end
     end
 
     def codes(options={})
-      hash_to_send = {}
+      hash_to_send = options
       uri = "projects/" + get_project_id(options) + "/codes"
       ret = get(uri, hash_to_send)
       ret
     end
 
     def schedules(options={})
-      hash_to_send = {}
+      hash_to_send = options
       uri = "projects/" + get_project_id(options) + "/schedules"
       ret = get(uri, hash_to_send)
       ret
@@ -536,7 +536,7 @@ end
     end
 
     def tasks(options={})
-      hash_to_send = {}
+      hash_to_send = options
       uri = "projects/" + get_project_id(options) + "/tasks"
       ret = get(uri, hash_to_send)
       ret
@@ -548,7 +548,7 @@ end
     end
 
     def log(task_id, options={})
-      data = {}
+      data = options
       ret = get("#{project_url_prefix(get_project_id(options))}tasks/#{task_id}/log", data, :parse=>false)
       ret
     end
