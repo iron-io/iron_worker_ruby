@@ -1,3 +1,6 @@
+require "rubygems"
+require "bundler/setup"
+
 require 'rake/dsl_definition' # temporary I think?
 require 'rake/testtask'
 require 'jeweler2'
