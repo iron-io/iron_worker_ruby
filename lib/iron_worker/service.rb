@@ -508,8 +508,8 @@ end
       raise "Must include a schedule id." if scheduled_task_id.blank?
       hash_to_send = {}
       hash_to_send["schedule_id"] = scheduled_task_id
-      uri = "#{project_url_prefix(get_project_id(options))}schedules/#{scheduled_task_id}"
-      delete(uri, hash_to_send)
+      uri = "#{project_url_prefix(get_project_id(options))}schedules/#{scheduled_task_id}/cancel"
+      post(uri, hash_to_send)
     end
 
     def get_project_id(options={})

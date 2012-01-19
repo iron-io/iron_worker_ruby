@@ -31,10 +31,12 @@ class IronWorkerTests < TestBase
   end
 
   def test_schedule_cancel
+    puts 'test_schedule_cancel'
     worker = OneLineWorker.new
 
     start_time = Time.now
     worker.schedule(start_at: 30.seconds.from_now)
+    p worker
     IronWorker.service.cancel_schedule(worker.schedule_id)
     assert_equal worker.status['status'], 'cancelled'
   end
