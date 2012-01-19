@@ -29,7 +29,7 @@ module IronWorker
                   :merged_gems,
                   :unmerged_gems,
                   :force_upload,
-                  :beta
+                  :beta # for setting beta feature flags
 
 
     def initialize
@@ -40,6 +40,7 @@ module IronWorker
       @merged_gems = {}
       @unmerged_gems = {}
       @mailers = {}
+      @beta = {}
 
     end
 

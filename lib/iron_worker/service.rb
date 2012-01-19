@@ -146,7 +146,7 @@ module IronWorker
         merged_gems.delete(k)
       end
       IronWorker.logger.debug 'merged_gems_after=' + merged_gems.inspect
-      gems_dependencies = IronWorker.config.beta ? gem_dependencies(merged_gems) : {}
+      gems_dependencies = gem_dependencies(merged_gems)
       IronWorker.logger.debug 'gem_dependencies=' + gems_dependencies.inspect
       merged_mailers ||= {}
       merged_mailers = merged_mailers.merge(IronWorker.config.mailers) if IronWorker.config.mailers
@@ -181,7 +181,7 @@ require 'json'
 ")
         #require gems dependencies
         gems_dependencies.each_pair do |k, gem|
-          IronWorker.logger.debug "Bundling gem #{gem[:name]}..."
+          IronWorker.logger.debug "Bundling dependent gem #{gem[:name]}..."
           f.write "$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib'))\n"
         end
         # require merged gems

@@ -35,7 +35,6 @@ class TestBase < Test::Unit::TestCase
     @project_id = @config['iron_worker']['project_id']
     # new style
     IronWorker.configure do |config|
-      config.beta=false
       config.token = @token
       config.project_id = @project_id
       config.host = @config['iron_worker']['host'] if @config['iron_worker']['host']
