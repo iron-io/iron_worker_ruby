@@ -73,7 +73,7 @@ module IronWorker
 
       rescue Exception => ex
         # if it errors, let's delete md5 since it wouldn't have uploaded.
-        File.delete(md5_f)
+        File.delete(md5_f) if File.exists?(md5_f)
         raise ex
       end
     end
