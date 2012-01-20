@@ -87,12 +87,18 @@ module IronWorker
       IronWorker.logger
     end
 
+
+    def self.heroku?
+      !Gem::GemPathSearcher.private_instance_methods.include?(:_deprecated_initialize)
+    end
+
+
     def self.get_gem_path(gem_info)
 #      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
       gem_name =(gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
       #puts "Searching for #{gem_name}..."
       gems= Gem::Specification.respond_to?(:each) ? Gem::Specification.find_all_by_name(gem_name) : Gem::GemPathSearcher.new.find_all(gem_name)
-      if (!Gem::GemPathSearcher.private_instance_methods.include?(:_deprecated_initialize)) && (!gems || gems.empty?)
+      if (Service.heroku?) && (!gems || gems.empty?)
         gems = Gem::GemPathSearcher.new.init_gemspecs.select { |gem| gem.name==gem_name }
       end
       IronWorker.logger.debug 'gems found=' + gems.inspect
@@ -105,9 +111,13 @@ module IronWorker
       end
     end
 
-
     def gem_dependencies(list_of_gems)
-      return {} unless Gem::Specification.respond_to? :all
+      if Service.heroku?
+        gem_specs = Gem::GemPathSearcher.new.init_gemspecs
+      else
+        gem_specs = Gem::Specification.all
+      end
+
       IronWorker.logger.debug "Getting gem_dependencies.."
       deps = []
       dependendent_gems ={}
@@ -122,7 +132,7 @@ module IronWorker
       filtered_deps = deps.select { |d| d.type != :development }
       IronWorker.logger.debug "filtered_deps=#{filtered_deps}"
       index = Bundler::Index.new
-      Gem::Specification.all.collect { |s| index<<s }
+      gem_specs.collect { |s| index<<s }
       list = Bundler::Resolver.resolve(filtered_deps, index)
       list.each do |gemspec|
         next if list_of_gems.keys.include?(gemspec.name) || Config.system_gems.include?(gemspec.name)
