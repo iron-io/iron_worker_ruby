@@ -3,6 +3,7 @@
 source 'http://rubygems.org'
 
 gem 'rack', '< 1.4'
+gem 'iron_worker'
 gem 'test-unit'
 gem 'jeweler2'
 gem 'zip'
