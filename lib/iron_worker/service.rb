@@ -51,11 +51,11 @@ module IronWorker
 
       begin
 
-        zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:merged_mailers], options[:merged_folders])
+        zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:unmerged_gems], options[:merged_mailers], options[:merged_folders])
 
-           # Check for code changes.
-        zipfile =  Zip::ZipFile.open(zip_filename, Zip::ZipFile::CREATE)
-        crc =  zipfile.entries.collect{|x|x.crc}.inject(:+)
+        # Check for code changes.
+        zipfile = Zip::ZipFile.open(zip_filename, Zip::ZipFile::CREATE)
+        crc = zipfile.entries.collect { |x| x.crc }.inject(:+)
         new_code = false
         if self.config.force_upload || crc.to_s != existing_md5
           IronWorker.logger.info "Uploading #{class_name}, code modified."
@@ -73,7 +73,7 @@ module IronWorker
 
       rescue Exception => ex
         # if it errors, let's delete md5 since it wouldn't have uploaded.
-        File.delete(md5_f)
+        File.delete(md5_f) if File.exists?(md5_f)
         raise ex
       end
     end
@@ -99,9 +99,9 @@ module IronWorker
       gems = gems.select { |g| g.version.version==gem_info[:version] } if gem_info[:version]
       if !gems.empty?
         gem = gems.last
-        return gem,gem.full_gem_path
+        return gem, gem.full_gem_path
       else
-        return nil,nil
+        return nil, nil
       end
     end
 
@@ -121,12 +121,15 @@ module IronWorker
       list = Bundler::Resolver.resolve(filtered_deps, index)
       list.each do |gemspec|
         next if list_of_gems.keys.include?(gemspec.name)
-        dependendent_gems[gemspec.name] = IronWorker::MergeHelper.create_gem_info(gemspec.name, gemspec.version.version)
+        gi = IronWorker::MergeHelper.create_gem_info(gemspec.name, gemspec.version.version)
+        dependendent_gems[gemspec.name] = gi
       end
       dependendent_gems
     end
 
-    def build_merged_file(filename, merged, unmerge, merged_gems, merged_mailers, merged_folders)
+    def build_merged_file(filename, merged, unmerge, merged_gems, unmerged_gems, merged_mailers, merged_folders)
+
+      unmerged_gems ||= {}
 
       merge = IronWorker.config.merged.dup
       merge.merge!(merged) if merged
@@ -141,13 +144,25 @@ module IronWorker
 
       merged_gems = merged_gems.merge(IronWorker.config.merged_gems)
       IronWorker.logger.debug 'merged_gems=' + merged_gems.inspect
-      IronWorker.config.unmerged_gems.each_pair do |k, v|
+
+      gems_dependencies = gem_dependencies(merged_gems)
+      IronWorker.logger.debug 'gem_dependencies=' + gems_dependencies.inspect
+      # add dependencies to merged_gems
+      #require gems dependencies
+      gems_dependencies.each_pair do |k, gem|
+        IronWorker.logger.debug "Bundling dependent gem #{gem[:name]}..."
+        gem[:bypass_require] = true
+        merged_gems[k] ||= gem
+      end
+
+      # Now remove unmerged gems
+      unmerged_gems = unmerged_gems.merge(IronWorker.config.unmerged_gems)
+      unmerged_gems.each_pair do |k, v|
         IronWorker.logger.debug 'unmerging gem=' + k.inspect
         merged_gems.delete(k)
       end
       IronWorker.logger.debug 'merged_gems_after=' + merged_gems.inspect
-      gems_dependencies = gem_dependencies(merged_gems)
-      IronWorker.logger.debug 'gem_dependencies=' + gems_dependencies.inspect
+
       merged_mailers ||= {}
       merged_mailers = merged_mailers.merge(IronWorker.config.mailers) if IronWorker.config.mailers
 
@@ -179,11 +194,7 @@ ARGV.each do |arg|
 end
 require 'json'
 ")
-        #require gems dependencies
-        gems_dependencies.each_pair do |k, gem|
-          IronWorker.logger.debug "Bundling dependent gem #{gem[:name]}..."
-          f.write "$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib'))\n"
-        end
+
         # require merged gems
         merged_gems.each_pair do |k, gem|
           IronWorker.logger.debug "Bundling gem #{gem[:name]}..."
@@ -517,14 +528,14 @@ end
     end
 
     def codes(options={})
-      hash_to_send = {}
+      hash_to_send = options
       uri = "projects/" + get_project_id(options) + "/codes"
       ret = get(uri, hash_to_send)
       ret
     end
 
     def schedules(options={})
-      hash_to_send = {}
+      hash_to_send = options
       uri = "projects/" + get_project_id(options) + "/schedules"
       ret = get(uri, hash_to_send)
       ret
@@ -536,7 +547,7 @@ end
     end
 
     def tasks(options={})
-      hash_to_send = {}
+      hash_to_send = options
       uri = "projects/" + get_project_id(options) + "/tasks"
       ret = get(uri, hash_to_send)
       ret
@@ -548,7 +559,7 @@ end
     end
 
     def log(task_id, options={})
-      data = {}
+      data = options
       ret = get("#{project_url_prefix(get_project_id(options))}tasks/#{task_id}/log", data, :parse=>false)
       ret
     end

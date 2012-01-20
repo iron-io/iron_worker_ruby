@@ -2,12 +2,13 @@ require_relative 'test_base'
 require_relative 'one_line_worker'
 require_relative 'progress_worker'
 require_relative 'workers/qb_worker'
+require_relative 'workers/big_gems_worker'
 
 class QuickRun < TestBase
 
   def test_worker
     1.times do |i|
-      worker = ProgressWorker.new
+      worker = BigGemsWorker.new
       worker.x = 10
       worker.queue
 

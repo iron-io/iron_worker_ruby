@@ -388,6 +388,7 @@ module IronWorker
       if !uploaded?
         unmerged = self.class.instance_variable_get(:@unmerged)
         merged_gems = self.class.instance_variable_get(:@merged_gems)
+        unmerged_gems = self.class.instance_variable_get(:@unmerged_gems)
         merged_mailers = self.class.instance_variable_get(:@merged_mailers)
         merged_folders = self.class.instance_variable_get(:@merged_folders)
         merged, rfile, subclass = IronWorker::Base.extract_superclasses_merges(self, merged)
@@ -396,7 +397,7 @@ module IronWorker
           merged_gems = gems_to_merge(merged_gems)
         end
 
-        options_for_upload = {:merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :merged_mailers=>merged_mailers, :merged_folders=>merged_folders}
+        options_for_upload = {:merge=>merged, :unmerge=>unmerged, :merged_gems=>merged_gems, :unmerged_gems=>unmerged_gems, :merged_mailers=>merged_mailers, :merged_folders=>merged_folders}
         options_for_upload.merge!(options)
         IronWorker.service.upload(rfile, subclass.name, options_for_upload)
         self.class.instance_variable_set(:@uploaded, true)

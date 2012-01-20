@@ -114,6 +114,7 @@ DEPENDENCIES
   carrierwave
   dropbox (= 1.2.3)
   jeweler2
+  mechanize
   mongoid_i18n
   pusher
   rack (< 1.4)
