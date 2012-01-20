@@ -107,15 +107,19 @@ module IronWorker
 
 
     def gem_dependencies(list_of_gems)
+      IronWorker.logger.debug "Getting gem_dependencies.."
       deps = []
       dependendent_gems ={}
       list_of_gems.each_value do |v|
+        IronWorker.logger.debug "Dependencies for #{v}"
         @deps = v[:gemspec].dependencies
         @deps.each do |d|
+          IronWorker.logger.debug "dep: #{d}"
           deps << Bundler::DepProxy.new(d, 'ruby')
         end
       end
       filtered_deps = deps.select { |d| d.type != :development }
+      IronWorker.logger.debug "filtered_deps=#{filtered_deps}"
       index = Bundler::Index.new
       Gem::Specification.all.collect { |s| index<<s }
       list = Bundler::Resolver.resolve(filtered_deps, index)
