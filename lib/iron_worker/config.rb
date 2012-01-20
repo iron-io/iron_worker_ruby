@@ -31,6 +31,9 @@ module IronWorker
                   :force_upload,
                   :beta # for setting beta feature flags
 
+    def self.system_gems
+       ['bson_ext','curb','em-http-request','eventmachine','mysql2','net-scp','net-sftp','net-ssh','nokogiri','rmagick','sqlite3','typhoeus']
+    end
 
     def initialize
       @global_attributes = {}

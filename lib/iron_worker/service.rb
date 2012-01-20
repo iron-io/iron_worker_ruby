@@ -125,7 +125,7 @@ module IronWorker
       Gem::Specification.all.collect { |s| index<<s }
       list = Bundler::Resolver.resolve(filtered_deps, index)
       list.each do |gemspec|
-        next if list_of_gems.keys.include?(gemspec.name)
+        next if list_of_gems.keys.include?(gemspec.name) || Config.system_gems.include?(gemspec.name)
         gi = IronWorker::MergeHelper.create_gem_info(gemspec.name, gemspec.version.version)
         dependendent_gems[gemspec.name] = gi
       end
