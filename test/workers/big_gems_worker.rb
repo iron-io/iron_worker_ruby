@@ -25,6 +25,8 @@ class BigGemsWorker < IronWorker::Base
   merge_gem 'mechanize'
   unmerge_gem 'nokogiri'
 
+  merge_gem 'mail'
+
   def run
     log "hello"
   end

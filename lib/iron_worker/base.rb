@@ -215,9 +215,9 @@ module IronWorker
     def queue(options={})
 #            puts 'in queue'
 
+      IronWorker.service.config.force_upload = IronWorker.service.config.force_upload && is_local?
       set_auto_attributes
       upload_if_needed(options)
-      IronWorker.service.config.force_upload = IronWorker.service.config.force_upload && is_local?
       response = IronWorker.service.queue(self.class.name, sw_get_data, options)
       IronWorker.service.logger.debug 'queue response=' + response.inspect
       @response = response
@@ -363,6 +363,7 @@ module IronWorker
     end
 
     def upload_if_needed(options={})
+      return if is_remote?
       check_service
       IronWorker.service.check_config
 
