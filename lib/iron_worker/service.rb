@@ -107,10 +107,10 @@ module IronWorker
 
 
     def gem_dependencies(list_of_gems)
+      return {} unless Gem::Specification.respond_to? :all
       IronWorker.logger.debug "Getting gem_dependencies.."
       deps = []
       dependendent_gems ={}
-      return unless Gem::Specification.respond_to? :all
       list_of_gems.each_value do |v|
         IronWorker.logger.debug "Dependencies for #{v}"
         @deps = v[:gemspec].dependencies
