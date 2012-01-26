@@ -1,5 +1,5 @@
-#require "rubygems"
-#require "bundler/setup"
+require "rubygems"
+require "bundler/setup"
 
 gem 'test-unit'
 require 'test/unit'
@@ -44,6 +44,7 @@ class TestBase < Test::Unit::TestCase
       config.global_attributes["db_pass"] = "pass"
       config.database = @config["database"]
       config.force_upload = true
+      # config.skip_auto_dependencies = true
     end
   end
 

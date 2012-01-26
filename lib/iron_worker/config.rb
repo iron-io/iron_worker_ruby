@@ -29,10 +29,11 @@ module IronWorker
                   :merged_gems,
                   :unmerged_gems,
                   :force_upload,
-                  :beta # for setting beta feature flags
+                  :beta, # for setting beta feature flags
+                  :skip_auto_dependencies
 
     def self.system_gems
-       ['bson_ext','curb','em-http-request','eventmachine','mysql2','net-scp','net-sftp','net-ssh','nokogiri','rmagick','sqlite3','typhoeus']
+      ['bson_ext', 'curb', 'em-http-request', 'eventmachine', 'mysql2', 'net-scp', 'net-sftp', 'net-ssh', 'nokogiri', 'rmagick', 'sqlite3', 'typhoeus']
     end
 
     def initialize
@@ -50,6 +51,7 @@ module IronWorker
     def access_key=(x)
       raise "IronWorker Config Error: access_key and secret_key are no longer used. The new IronWorker gem requires a couple of small configuration changes, please see: http://docs.IronWorker.com/ruby/new-gem-v2-update-guide for information."
     end
+
     def secret_key=(x)
       raise "IronWorker Config Error: access_key and secret_key are no longer used. The new IronWorker gem requires a couple of small configuration changes, please see: http://docs.IronWorker.com/ruby/new-gem-v2-update-guide for information."
     end
@@ -67,13 +69,13 @@ module IronWorker
     #end
 
     def bundle=(activate)
-     if activate
-       IronWorker.logger.info "Initializing IronWorker for Bundler..."
-       IronWorker.configure do |c2|
-         c2.merged_gems.merge!(get_required_gems)
-         IronWorker.logger.debug "List of gems from bundler:#{c2.merged_gems.inspect}"
-       end
-     end
+      if activate
+        IronWorker.logger.info "Initializing IronWorker for Bundler..."
+        IronWorker.configure do |c2|
+          c2.merged_gems.merge!(get_required_gems)
+          IronWorker.logger.debug "List of gems from bundler:#{c2.merged_gems.inspect}"
+        end
+      end
     end
 
     def auto_merge=(b)
@@ -127,12 +129,12 @@ module IronWorker
         #  IronWorker.logger.debug "Skipping #{spec.name}"
         #  next
         #end
-#        next if dep.name=='rails' #monkey patch
+        #        next if dep.name=='rails' #monkey patch
         gem_info = {:name=>spec.name, :version=>spec.version}
         gem_info[:auto_merged] = true
         gem_info[:merge] = spec.extensions.length == 0 #merging only non binary gems
         gem_info[:bypass_require] = true #don't require gem'
-# Now find dependency in gemfile in case user set the require
+        # Now find dependency in gemfile in case user set the require
         dep = gems_in_gemfile.find { |g| g.name == gem_info[:name] }
         if dep
           IronWorker.logger.debug 'dep found in gemfile: ' + dep.inspect
@@ -142,7 +144,7 @@ module IronWorker
         end
         gem_info[:version] = spec.version.to_s
         gems[gem_info[:name]] = gem_info
-        gemspec,path = IronWorker::Service.get_gem_path(gem_info)
+        gemspec, path = IronWorker::Service.get_gem_path(gem_info)
         if path
           gem_info[:gemspec] = gemspec
           gem_info[:path] = path
