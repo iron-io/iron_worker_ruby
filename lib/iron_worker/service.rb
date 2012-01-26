@@ -94,8 +94,8 @@ module IronWorker
 
 
     def self.get_gem_path(gem_info)
-#      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
-      gem_name =(gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
+#      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_\.]+/)[0])
+      gem_name =(gem_info[:name].match(/^[a-zA-Z0-9\-_\.]+/)[0])
       IronWorker.logger.debug "Searching for gem #{gem_name}..."
       gems= Gem::Specification.respond_to?(:each) ? Gem::Specification.find_all_by_name(gem_name) : Gem::GemPathSearcher.new.find_all(gem_name)
       if (Service.heroku?) && (!gems || gems.empty?)
@@ -171,10 +171,10 @@ module IronWorker
         gems_dependencies.each_pair do |k, gem|
           IronWorker.logger.debug "Bundling dependent gem #{gem[:name]}..."
           gem[:bypass_require] = true
-          merged_gems[k] ||= gem
+#          merged_gems[k] ||= gem
         end
       end
-
+      merged_gems = gems_dependencies.merge merged_gems
       # Now remove unmerged gems
       unmerged_gems = unmerged_gems.merge(IronWorker.config.unmerged_gems)
       unmerged_gems.each_pair do |k, v|
