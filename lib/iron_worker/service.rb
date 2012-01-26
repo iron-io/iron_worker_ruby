@@ -96,7 +96,7 @@ module IronWorker
     def self.get_gem_path(gem_info)
 #      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
       gem_name =(gem_info[:name].match(/^[a-zA-Z0-9\-_]+/)[0])
-      #puts "Searching for #{gem_name}..."
+      IronWorker.logger.debug "Searching for gem #{gem_name}..."
       gems= Gem::Specification.respond_to?(:each) ? Gem::Specification.find_all_by_name(gem_name) : Gem::GemPathSearcher.new.find_all(gem_name)
       if (Service.heroku?) && (!gems || gems.empty?)
         gems = Gem::GemPathSearcher.new.init_gemspecs.select { |gem| gem.name==gem_name }
@@ -136,6 +136,7 @@ module IronWorker
       list = Bundler::Resolver.resolve(filtered_deps, index)
       list.each do |gemspec|
         next if list_of_gems.keys.include?(gemspec.name) || Config.system_gems.include?(gemspec.name)
+        IronWorker.logger.debug "gemspec from bundler " + gemspec.inspect
         gi = IronWorker::MergeHelper.create_gem_info(gemspec.name, gemspec.version.version)
         dependendent_gems[gemspec.name] = gi
       end
@@ -160,14 +161,18 @@ module IronWorker
       merged_gems = merged_gems.merge(IronWorker.config.merged_gems)
       IronWorker.logger.debug 'merged_gems=' + merged_gems.inspect
 
-      gems_dependencies = gem_dependencies(merged_gems)
-      IronWorker.logger.debug 'gem_dependencies=' + gems_dependencies.inspect
-      # add dependencies to merged_gems
-      #require gems dependencies
-      gems_dependencies.each_pair do |k, gem|
-        IronWorker.logger.debug "Bundling dependent gem #{gem[:name]}..."
-        gem[:bypass_require] = true
-        merged_gems[k] ||= gem
+      if config.skip_auto_dependencies
+        gems_dependencies = {}
+      else
+        gems_dependencies = gem_dependencies(merged_gems)
+        IronWorker.logger.debug 'gem_dependencies=' + gems_dependencies.inspect
+        # add dependencies to merged_gems
+        #require gems dependencies
+        gems_dependencies.each_pair do |k, gem|
+          IronWorker.logger.debug "Bundling dependent gem #{gem[:name]}..."
+          gem[:bypass_require] = true
+          merged_gems[k] ||= gem
+        end
       end
 
       # Now remove unmerged gems

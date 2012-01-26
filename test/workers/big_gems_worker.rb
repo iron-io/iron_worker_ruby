@@ -22,6 +22,8 @@ class BigGemsWorker < IronWorker::Base
   #merge_gem 'fog'
   ##merge_gem 'friendly_id', {:version => '4.0.0.beta14'}
 
+  merge_gem 'concur'
+
   merge_gem 'mechanize'
   unmerge_gem 'nokogiri'
 
