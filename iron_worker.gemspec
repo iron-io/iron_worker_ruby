@@ -4,14 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{iron_worker}
-  s.version = "2.3.10"
+  s.name = "iron_worker"
+  s.version = "2.3.11"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder"]
-  s.date = %q{2012-01-26}
-  s.description = %q{The official IronWorker gem for IronWorker by Iron.io. http://www.iron.io}
-  s.email = %q{travis@iron.io}
+  s.date = "2012-01-26"
+  s.description = "The official IronWorker gem for IronWorker by Iron.io. http://www.iron.io"
+  s.email = "travis@iron.io"
   s.extra_rdoc_files = [
     "README.markdown"
   ]
@@ -31,14 +31,13 @@ Gem::Specification.new do |s|
     "lib/iron_worker/utils.rb",
     "rails/init.rb"
   ]
-  s.homepage = %q{http://www.iron.io}
+  s.homepage = "http://www.iron.io"
   s.require_paths = ["lib"]
   s.required_ruby_version = Gem::Requirement.new(">= 1.9")
-  s.rubygems_version = %q{1.3.7}
-  s.summary = %q{The official IronWorker gem for IronWorker by Iron.io. http://www.iron.io}
+  s.rubygems_version = "1.8.15"
+  s.summary = "The official IronWorker gem for IronWorker by Iron.io. http://www.iron.io"
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
