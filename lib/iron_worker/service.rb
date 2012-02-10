@@ -481,8 +481,7 @@ end
         task = {}
         task["payload"] = d.to_json
         task["code_name"] = name
-        task["priority"] = options[:priority] if options[:priority]
-        task["timeout"] = options[:timeout] if options[:timeout]
+        task.merge!(options)
         tasks << task
       end
       name = options[:name] || name
