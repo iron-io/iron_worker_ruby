@@ -7,15 +7,11 @@ require_relative 'workers/big_gems_worker'
 class QuickRun < TestBase
 
   def test_worker
-    tasks = []
-    100.times do |i|
+    10.times do |i|
       worker = OneLineWorker.new
       worker.x = 10
       worker.queue
-      tasks << worker
-    end
 
-    tasks.each do |worker|
       status = worker.wait_until_complete
       p status
       puts "error_class: #{status["error_class"]}"

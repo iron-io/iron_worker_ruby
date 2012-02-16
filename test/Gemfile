@@ -9,7 +9,6 @@ gem 'jeweler2'
 gem 'zip'
 gem 'rest'
 
-# For testing gem merging
 gem 'simple_record'
 gem 'activesupport'
 gem 'simple_record'
@@ -21,5 +20,4 @@ gem 'carrierwave'
 gem 'aws-s3'
 gem 'mechanize'
 gem 'mail'
-gem 'timecop'
 gem 'fog'
