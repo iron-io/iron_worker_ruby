@@ -33,7 +33,7 @@ module IronWorker
                   :skip_auto_dependencies
 
     def self.system_gems
-      ['bson_ext', 'curb', 'em-http-request', 'eventmachine', 'mysql2', 'net-scp', 'net-sftp', 'net-ssh', 'nokogiri', 'rmagick', 'sqlite3', 'typhoeus']
+      ['yajl-ruby', 'bson_ext', 'curb', 'em-http-request', 'eventmachine', 'mysql2', 'net-scp', 'net-sftp', 'net-ssh', 'nokogiri', 'rmagick', 'sqlite3', 'typhoeus']
     end
 
     def initialize
