@@ -51,10 +51,12 @@ def init_runner(runner_class, job_data, user_dir, task_id)
   end
   runner = runner_class.new
   runner.instance_variable_set(:@task_id, task_id)
-  runner.instance_variable_set(:@job_data, job_data)
-  runner.instance_variable_set(:@sw_config, job_data['sw_config'])
+  if job_data
+    runner.instance_variable_set(:@job_data, job_data)
+    runner.instance_variable_set(:@sw_config, job_data['sw_config'])
+    runner.sw_set_data(job_data)
+  end
   runner.instance_variable_set(:@user_dir, user_dir)
-  runner.sw_set_data(job_data)
   runner
 end
 

@@ -51,7 +51,7 @@ module IronWorker
 
       begin
 
-        zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:unmerged_gems], options[:merged_mailers], options[:merged_folders])
+        zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:unmerged_gems], options[:merged_mailers], options[:merged_folders], class_name)
 
         # Check for code changes.
         zipfile = Zip::ZipFile.open(zip_filename, Zip::ZipFile::CREATE)
@@ -92,6 +92,9 @@ module IronWorker
       !Gem::GemPathSearcher.private_instance_methods.include?(:_deprecated_initialize)
     end
 
+    def webhook
+
+    end
 
     def self.get_gem_path(gem_info)
 #      gem_name =(gem_info[:require] || gem_info[:name].match(/^[a-zA-Z0-9\-_\.]+/)[0])
@@ -143,7 +146,7 @@ module IronWorker
       dependendent_gems
     end
 
-    def build_merged_file(filename, merged, unmerge, merged_gems, unmerged_gems, merged_mailers, merged_folders)
+    def build_merged_file(filename, merged, unmerge, merged_gems, unmerged_gems, merged_mailers, merged_folders, class_name)
 
       unmerged_gems ||= {}
 
@@ -257,7 +260,10 @@ IronWorker.disable_queueing()
 #puts 'dirname=' + dirname.inspect
 Dir.chdir(dirname)
 # Load in job data
-job_data = JSON.load(File.open(task_data_file))
+payload = IO.read(task_data_file)
+IronWorker.payload = payload
+begin
+job_data = JSON.parse(payload)
 #puts 'payload=' + job_data.inspect
 sw_config = job_data['sw_config']
 IronWorker.task_data = job_data
@@ -271,6 +277,9 @@ if IronWorker.task_data['rails']
       IronWorker.task_data['rails']['env']
     end
   end
+end
+rescue JSON::ParserError => ex
+  puts 'Payload is not json, raw payload can be accessed with IronWorker.payload.'
 end
 ")
 
@@ -300,11 +309,13 @@ end
         f.write("require_relative '#{File.basename(filename)}'\n")
 
         f.write("
-  runner_class = get_class_to_run(job_data['class_name'])
+        clz_name = '#{class_name}' # job_data['class_name']
+  runner_class = get_class_to_run(clz_name)
   IronWorker.running_class = runner_class
   runner = init_runner(runner_class, job_data, dirname, task_id)
+if IronWorker.task_data
   init_worker_service_for_runner(job_data)
-
+end
   # Now reenable after loading
   IronWorker.enable_queueing()
 

@@ -7,6 +7,7 @@ require_relative 'progress_worker'
 require_relative 'one_line_worker'
 require_relative 'workers/big_gems_worker'
 require_relative 'workers/tmp_dir_worker'
+require_relative 'workers/webhook_worker'
 
 class IronWorkerTests < TestBase
 
@@ -182,6 +183,37 @@ class IronWorkerTests < TestBase
     assert log.include?("hello")
   end
 
+  def test_webhook
+    worker = WebhookWorker.new
+    worker.upload
+
+    code_name = worker.class.name
+    payload = "webhooked!"
+
+    # Now we hit the webhook
+    @uber_client = Rest::Client.new
+    url = "https://worker-aws-us-east-1.iron.io/2/projects/#{@project_id}/tasks/webhook?code_name=#{code_name}&oauth=#{@token}"
+    resp = @uber_client.post(url, {:body=>payload})
+    p resp
+    body = JSON.parse(resp.body)
+    p body
+
+    @task_id = body["id"]
+
+    resp = @uber_client.get("https://worker-aws-us-east-1.iron.io/2/projects/#{@project_id}/tasks/#{@task_id}?oauth=#{@token}")
+    p resp
+
+    status = IronWorker.service.wait_until_complete(@task_id)
+    p status
+    assert status["status"]
+    puts status["msg"]
+
+    puts "LOG:"
+    log = IronWorker.service.get_log(@task_id)
+    puts log
+    assert log.include?(payload)
+
+  end
 
 end
 

@@ -21,6 +21,14 @@ module IronWorker
     def task_data
       @task_data
     end
+
+    def payload=(td)
+      @payload = td
+    end
+
+    def payload
+      @payload
+    end
   end
 
   def self.disable_queueing()
