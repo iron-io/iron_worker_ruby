@@ -160,8 +160,7 @@ module IronWorker
       end
       merged = merge
       IronWorker.logger.debug 'merged=' + merged.inspect
-
-      merged_gems = merged_gems.merge(IronWorker.config.merged_gems)
+      merged_gems = IronWorker.config.merged_gems.merge(merged_gems)
       IronWorker.logger.debug 'merged_gems=' + merged_gems.inspect
 
       if config.skip_auto_dependencies
@@ -345,10 +344,10 @@ end
 #            puts 'gem=' + gem.inspect
             path = gem[:path]
             if path
-              IronWorker.logger.debug "Collecting gem #{path}"
+              #IronWorker.logger.debug "Collecting gem #{path}"
               paths_to_use = ["#{path}/*", "#{path}/lib/**/**"]
               if gem[:include_dirs]
-                IronWorker.logger.debug "including extra dirs: " + gem[:include_dirs].inspect
+                #IronWorker.logger.debug "including extra dirs: " + gem[:include_dirs].inspect
                 gem[:include_dirs].each do |dir|
                   paths_to_use << "#{path}/#{dir}/**/**"
                 end
@@ -356,11 +355,11 @@ end
               IronWorker.logger.debug 'paths_to_use: ' + paths_to_use.inspect
               Dir.glob(paths_to_use).each do |file|
                 # todo: could check if directory and it not lib, skip it
-                IronWorker.logger.debug 'file for gem=' + file.inspect
+                #IronWorker.logger.debug 'file for gem=' + file.inspect
 #                puts 'gem2=' + gem.inspect
                 zdest = "gems/#{gem[:name]}/#{file.sub(path+'/', '')}"
 #                puts 'gem file=' + file.to_s
-                IronWorker.logger.debug 'zip dest=' + zdest
+                #IronWorker.logger.debug 'zip dest=' + zdest
                 f.add(zdest, file)
               end
             else
@@ -380,7 +379,7 @@ end
             if files and files.size>0
               files.each do |file|
                 zdest = "#{Digest::MD5.hexdigest(folder)}/#{file.sub(':', '_').sub('/', '_')}"
-                IronWorker.logger.debug 'put file to=' + zdest
+                #IronWorker.logger.debug 'put file to=' + zdest
                 f.add(zdest, file)
               end
             end
