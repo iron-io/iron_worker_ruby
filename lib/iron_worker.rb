@@ -34,6 +34,14 @@ module IronWorker
     def api_version
       2
     end
+
+    def is_local?
+      !is_remote?
+    end
+
+    def is_remote?
+      false
+    end
   end
 
 end

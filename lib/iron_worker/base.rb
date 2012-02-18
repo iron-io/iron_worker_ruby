@@ -242,11 +242,11 @@ module IronWorker
     end
 
     def is_local?
-      !is_remote?
+      IronWorker.is_local?
     end
 
     def is_remote?
-      false
+      IronWorker.is_remote?
     end
 
     # will return after job has completed or errored out.

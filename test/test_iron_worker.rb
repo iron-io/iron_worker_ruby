@@ -12,26 +12,26 @@ require_relative 'workers/webhook_worker'
 class IronWorkerTests < TestBase
 
   # todo: test both gems
-    #def test_rest_client
-    #  Uber.gem = :rest_client
-    #
-    #  worker = OneLineWorker.new
-    #  worker.queue
-    #
-    #  IronWorker.service.host = "http://www.wlajdfljalsjfklsldf.com/"
-    #  IronWorker.service.reset_base_url
-    #
-    #  status = worker.wait_until_complete
-    #  p status
-    #  p status["error_class"]
-    #  p status["msg"]
-    #  puts "\n\n\nLOG START:"
-    #  log = worker.get_log
-    #  puts log
-    #  puts "LOG END\n\n\n"
-    #  assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
-    #  Uber.gem = :typhoeus
-    #end
+  #def test_rest_client
+  #  Uber.gem = :rest_client
+  #
+  #  worker = OneLineWorker.new
+  #  worker.queue
+  #
+  #  IronWorker.service.host = "http://www.wlajdfljalsjfklsldf.com/"
+  #  IronWorker.service.reset_base_url
+  #
+  #  status = worker.wait_until_complete
+  #  p status
+  #  p status["error_class"]
+  #  p status["msg"]
+  #  puts "\n\n\nLOG START:"
+  #  log = worker.get_log
+  #  puts log
+  #  puts "LOG END\n\n\n"
+  #  assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
+  #  Uber.gem = :typhoeus
+  #end
 
 
   def test_old_gem_error_message
@@ -99,7 +99,7 @@ class IronWorkerTests < TestBase
 
   def test_data_passing
     cool = CoolWorker.new
-    cool.array_of_models = [CoolModel.new(:name=>"name1"), CoolModel.new(:name=>"name2")]
+    cool.array_of_models = [CoolModel.new(:name => "name1"), CoolModel.new(:name => "name2")]
     cool.queue
     status = wait_for_task(cool)
     assert status["status"] == "complete"
@@ -193,7 +193,7 @@ class IronWorkerTests < TestBase
     # Now we hit the webhook
     @uber_client = Rest::Client.new
     url = "https://worker-aws-us-east-1.iron.io/2/projects/#{@project_id}/tasks/webhook?code_name=#{code_name}&oauth=#{@token}"
-    resp = @uber_client.post(url, {:body=>payload})
+    resp = @uber_client.post(url, {:body => payload})
     p resp
     body = JSON.parse(resp.body)
     p body
@@ -213,6 +213,24 @@ class IronWorkerTests < TestBase
     puts log
     assert log.include?(payload)
 
+  end
+
+
+  def test_local_vs_remote
+
+    worker = LocalVsRemoteWorker.new
+    worker.run_local
+    assert worker.is_local?
+    # now remote
+    worker.queue
+
+    status = worker.wait_until_complete
+    p status
+    log = worker.get_log
+    puts 'log: ' + log
+    puts 'STATUS: ' + status.inspect
+    assert status["status"] == "complete"
+    assert log.include?("is_remote? true")
   end
 
 end
