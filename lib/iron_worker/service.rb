@@ -481,7 +481,7 @@ end
     def queue(name, data={}, options={})
       puts "Queuing #{name}..."
       check_config
-      if !data.is_a?(Array)
+      unless data.is_a?(Array)
         data = [data]
       end
       # Now we need to add class_name to the payload
@@ -503,7 +503,7 @@ end
         # todo: REMOVE THIS
         hash_to_send["rails_env"] = RAILS_ENV
       end
-      return queue_raw(name, hash_to_send, options)
+      queue_raw(name, hash_to_send, options)
     end
 
     def queue_raw(name, data={}, options={})
