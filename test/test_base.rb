@@ -24,9 +24,7 @@ class TestBase < Test::Unit::TestCase
 
   def setup
     if defined? $abt_config
-      dir = File.dirname(__FILE__) + '/tmp'
-      Dir.mkdir(dir)
-      ENV["TMPDIR"] = dir
+      ENV["TMPDIR"] = File.dirname(__FILE__) + '/tmp'
       @config = $abt_config
     else
       @config =YAML::load_file(File.expand_path(File.join("~", "Dropbox", "configs", "iron_worker_ruby", "test", "config.yml")))
