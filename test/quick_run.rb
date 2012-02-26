@@ -1,8 +1,7 @@
 require_relative 'test_base'
-require_relative 'one_line_worker'
-require_relative 'progress_worker'
-require_relative 'workers/qb_worker'
-require_relative 'workers/big_gems_worker'
+require_relative 'workers/one_line_worker'
+require_relative 'workers/progress_worker'
+require_relative 'workers/fail_worker'
 
 class QuickRun < TestBase
 
