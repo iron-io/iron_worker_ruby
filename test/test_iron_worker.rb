@@ -135,6 +135,7 @@ class IronWorkerTests < TestBase
   end
 
   def test_tmpdir
+    omit
     worker = TmpDirWorker.new
     worker.queue
     status = wait_for_task(worker)
@@ -218,7 +219,7 @@ class IronWorkerTests < TestBase
 
 
   def test_local_vs_remote
-
+    omit if defined? $abt_config
     worker = LocalVsRemoteWorker.new
     worker.run_local
     assert worker.is_local?

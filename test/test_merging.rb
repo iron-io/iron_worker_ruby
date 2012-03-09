@@ -31,6 +31,7 @@ class IronWorkerTests < TestBase
   end
   
   def test_include_dirs
+    omit
     worker = PrawnWorker.new
     worker.queue
 
