@@ -8,6 +8,7 @@ require_relative 'workers/one_line_worker'
 require_relative 'workers/big_gems_worker'
 require_relative 'workers/tmp_dir_worker'
 require_relative 'workers/webhook_worker'
+require_relative 'workers/local_vs_remote_worker'
 
 class IronWorkerTests < TestBase
 

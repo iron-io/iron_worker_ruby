@@ -24,7 +24,6 @@ class PrawnWorker < IronWorker::Base
       puts f
     end
 
-    raise PDF::Reader::UnsupportedFeatureError
 
 
   end
