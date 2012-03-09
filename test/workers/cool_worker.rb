@@ -1,7 +1,7 @@
 # bump..
 class CoolWorker < IronWorker::Base
   attr_accessor :array_of_models
-  merge 'cool_model'
+  merge '../models/cool_model'
 
 
   def run

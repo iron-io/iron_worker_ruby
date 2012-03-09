@@ -1,9 +1,9 @@
 require_relative 'test_base'
 require 'active_record'
-require_relative 'cool_worker'
-require_relative 'cool_model'
-require_relative 'db_model'
-require_relative 'prawn_worker'
+require_relative 'workers/cool_worker'
+require_relative 'models/cool_model'
+require_relative 'models/db_model'
+require_relative 'workers/prawn_worker'
 
 class IronWorkerTests < TestBase
 

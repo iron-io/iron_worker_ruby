@@ -1,6 +1,6 @@
 require_relative 'test_base'
-require_relative 'db_worker'
-require_relative 'db_model'
+require_relative 'workers/db_worker'
+require_relative 'models/db_model'
 class IronWorkerTests < TestBase
 
   def setup

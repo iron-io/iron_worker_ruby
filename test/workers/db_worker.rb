@@ -4,7 +4,7 @@ require 'mysql2'
 
 class DbWorker < IronWorker::Base
   merge_gem 'activerecord', :require=>'active_record'
-  merge 'db_model'
+  merge '../models/db_model'
 
 
   def run

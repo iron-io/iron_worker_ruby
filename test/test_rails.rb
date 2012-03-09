@@ -1,5 +1,5 @@
 require_relative 'test_base'
-require_relative 'rails_worker'
+require_relative 'workers/rails_worker'
 require 'active_support/core_ext'
 
 module Rails

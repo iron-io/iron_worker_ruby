@@ -1,5 +1,5 @@
 require_relative 'test_base'
-require_relative 'awesome_job'
+require_relative 'workers/awesome_job'
 require_relative 'workers/aws_s3_worker'
 
 class TestGems < TestBase

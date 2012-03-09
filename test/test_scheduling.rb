@@ -1,5 +1,5 @@
 require_relative 'test_base'
-require_relative 'one_line_worker'
+require_relative 'workers/one_line_worker'
 require 'active_support/core_ext'
 
 class IronWorkerTests < TestBase
