@@ -67,9 +67,15 @@ GEM
       ruby-hmac
     formatador (0.2.1)
     git (1.2.5)
+    hashie (1.2.0)
     http_connection (1.4.1)
     http_parser.rb (0.5.3)
     i18n (0.6.0)
+    iron_mq (1.5.0)
+      rest
+      rest
+      rest-client
+      rest-client
     iron_worker (2.3.12)
       bundler
       bundler
@@ -96,6 +102,9 @@ GEM
       ntlm-http (~> 0.1, >= 0.1.1)
       webrobots (~> 0.0, >= 0.0.9)
     mime-types (1.17.2)
+    mini_fb (1.1.7)
+      hashie
+      rest-client
     mongo (1.5.2)
       bson (= 1.5.2)
     mongoid (2.4.4)
@@ -158,11 +167,13 @@ DEPENDENCIES
   carrierwave
   dropbox (= 1.2.3)
   fog
+  iron_mq
   iron_worker
   jeweler2
   logglier
   mail
   mechanize
+  mini_fb
   mongoid_i18n
   mysql2
   pusher
