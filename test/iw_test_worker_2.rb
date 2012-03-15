@@ -8,6 +8,10 @@ class TestWorker2 < IronWorker::Base
 
     attr_accessor :s3_key, :times, :x
 
+    def super_class_method
+      puts 'This is a super_class_method'
+    end
+
 
     def who_am_i2?
         return self.class.name
@@ -42,10 +46,6 @@ class TestWorker2 < IronWorker::Base
         #        puts sw.status["status"].to_s
         #    end
         #end
-    end
-
-    def set_complete(params=nil)
-        log 'SET COMPLETE YAY!' + params[:task_set_id]
     end
 
 end

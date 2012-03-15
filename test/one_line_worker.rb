@@ -1,8 +1,6 @@
 # bump......
 class OneLineWorker < IronWorker::Base
 
-  #merge_gem 'webrobots'
-
   attr_accessor :x
 
   def run

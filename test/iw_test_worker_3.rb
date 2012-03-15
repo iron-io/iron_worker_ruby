@@ -9,6 +9,8 @@ class TestWorker3 < TestWorker2
   def run()
     puts 'TestWorker3.run'
     @x = 123
+    super_class_method
+
   end
 
 end
