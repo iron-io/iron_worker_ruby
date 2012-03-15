@@ -119,13 +119,20 @@ module IronWorker
       # Use this to merge in other workers. These are treated differently the normal merged files because
       # they will be uploaded separately and treated as distinctly separate workers.
       #
-      # file: This is the path to the file, just like merge.
-      # class_name: eg: 'MyWorker'.
+      # @param file [String] This is the path to the file, just like merge.
+      # @param class_name [String|Class] 'MyWorker' or just MyWorker.
+      # @return [Hash]
       def merge_worker(file, class_name)
-#        puts 'merge_worker in ' + self.name
         ret = merge(file)
-        ret[:class_name] = class_name
-        #[File.expand_path(file), class_name]
+        ret[:class_name] = case class_name
+                             when String
+                               class_name.strip
+                             when Class
+                               class_name.name
+                             else
+                               IronWorker.service.logger.warn "merge_worker: only String or Class is expected as class_name"
+                               class_name # probably user does know what is he doing
+                           end
         @merged_workers[file] = ret
         ret
       end
@@ -242,11 +249,11 @@ module IronWorker
     end
 
     def is_local?
-      !is_remote?
+      IronWorker.is_local?
     end
 
     def is_remote?
-      false
+      IronWorker.is_remote?
     end
 
     # will return after job has completed or errored out.

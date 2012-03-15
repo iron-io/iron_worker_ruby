@@ -2,7 +2,7 @@
 
 class PrawnWorker < IronWorker::Base
 
-  merge 'resources/something.yml'
+  merge '../resources/something.yml'
   merge_gem 'prawn', :include_dirs=>['data']
   merge_gem "pdf-reader"
 
@@ -24,7 +24,6 @@ class PrawnWorker < IronWorker::Base
       puts f
     end
 
-    raise PDF::Reader::UnsupportedFeatureError
 
 
   end

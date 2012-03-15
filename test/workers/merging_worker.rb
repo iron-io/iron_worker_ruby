@@ -4,9 +4,9 @@ class MergingWorker < IronWorker::Base
 
   merge_gem 'mini_fb'
   #merge_gem 'carrierwave', :require=>['carrierwave', 'carrierwave/orm/activerecord']
-  merge_folder './models'
+  merge_folder '../models'
 
-  merge 'cool_model'
+  merge 'models/cool_model'
   unmerge 'models/model_2.rb'
   merge_worker 'second_worker.rb', 'SecondWorker'
 

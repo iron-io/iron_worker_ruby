@@ -16,9 +16,9 @@ IronWorker.service=nil
 IronWorker.config.merged_gems={}
 
 
-require_relative "iw_test_worker"
-require_relative "iw_test_worker_2"
-require_relative "iw_test_worker_3"
+require_relative "workers/iw_test_worker"
+require_relative "workers/iw_test_worker_2"
+require_relative "workers/iw_test_worker_3"
 
 class TestBase < Test::Unit::TestCase
 

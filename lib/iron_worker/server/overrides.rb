@@ -29,6 +29,14 @@ module IronWorker
     def payload
       @payload
     end
+
+    def is_local?
+      !is_remote?
+    end
+
+    def is_remote?
+      true
+    end
   end
 
   def self.disable_queueing()
@@ -88,15 +96,6 @@ module IronWorker
 
       end
 
-    end
-
-    def is_remote?
-      true
-    end
-
-    #:todo remove this method later, when new iron_worker gem will be released
-    def is_local?
-      !is_remote?
     end
 
     def log(str)

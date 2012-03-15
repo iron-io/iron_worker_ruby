@@ -13,6 +13,7 @@ class RailsWorker < IronWorker::Base
     end
 
     worker2.wait_until_complete
+    sleep 2
     log = worker2.get_log
     puts "START WORKER2 LOG:"
     puts log
