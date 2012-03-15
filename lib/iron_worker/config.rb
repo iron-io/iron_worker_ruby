@@ -88,7 +88,7 @@ module IronWorker
           c2.models = models
           models.each { |model| c2.merge(model) }
           mailers_path = File.join(Rails.root, 'app/mailers/*.rb')
-          Dir.glob(mailers_path).collect { |m| c2.mailers[File.basename(m)] = {:filename=>m, :name => File.basename(m), :path_to_templates=>File.join(Rails.root, "app/views/#{File.basename(m, File.extname(m))}")} }
+          Dir.glob(mailers_path).collect { |m| c2.mailers[File.basename(m)] = {:filename=>m, :name => File.basename(m), :path_to_layouts => File.join(Rails.root, "app/views/layouts"), :path_to_templates=>File.join(Rails.root, "app/views/#{File.basename(m, File.extname(m))}")} }
           c2.extra_requires += ['active_support/core_ext', 'action_mailer']
           #puts 'DB FILE=' + File.join(Rails.root, 'config', 'database.yml').to_s
           if defined?(ActiveRecord) && File.exist?(File.join(Rails.root, 'config', 'database.yml'))
