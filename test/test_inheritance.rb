@@ -16,7 +16,9 @@ class TestInheritance < TestBase
     t3.queue
     t3.wait_until_complete
     puts "LOG:"
-    puts t3.get_log
+    log = t3.get_log
+    puts log
+    assert log.include?("super_class_method")
 
   end
 
