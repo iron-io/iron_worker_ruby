@@ -64,4 +64,6 @@ Full Documentation
 -----------------
 
 Now that you've got your first worker running, be sure to [check out the full documentation](https://github.com/iron-io/iron_worker_ruby/wiki).
-IronWorker can do so much more!
+IronWorker can do so much more! 
+
+And check out the [Iron.io Dev Center](http://dev.iron.io) for full IronWorker API documentation and and support for other languages.
