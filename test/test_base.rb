@@ -11,7 +11,7 @@ rescue Exception => ex
   raise ex
 end
 
-IronWorker.logger.level = Logger::DEBUG
+#IronWorker.logger.level = Logger::DEBUG
 IronWorker.service=nil
 IronWorker.config.merged_gems={}
 
@@ -42,7 +42,7 @@ class TestBase < Test::Unit::TestCase
       config.scheme = @config['iron_worker']['scheme'] if @config['iron_worker']['scheme']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
-      config.database = @config["database"]
+      #config.database = @config["database"]
       config.force_upload = true
       # config.skip_auto_dependencies = true
     end

@@ -9,7 +9,7 @@ class TestGems < TestBase
     worker = AwesomeJob.new
     worker.queue
 
-    wait_for_task(worker)
+    worker.wait_until_complete
 
     puts 'log=' + worker.get_log
 
@@ -22,7 +22,7 @@ class TestGems < TestBase
     worker.run_local
     worker.queue
 
-    wait_for_task(worker)
+    worker.wait_until_complete
 
     puts 'log=' + worker.get_log
 

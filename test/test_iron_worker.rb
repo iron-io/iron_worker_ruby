@@ -102,7 +102,7 @@ class IronWorkerTests < TestBase
     cool = CoolWorker.new
     cool.array_of_models = [CoolModel.new(:name => "name1"), CoolModel.new(:name => "name2")]
     cool.queue
-    status = wait_for_task(cool)
+    status = cool.wait_until_complete
     assert status["status"] == "complete"
     log = IronWorker.service.log(cool.task_id)
     puts 'log=' + log.inspect
@@ -129,7 +129,7 @@ class IronWorkerTests < TestBase
   def test_exceptions
     worker = FailWorker.new
     worker.queue
-    status = wait_for_task(worker)
+    status = worker.wait_until_complete
     assert status["status"] == "error"
     assert status["msg"].present?
   end
@@ -137,7 +137,7 @@ class IronWorkerTests < TestBase
   def test_tmpdir
     worker = TmpDirWorker.new
     worker.queue
-    status = wait_for_task(worker)
+    status = worker.wait_until_complete
     assert status["status"] == "complete"
     log = worker.get_log
     assert log.include?("TMPDIR"), "TMPDIR is not set"

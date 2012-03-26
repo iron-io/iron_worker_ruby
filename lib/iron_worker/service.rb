@@ -25,7 +25,7 @@ module IronWorker
       options[:logger] = IronWorker.logger
       super("worker-aws-us-east-1.iron.io", token, options)
       self.host = self.config.host if self.config && self.config.host
-      # automerge simple worker gem and dependenices
+      # automerge simple worker gem and dependencies
       self.config.merge_gem('zip')
       self.config.merge_gem('rest-client')
       self.config.merge_gem('rest')

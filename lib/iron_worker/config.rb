@@ -241,7 +241,7 @@ module IronWorker
         # try relative
         #          p caller
         f2 = File.join(File.dirname(callerr), f)
-        puts 'f2=' + f2
+        #puts 'f2=' + f2
         if File.exist? f2
           exists = true
           f = f2
