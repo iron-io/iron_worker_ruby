@@ -4,7 +4,7 @@ require 'time'
 
 class IronWorkerTests < TestBase
 
-  def test_scheduler
+  def test_scheduler_no_as
     worker = OneLineWorker.new
 
     start_time = Time.now

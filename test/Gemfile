@@ -2,13 +2,14 @@
 
 source 'http://rubygems.org'
 
-gem 'rack', '< 1.4'
+gem 'rack'
 gem 'iron_worker'
 gem 'test-unit'
 gem 'jeweler2'
 gem 'zip'
 gem 'rest'
 gem 'typhoeus'
+gem 'uber_config'
 
 gem 'simple_record'
 gem 'activerecord'

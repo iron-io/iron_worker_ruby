@@ -6,7 +6,7 @@ require_relative 'progress_worker'
 
 class QuickRun < TestBase
 
-  def test_scheduler
+  def test_scheduler_quick
     worker = TestWorker.new
     worker.schedule(:start_at=>10.seconds.from_now)
     status = worker.wait_until_complete

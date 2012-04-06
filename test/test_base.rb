@@ -4,6 +4,7 @@ require "bundler/setup"
 gem 'test-unit'
 require 'test/unit'
 require 'yaml'
+require 'uber_config'
 begin
   require File.join(File.dirname(__FILE__), '../lib/iron_worker')
 rescue Exception => ex
@@ -23,12 +24,7 @@ require_relative "workers/iw_test_worker_3"
 class TestBase < Test::Unit::TestCase
 
   def setup
-    if defined? $abt_config
-      @config = $abt_config
-    else
-      @config =YAML::load_file(File.expand_path(File.join("~", "Dropbox", "configs", "iron_worker_ruby", "test", "config.yml")))
-    end
-#    @config = YAML::load_file(File.join(File.dirname(__FILE__), "config.yml"))
+    @config = UberConfig.load
     puts "config: " + @config.inspect
 
     @token = @config['iron_worker']['token']
