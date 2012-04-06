@@ -63,10 +63,7 @@ This will send it off to the IronWorker cloud.
 Full Documentation
 -----------------
 
-Now that you've got your first worker running, be sure to [check out the full documentation](http://docs.iron.io).
-IronWorker can do so much more!
+Now that you've got your first worker running, be sure to [check out the full documentation](https://github.com/iron-io/iron_worker_ruby/wiki).
+IronWorker can do so much more! 
 
-Discussion Group
-----------------------
-
-Join the discussion group at: https://groups.google.com/forum/#!forum/ironworker-users
+And check out the [Iron.io Dev Center](http://dev.iron.io) for full IronWorker API documentation and and support for other languages.
