@@ -27,15 +27,15 @@ class TestBase < Test::Unit::TestCase
     @config = UberConfig.load
     puts "config: " + @config.inspect
 
-    @token = @config['iron_worker']['token']
-    @project_id = @config['iron_worker']['project_id']
+    @token = @config['iron']['token']
+    @project_id = @config['iron']['project_id']
     # new style
     IronWorker.configure do |config|
       config.token = @token
       config.project_id = @project_id
-      config.host = @config['iron_worker']['host'] if @config['iron_worker']['host']
-      config.port = @config['iron_worker']['port'] if @config['iron_worker']['port']
-      config.scheme = @config['iron_worker']['scheme'] if @config['iron_worker']['scheme']
+      config.host = @config['iron']['host'] if @config['iron']['host']
+      config.port = @config['iron']['port'] if @config['iron']['port']
+      config.scheme = @config['iron']['scheme'] if @config['iron']['scheme']
       config.global_attributes["db_user"] = "sa"
       config.global_attributes["db_pass"] = "pass"
       #config.database = @config["database"]
