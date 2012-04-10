@@ -6,7 +6,6 @@ require_relative 'workers/fail_worker'
 require_relative 'workers/progress_worker'
 require_relative 'workers/one_line_worker'
 require_relative 'workers/big_gems_worker'
-require_relative 'workers/tmp_dir_worker'
 require_relative 'workers/webhook_worker'
 require_relative 'workers/local_vs_remote_worker'
 
@@ -134,15 +133,6 @@ class IronWorkerTests < TestBase
     assert status["msg"].present?
   end
 
-  def test_tmpdir
-    worker = TmpDirWorker.new
-    worker.queue
-    status = worker.wait_until_complete
-    assert status["status"] == "complete"
-    log = worker.get_log
-    assert log.include?("TMPDIR"), "TMPDIR is not set"
-    assert log.include?("tmp"), "There is no tmp dir in user dir"
-  end
 
   def test_progress
     worker = ProgressWorker.new
