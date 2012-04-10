@@ -450,10 +450,16 @@ end
       status = nil
       sleep 1
       while tries < 100
-        status = status(task_id)
+        status = options[:schedule] ? schedule_status(task_id) : status(task_id)
         puts "Waiting... status=" + status["status"]
-        if status["status"] != "queued" && status["status"] != "running"
-          break
+        if options[:schedule]
+          if status["status"] == "complete"
+            break
+          end
+        else
+          if status["status"] != "queued" && status["status"] != "running"
+            break
+          end
         end
         sleep 2
       end

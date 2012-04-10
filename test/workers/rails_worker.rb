@@ -6,7 +6,7 @@ class RailsWorker < IronWorker::Base
   def run
     puts "hello rails! env=#{Rails.env}"
     worker2 = nil
-    100.times do |i|
+    10.times do |i|
       worker2 = RailsWorker2.new
       worker2.x = "yz #{i}"
       worker2.queue(:priority=>2)

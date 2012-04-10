@@ -261,7 +261,12 @@ module IronWorker
     # todo: add a :timeout option
     def wait_until_complete
       check_service
-      IronWorker.service.wait_until_complete(self.task_id)
+      raise "No ID for worker!" if self.task_id.nil? && self.schedule_id.nil?
+      IronWorker.service.wait_until_complete(self.task_id || self.schedule_id, :schedule=>is_schedule?)
+    end
+
+    def is_schedule?
+      !self.schedule_id.nil?
     end
 
     def upload
