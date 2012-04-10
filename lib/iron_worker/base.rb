@@ -70,8 +70,10 @@ module IronWorker
         f2 = IronWorker::MergeHelper.check_for_file(mailer, @caller_file)
         basename = File.basename(mailer, f2[:extname])
         path_to_templates = params[:path_to_templates] || File.join(Rails.root, "app/views/#{basename}")
-        @merged_mailers[basename] = {:name=>basename, :path_to_templates=>path_to_templates, :filename => f2[:path]}.merge!(params)
+        path_to_layouts = params[:path_to_layouts] || File.join(Rails.root, "app/views/layouts")
+        @merged_mailers[basename] = {:name => basename, :path_to_templates => path_to_templates, :path_to_layouts => path_to_layouts, :filename => f2[:path]}.merge!(params)
       end
+
 
       def merge_folder(path)
         files = []
