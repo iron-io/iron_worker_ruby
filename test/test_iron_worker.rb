@@ -193,7 +193,7 @@ class IronWorkerTests < TestBase
 
     # Now we hit the webhook
     @uber_client = Rest::Client.new
-    url = "https://worker-aws-us-east-1.iron.io/2/projects/#{@project_id}/tasks/webhook?code_name=#{code_name}&oauth=#{@token}"
+    url = "#{IronWorker.service.base_url}/projects/#{@project_id}/tasks/webhook?code_name=#{code_name}&oauth=#{@token}"
     resp = @uber_client.post(url, {:body => payload})
     p resp
     body = JSON.parse(resp.body)
@@ -201,7 +201,7 @@ class IronWorkerTests < TestBase
 
     @task_id = body["id"]
 
-    resp = @uber_client.get("https://worker-aws-us-east-1.iron.io/2/projects/#{@project_id}/tasks/#{@task_id}?oauth=#{@token}")
+    resp = @uber_client.get("#{IronWorker.service.base_url}/projects/#{@project_id}/tasks/#{@task_id}?oauth=#{@token}")
     p resp
 
     status = IronWorker.service.wait_until_complete(@task_id)
