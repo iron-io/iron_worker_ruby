@@ -5,6 +5,6 @@ class FailWorker < IronWorker::Base
 
   def run
     puts "I am about to fail..."
-    raise "Dang, I failed. Fail whale."
+    raise "I wanted to fail and I did!"
   end
 end
