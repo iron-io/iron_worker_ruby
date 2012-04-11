@@ -401,6 +401,11 @@ end
               zdest = "templates/#{mailer[:name]}/#{file.sub(path+'/', '')}"
               f.add(zdest, file)
             end
+            path = mailer[:path_to_layouts]
+            Dir["#{path}/**/**"].each do |file|
+              zdest = "templates/layouts/#{file.sub(path+'/', '')}"
+              f.add(zdest, file)
+            end
           end
         end
       end
