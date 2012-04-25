@@ -28,7 +28,7 @@ module IronWorker
                   :unmerged,
                   :merged_gems,
                   :unmerged_gems,
-                  :force_upload,
+                  :force_upload, :no_upload,
                   :beta, # for setting beta feature flags
                   :skip_auto_dependencies
 

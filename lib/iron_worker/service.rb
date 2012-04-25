@@ -38,6 +38,10 @@ module IronWorker
     #    - :callback_url
     #    - :merge => array of files to merge in with this file
     def upload(filename, class_name, options={})
+      if self.config.no_upload
+        IronWorker.logger.debug 'NO UPLOAD!'
+        return
+      end
       name = options[:name] || class_name
       project_id = get_project_id(options)
       tmp = Dir.tmpdir()

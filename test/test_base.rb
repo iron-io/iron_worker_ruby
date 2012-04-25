@@ -12,7 +12,7 @@ rescue Exception => ex
   raise ex
 end
 
-#IronWorker.logger.level = Logger::DEBUG
+IronWorker.logger.level = Logger::DEBUG
 IronWorker.service=nil
 IronWorker.config.merged_gems={}
 
