@@ -12,7 +12,7 @@ rescue Exception => ex
   raise ex
 end
 
-IronWorker.logger.level = Logger::DEBUG
+#IronWorker.logger.level = Logger::DEBUG
 IronWorker.service=nil
 IronWorker.config.merged_gems={}
 
@@ -26,6 +26,7 @@ class TestBase < Test::Unit::TestCase
   def setup
     @config = UberConfig.load
     puts "config: " + @config.inspect
+    raise "Config is nil! Ensure you have a config file in the proper place." if @config.nil?
 
     @token = @config['iron']['token']
     @project_id = @config['iron']['project_id']

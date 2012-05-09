@@ -10,6 +10,7 @@ class BatchRun < TestBase
 
   def test_concur_batch
 
+    old_log_level = IronWorker.logger.level
     IronWorker.logger.level = Logger::INFO
 
     clz = MqWorker
@@ -112,7 +113,7 @@ class BatchRun < TestBase
     #  puts "LOG END\n\n\n"
     #  assert status["status"] == "complete", "Status was not complete, it was #{status["status"]}"
     #end
-    IronWorker.logger.level = Logger::DEBUG
+    IronWorker.logger.level = old_log_level
 
   end
 
