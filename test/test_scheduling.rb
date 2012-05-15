@@ -17,7 +17,7 @@ class IronWorkerTests < TestBase
     assert duration > 30
 
     worker = OneLineWorker.new
-    worker.schedule(:start_at=>1.seconds.from_now, :run_every=>5, :end_at=>60.seconds.from_now)
+    worker.schedule(:start_at=>1.seconds.from_now, :run_every=>60, :end_at=>(6*60).seconds.from_now)
     status = worker.wait_until_complete
     assert status["status"] == "complete"
     puts "run_count=#{status["run_count"]}"
@@ -25,7 +25,7 @@ class IronWorkerTests < TestBase
     assert status["run_count"] < 20
 
     worker = OneLineWorker.new
-    worker.schedule(:start_at => 2.seconds.since, :run_every => 5, :run_times => 5)
+    worker.schedule(:start_at => 2.seconds.since, :run_every => 60, :run_times => 5)
     status = worker.wait_until_complete
     assert status["status"] == "complete"
     puts "run_count=#{status["run_count"]}"
