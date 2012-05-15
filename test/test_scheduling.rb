@@ -50,7 +50,7 @@ class IronWorkerTests < TestBase
     end
     sleep 1
     page = 0
-    while true
+    while page <= 100
       puts "page #{page}"
       schedules = IronWorker.service.schedules(:page=>page)['schedules']
       page += 1
@@ -65,6 +65,7 @@ class IronWorkerTests < TestBase
           next
         end
         puts 'SCHEDULED!! Cancelling...'
+        IronWorker.service.cancel_schedule(s['id'])
       end
     end
   end
