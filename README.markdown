@@ -5,6 +5,11 @@ Getting Started
 
 [1]: http://www.iron.io/
 
+NOTE: The next generation IronWorker gem, `iron_worker_ng` is at: https://github.com/iron-io/iron_worker_ruby_ng. 
+We recommend using that one going forward. This one still works, but we'll be putting most of our effort into the new
+one. It also includes our new IronWorker command line interface (CLI) which is... awesome. ;) You can [read more about 
+that here](http://blog.iron.io/2012/05/new-ironworker-command-line-interface.html). 
+
 Install IronWorker Gem
 ------------------------
 
