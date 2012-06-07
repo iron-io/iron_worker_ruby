@@ -5,7 +5,7 @@ class QbWorker < IronWorker::Base
   attr_accessor :x
 
   def run
-    IronWorker.logger.level = Logger::DEBUG
+    #IronWorker.logger.level = Logger::DEBUG
     puts "Qb passing off to running backs..."
     x ||= 10
     x.times do |i|

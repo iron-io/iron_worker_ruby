@@ -23,7 +23,6 @@ class QuickRun < TestBase
       puts "error_class: #{status["error_class"]}"
       puts "msg: #{status["msg"]}"
       puts "percent: #{status["percent"]}"
-      sleep 1
       puts "\n\n\nLOG START:"
       log = worker.get_log
       puts log
