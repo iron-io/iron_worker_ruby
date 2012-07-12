@@ -13,8 +13,8 @@ class BatchRun < TestBase
     old_log_level = IronWorker.logger.level
     IronWorker.logger.level = Logger::INFO
 
-    clz = MqWorker
-    num_tasks = 1000
+    clz = OneLineWorker
+    num_tasks = 100
 
     worker = clz.new
     worker.upload
@@ -34,9 +34,7 @@ class BatchRun < TestBase
           response_hash = worker2.queue(:priority=>(@config[:priority] || 0))
           puts "response_hash #{i} = " + response_hash.inspect
           assert response_hash["msg"]
-          assert response_hash["status_code"]
           assert response_hash["tasks"]
-          assert response_hash["status_code"] == 200
           assert response_hash["tasks"][0]["id"].length == 24, "length is #{response_hash["tasks"][0]["id"].length}"
           assert response_hash["tasks"][0]["id"] == worker2.task_id, "id in hash: #{response_hash["tasks"][0]["id"]}, task_id: #{worker2.task_id}. response was #{worker2.response.inspect}"
           worker2
