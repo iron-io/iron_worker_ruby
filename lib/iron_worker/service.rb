@@ -223,8 +223,12 @@ require 'json'
 
         # require merged gems
         merged_gems.each_pair do |k, gem|
-          IronWorker.logger.debug "Bundling gem #{gem[:name]}..."
           f.write "$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib'))\n"
+        end
+
+        merged_gems.each_pair do |k, gem|
+          IronWorker.logger.debug "Bundling gem #{gem[:name]}..."
+          #f.write "$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '/gems/#{gem[:name]}/lib'))\n"
           next if gem[:bypass_require]
           IronWorker.logger.debug 'writing requires: ' + gem[:require].inspect
           if gem[:require].nil?
