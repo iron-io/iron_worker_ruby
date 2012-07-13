@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "iron_worker"
-  s.version = "2.3.14"
+  s.version = "2.3.15"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Reeder"]
-  s.date = "2012-04-25"
+  s.date = "2012-07-13"
   s.description = "The official IronWorker gem for IronWorker by Iron.io. http://www.iron.io"
   s.email = "travis@iron.io"
   s.extra_rdoc_files = [
@@ -35,7 +35,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://www.iron.io"
   s.require_paths = ["lib"]
   s.required_ruby_version = Gem::Requirement.new(">= 1.9")
-  s.rubygems_version = "1.8.21"
+  s.rubygems_version = "1.8.24"
   s.summary = "The official IronWorker gem for IronWorker by Iron.io. http://www.iron.io"
 
   if s.respond_to? :specification_version then
