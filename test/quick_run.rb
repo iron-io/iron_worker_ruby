@@ -7,7 +7,7 @@ class QuickRun < TestBase
 
   def test_worker
     tasks = []
-    50.times do |i|
+    1.times do |i|
       puts "Queuing #{i}"
       worker = OneLineWorker.new
       worker.x = i
