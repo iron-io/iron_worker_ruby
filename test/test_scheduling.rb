@@ -14,7 +14,7 @@ class IronWorkerTests < TestBase
     end_time = Time.now
     duration = (end_time-start_time)
     puts "duration=#{duration}"
-    assert duration > 30
+    assert duration > 28
 
     worker = OneLineWorker.new
     worker.schedule(:start_at=>1.seconds.from_now, :run_every=>60, :end_at=>(6*60).seconds.from_now)

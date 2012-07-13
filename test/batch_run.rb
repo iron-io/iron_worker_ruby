@@ -13,8 +13,8 @@ class BatchRun < TestBase
     old_log_level = IronWorker.logger.level
     IronWorker.logger.level = Logger::INFO
 
-    clz = MqWorker
-    num_tasks = 50
+    clz = OneLineWorker
+    num_tasks = 100
 
     worker = clz.new
     worker.upload
