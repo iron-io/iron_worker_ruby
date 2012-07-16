@@ -71,9 +71,7 @@ class IronWorkerTests < TestBase
     puts 'task_id=' + tw.task_id
 
     assert response_hash["msg"]
-    assert response_hash["status_code"]
     assert response_hash["tasks"]
-    assert response_hash["status_code"] == 200
     assert response_hash["tasks"][0]["id"].length == 24, "length is #{response_hash["tasks"][0]["id"].length}"
     assert response_hash["tasks"][0]["id"] == tw.task_id
 
