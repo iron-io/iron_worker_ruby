@@ -172,38 +172,6 @@ class IronWorkerTests < TestBase
     assert log.include?("hello")
   end
 
-  def test_webhook
-    worker = WebhookWorker.new
-    worker.upload
-
-    code_name = worker.class.name
-    payload = "webhooked!"
-
-    # Now we hit the webhook
-    @uber_client = Rest::Client.new
-    url = "#{IronWorker.service.base_url}/projects/#{@project_id}/tasks/webhook?code_name=#{code_name}&oauth=#{@token}"
-    resp = @uber_client.post(url, {:body => payload})
-    p resp
-    body = JSON.parse(resp.body)
-    p body
-
-    @task_id = body["id"]
-
-    resp = @uber_client.get("#{IronWorker.service.base_url}/projects/#{@project_id}/tasks/#{@task_id}?oauth=#{@token}")
-    p resp
-
-    status = IronWorker.service.wait_until_complete(@task_id)
-    p status
-    assert status["status"]
-    puts status["msg"]
-
-    puts "LOG:"
-    log = IronWorker.service.get_log(@task_id)
-    puts log
-    assert log.include?(payload)
-
-  end
-
 
   def test_local_vs_remote
 

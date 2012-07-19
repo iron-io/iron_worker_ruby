@@ -30,6 +30,7 @@ class TestBase < Test::Unit::TestCase
 
     @token = @config['iron']['token']
     @project_id = @config['iron']['project_id']
+    puts "@token: #{@token}"
     # new style
     IronWorker.configure do |config|
       config.token = @token

@@ -5,7 +5,7 @@ require_relative 'models/cool_model'
 require_relative 'models/db_model'
 require_relative 'workers/prawn_worker'
 
-class IronWorkerTests < TestBase
+class TestMerging < TestBase
 
   def test_merge_worker
     tw = TestWorker2.new
