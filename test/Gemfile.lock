@@ -1,63 +1,45 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    Ascii85 (1.0.1)
-    activemodel (3.2.6)
-      activesupport (= 3.2.6)
-      builder (~> 3.0.0)
-    activerecord (3.2.6)
-      activemodel (= 3.2.6)
-      activesupport (= 3.2.6)
-      arel (~> 3.0.2)
-      tzinfo (~> 0.3.29)
-    activesupport (3.2.6)
+    Ascii85 (1.0.2)
+    activerecord (1.6.0)
+    activesupport (3.2.8)
       i18n (~> 0.6)
       multi_json (~> 1.0)
-    addressable (2.2.8)
-    arel (3.0.2)
-    aws (2.5.6)
+    aws (2.5.8)
+      http_connection
       http_connection
       uuidtools
+      uuidtools
+      xml-simple
       xml-simple
     aws-s3 (0.6.3)
       builder
       mime-types
       xml-simple
-    builder (3.0.0)
-    carrierwave (0.6.2)
-      activemodel (>= 3.2.0)
-      activesupport (>= 3.2.0)
-    concur (0.1.2)
-      em-http-request
-      em-http-request
-      eventmachine
-      eventmachine
+    builder (3.1.4)
+    carrierwave (0.5.8)
+      activesupport (~> 3.0)
+    concur (1.0.0)
       faraday
       faraday
-    cookiejar (0.3.0)
-    domain_name (0.5.3)
+    domain_name (0.5.4)
       unf (~> 0.0.3)
     dropbox (1.2.3)
       json (>= 1.2.0)
       mechanize (>= 1.0.0)
       multipart-post (>= 1.0)
       oauth (>= 0.3.6)
-    em-http-request (1.0.2)
-      addressable (>= 2.2.3)
-      cookiejar
-      em-socksify
-      eventmachine (>= 1.0.0.beta.4)
-      http_parser.rb (>= 0.5.3)
-    em-socksify (0.2.0)
-      eventmachine (>= 1.0.0.beta.4)
-    eventmachine (1.0.0.rc.4)
-    excon (0.14.3)
-    faraday (0.8.1)
+    ethon (0.5.3)
+      ffi (~> 1.0.11)
+      mime-types (~> 1.18)
+    excon (0.16.7)
+    faraday (0.8.4)
       multipart-post (~> 1.1)
-    ffi (1.1.0)
-    fog (1.4.0)
+    ffi (1.0.11)
+    fog (1.7.0)
       builder
-      excon (~> 0.14.0)
+      excon (~> 0.14)
       formatador (~> 0.2.0)
       mime-types
       multi_json (~> 1.0)
@@ -65,16 +47,16 @@ GEM
       net-ssh (>= 2.1.3)
       nokogiri (~> 1.5.0)
       ruby-hmac
-    formatador (0.2.3)
+    formatador (0.2.4)
     git (1.2.5)
+    hashery (2.0.1)
     hashie (1.2.0)
-    http_connection (1.4.1)
-    http_parser.rb (0.5.3)
-    i18n (0.6.0)
-    iron_core (0.2.0)
-      rest (>= 2.0.0)
-    iron_mq (2.0.0)
-      iron_core (>= 0.2.0)
+    http_connection (1.4.2)
+    i18n (0.6.1)
+    iron_core (0.4.3)
+      rest (>= 2.0.2)
+    iron_mq (2.1.3)
+      iron_core (>= 0.4.2)
     iron_worker (2.3.15)
       bundler
       bundler
@@ -86,8 +68,8 @@ GEM
       zip
     jeweler2 (2.0.9)
       git (>= 1.2.5)
-    json (1.7.3)
-    logglier (0.2.7)
+    json (1.7.5)
+    logglier (0.2.8)
     mail (2.4.4)
       i18n (>= 0.4.0)
       mime-types (~> 1.16)
@@ -101,59 +83,60 @@ GEM
       ntlm-http (~> 0.1, >= 0.1.1)
       webrobots (~> 0.0, >= 0.0.9)
     mime-types (1.19)
-    mini_fb (1.1.7)
+    mini_fb (1.2.0)
+      hashie
       hashie
       rest-client
-    minitest (3.2.0)
-    multi_json (1.3.6)
+      rest-client
+    minitest (4.2.0)
+    multi_json (1.3.7)
     multipart-post (1.1.5)
     net-http-digest_auth (1.2.1)
-    net-http-persistent (2.7)
+    net-http-persistent (2.8)
     net-scp (1.0.4)
       net-ssh (>= 1.99.1)
-    net-ssh (2.5.2)
+    net-ssh (2.6.1)
     nokogiri (1.5.5)
     ntlm-http (0.1.1)
-    oauth (0.4.6)
-    pdf-reader (1.1.1)
+    oauth (0.4.7)
+    pdf-reader (1.2.0)
       Ascii85 (~> 1.0.0)
+      hashery (~> 2.0)
       ruby-rc4
     polyglot (0.3.3)
     prawn (0.12.0)
       pdf-reader (>= 0.9.0)
       ttfunk (~> 1.0.2)
-    pusher (0.9.4)
+    pusher (0.10.0)
       multi_json (~> 1.0)
-      signature (~> 0.1.2)
+      signature (~> 0.1.4)
     rack (1.4.1)
-    rest (2.0.2)
+    rest (2.1.0)
       net-http-persistent
       rest-client (>= 0.3.0)
     rest-client (1.6.7)
       mime-types (>= 1.16)
     ruby-hmac (0.4.0)
     ruby-rc4 (0.1.5)
-    signature (0.1.3)
+    signature (0.1.4)
     simple_record (2.2.0)
       aws
       concur
-    test-unit (2.5.1)
-    timecop (0.3.5)
-    treetop (1.4.10)
+    test-unit (2.5.2)
+    timecop (0.5.3)
+    treetop (1.4.12)
       polyglot
       polyglot (>= 0.3.1)
     ttfunk (1.0.3)
-    typhoeus (0.4.2)
-      ffi (~> 1.0)
-      mime-types (~> 1.18)
-    tzinfo (0.3.33)
-    uber_config (0.0.5)
+    typhoeus (0.5.1)
+      ethon (= 0.5.3)
+    uber_config (1.0.5)
     unf (0.0.5)
       unf_ext
     unf_ext (0.0.5)
     uuidtools (2.1.3)
     webrobots (0.0.13)
-    xml-simple (1.1.1)
+    xml-simple (1.1.2)
     zip (2.0.2)
 
 PLATFORMS

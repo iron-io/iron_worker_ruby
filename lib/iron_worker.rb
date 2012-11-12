@@ -1,9 +1,10 @@
+puts "WARNING: iron_worker gem is deprecated. Please use iron_worker_ng gem, more info at https://github.com/iron-io/iron_worker_ruby_ng"
+
 require_relative 'iron_worker/utils'
 require_relative 'iron_worker/service'
 require_relative 'iron_worker/base'
 require_relative 'iron_worker/config'
 require_relative 'iron_worker/used_in_worker'
-
 
 module IronWorker
   @@logger = Logger.new(STDOUT)
