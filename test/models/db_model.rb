@@ -1,6 +1,6 @@
-require 'active_record'
+#require 'active_record'
 
-class DbModel < ActiveRecord::Base
+class DbModel #< ActiveRecord::Base
 
 
 end

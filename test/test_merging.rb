@@ -1,5 +1,5 @@
 require_relative 'test_base'
-require 'active_record'
+#require 'active_record'
 require_relative 'workers/cool_worker'
 require_relative 'models/cool_model'
 require_relative 'models/db_model'
