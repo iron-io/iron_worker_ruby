@@ -2,7 +2,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     Ascii85 (1.0.2)
-    activerecord (1.6.0)
+    activerecord (3.2.8)
     activesupport (3.2.8)
       i18n (~> 0.6)
       multi_json (~> 1.0)
@@ -143,8 +143,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activerecord
-  activesupport
+  activerecord (> 3)
+  activesupport (> 3)
   aws-s3
   carrierwave
   concur

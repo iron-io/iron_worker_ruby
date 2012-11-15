@@ -15,8 +15,8 @@ group :test do
   gem 'uber_config'
 
   gem 'simple_record'
-  gem 'activerecord'
-  gem 'activesupport'
+  gem 'activerecord','>3'
+  gem 'activesupport','>3'
   gem 'simple_record'
   gem 'dropbox', '1.2.3'
   gem 'pusher'
