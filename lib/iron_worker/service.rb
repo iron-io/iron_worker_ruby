@@ -93,7 +93,7 @@ module IronWorker
 
 
     def self.heroku?
-      !Gem::GemPathSearcher.private_instance_methods.include?(:_deprecated_initialize)
+      !Gem::GemPathSearcher.private_instance_methods.include?(:_deprecated_initialize) rescue false
     end
 
     def webhook
