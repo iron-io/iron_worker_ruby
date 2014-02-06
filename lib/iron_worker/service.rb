@@ -58,7 +58,7 @@ module IronWorker
         zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:unmerged_gems], options[:merged_mailers], options[:merged_folders], class_name)
 
         # Check for code changes.
-        zipfile = Zip::ZipFile.open(zip_filename, Zip::ZipFile::CREATE)
+        zipfile = Zip::File.open(zip_filename, Zip::File::CREATE)
         crc = zipfile.entries.collect { |x| x.crc }.inject(:+)
         new_code = false
         if self.config.force_upload || crc.to_s != existing_md5
@@ -345,7 +345,7 @@ end
       File.delete(fname2) if File.exist?(fname2)
       #merging all gems and deps
       merged_gems.merge!(gems_dependencies)
-      Zip::ZipFile.open(fname2, 'w') do |f|
+      Zip::File.open(fname2, 'w') do |f|
         if merged_gems && merged_gems.size > 0
           merged_gems.each_pair do |k, gem|
             next unless gem[:merge]
@@ -424,7 +424,7 @@ end
     def package_code(files)
       fname2 = "package.zip"
       File.delete(fname2) if File.exist?(fname2)
-      Zip::ZipFile.open(fname2, 'w') do |f|
+      Zip::File.open(fname2, 'w') do |f|
         files.each do |file|
           f.add(file, file)
         end
