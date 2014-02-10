@@ -9,7 +9,7 @@ group :test do
   gem 'test-unit'
   gem 'minitest'
   gem 'jeweler2'
-  gem 'zip'
+  gem 'rubyzip'
   gem 'rest'
   gem 'typhoeus'
   gem 'uber_config'

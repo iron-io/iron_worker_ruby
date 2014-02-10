@@ -4,7 +4,7 @@ require 'zlib'
 dir = Dir.new("./")
 started_at = Time.now
 fname2 = "zipped.zip"
-Zip::ZipFile.open(fname2, 'w') do |f|
+Zip::File.open(fname2, 'w') do |f|
   dir.each do |fname|
     puts "merging #{fname} into #{fname2}"
     f.add(File.basename(fname), fname)

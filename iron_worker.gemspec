@@ -18,7 +18,7 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = Gem::Requirement.new(">= 1.9")
   gem.add_runtime_dependency "iron_core", ">= 0.5.1"
 
-  gem.add_runtime_dependency 'zip'
+  gem.add_runtime_dependency 'rubyzip'
   gem.add_runtime_dependency 'rest-client'
   gem.add_runtime_dependency 'rest'
   gem.add_runtime_dependency 'bundler'
