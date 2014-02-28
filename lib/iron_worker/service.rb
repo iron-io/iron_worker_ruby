@@ -1,6 +1,13 @@
 require 'base64'
 require 'logger'
-require 'zip'
+begin
+  # Little hack until everyone upgrades to rubyzip >= 1
+  require 'zip'
+  ZIPCLZ = Zip::File
+rescue Exception => ex
+  require 'zip/zip'
+  ZIPCLZ = Zip::ZipFile
+end
 require 'bundler'
 require 'rest_client'
 require 'json'
@@ -26,7 +33,7 @@ module IronWorker
       super("worker-aws-us-east-1.iron.io", token, options)
       self.host = self.config.host if self.config && self.config.host
       # automerge simple worker gem and dependencies
-      self.config.merge_gem('rubyzip', :require=>'zip')
+      self.config.merge_gem('rubyzip', :require => 'zip')
       self.config.merge_gem('rest-client')
       self.config.merge_gem('rest')
       self.config.merge_gem('iron_worker')
@@ -58,7 +65,7 @@ module IronWorker
         zip_filename = build_merged_file(filename, options[:merge], options[:unmerge], options[:merged_gems], options[:unmerged_gems], options[:merged_mailers], options[:merged_folders], class_name)
 
         # Check for code changes.
-        zipfile = Zip::File.open(zip_filename, Zip::File::CREATE)
+        zipfile = ZIPCLZ.open(zip_filename, ZIPCLZ::CREATE)
         crc = zipfile.entries.collect { |x| x.crc }.inject(:+)
         new_code = false
         if self.config.force_upload || crc.to_s != existing_md5
@@ -72,7 +79,7 @@ module IronWorker
         end
 
         if new_code
-          upload_code(name, zip_filename, 'runner.rb', :runtime=>'ruby')
+          upload_code(name, zip_filename, 'runner.rb', :runtime => 'ruby')
         end
 
       rescue Exception => ex
@@ -332,9 +339,9 @@ end
 
       end
       #puts 'funner.rb=' + tmp_file
-      merge['runner.rb'] = {:path=>tmp_file}
+      merge['runner.rb'] = {:path => tmp_file}
       #puts 'filename=' + filename
-      merge[File.basename(filename)] = {:path=>filename}
+      merge[File.basename(filename)] = {:path => filename}
       #puts "merge before uniq! " + merge.inspect      
       # puts "merge after uniq! " + merge.inspect
 
@@ -345,7 +352,7 @@ end
       File.delete(fname2) if File.exist?(fname2)
       #merging all gems and deps
       merged_gems.merge!(gems_dependencies)
-      Zip::File.open(fname2, 'w') do |f|
+      ZIPCLZ.open(fname2, 'w') do |f|
         if merged_gems && merged_gems.size > 0
           merged_gems.each_pair do |k, gem|
             next unless gem[:merge]
@@ -364,10 +371,10 @@ end
               Dir.glob(paths_to_use).each do |file|
                 # todo: could check if directory and it not lib, skip it
                 #IronWorker.logger.debug 'file for gem=' + file.inspect
-#                puts 'gem2=' + gem.inspect
+                #                puts 'gem2=' + gem.inspect
                 zdest = "gems/#{gem[:name]}/#{file.sub(path+'/', '')}"
 #                puts 'gem file=' + file.to_s
-                #IronWorker.logger.debug 'zip dest=' + zdest
+#IronWorker.logger.debug 'zip dest=' + zdest
                 f.add(zdest, file)
               end
             else
@@ -424,7 +431,7 @@ end
     def package_code(files)
       fname2 = "package.zip"
       File.delete(fname2) if File.exist?(fname2)
-      Zip::File.open(fname2, 'w') do |f|
+      ZIPCLZ.open(fname2, 'w') do |f|
         files.each do |file|
           f.add(file, file)
         end
@@ -437,10 +444,10 @@ end
     def upload_code(name, package_file, exec_file, options={})
       IronWorker.logger.info 'file size to upload: ' + File.size(package_file).to_s
       options = {
-          "name"=>name,
-          "standalone"=>true,
-          "runtime"=>options[:runtime] || "ruby",
-          "file_name"=> exec_file # File.basename(filename)
+          "name" => name,
+          "standalone" => true,
+          "runtime" => options[:runtime] || "ruby",
+          "file_name" => exec_file # File.basename(filename)
       }
       #puts 'options for upload=' + options.inspect
       IronWorker.logger.info "Uploading now..."
@@ -608,19 +615,19 @@ end
 
     def log(task_id, options={})
       data = options
-      ret = get("#{project_url_prefix(get_project_id(options))}tasks/#{task_id}/log", data, :parse=>false)
+      ret = get("#{project_url_prefix(get_project_id(options))}tasks/#{task_id}/log", data, :parse => false)
       ret
     end
 
 
     def status(task_id, options={})
-      data = {"task_id"=>task_id}
+      data = {"task_id" => task_id}
       ret = get("#{project_url_prefix(get_project_id(options))}tasks/#{task_id}", data)
       ret
     end
 
     def schedule_status(schedule_id, options={})
-      data = {"schedule_id"=>schedule_id}
+      data = {"schedule_id" => schedule_id}
       ret = get("#{project_url_prefix(get_project_id(options))}schedules/#{schedule_id}", data)
       ret
     end
