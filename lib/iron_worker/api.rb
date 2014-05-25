@@ -166,7 +166,15 @@ module IronWorker
           logger.debug 'body=' + json
           req_hash = common_req_hash
           req_hash[:body] = json
-          response = @uber_client.post(url, req_hash)
+          begin
+            response = @uber_client.post(url, req_hash)
+          rescue Rest::Wrappers::TyphoeusTimeoutError => ex
+            retries ||= 0
+            retries += 1
+            logger.debug "Timed out retrying... #{retries}"
+            raise ex if retries >= 5
+            retry
+          end
           #response = @http_sess.post(url, json, {"Content-Type" => 'application/json'})
           check_response(response)
           logger.debug 'response: ' + response.inspect
