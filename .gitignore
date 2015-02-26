@@ -2,3 +2,4 @@
 pkg
 test/config.yml
 *.sublime-*
+*.gem
