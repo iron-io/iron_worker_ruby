@@ -6,160 +6,52 @@ To run your code in cloud you need to do three things:
 - **Upload code package**
 - **Queue or schedule tasks** for execution
 
-TODO: Link to dockerworker.
+You can read how to create, package and upload your worker here: http://dev.iron.io/worker/getting_started/
 
-While you can use [REST APIs](http://dev.iron.io/worker/reference/api) for that, it's easier to use an
-IronWorker library created specifically for your language of choice, such as this gem, IronWorkerNG.
+This gem has two parts to it, one to access the [IronWorker API[(http://dev.iron.io/worker/reference/api) and
+the other to help you with your Ruby IronWorker's.
 
 # Preparing Your Environment
 
-You'll need to register at http://iron.io/ and get your credentials to use IronWorker. Each account can have an unlimited number of projects, so take advantage of it by creating separate projects for development, testing and production. Each project is identified by a unique project ID and requires your access token before it will perform any action, like uploading or queuing workers.
+You'll need to register at http://iron.io/ and get your credentials to use IronWorker. Each account can have an unlimited number
+ of projects, so take advantage of it by creating separate projects for development, testing and production. 
+ Each project is identified by a unique project ID and requires your access token before it will perform any action, 
+ like uploading or queuing workers.
 
-Also, you'll need a Ruby 1.9 interpreter and the IronWorker gem. Install it using following command.
+Install using the following command.
 
 ```sh
 gem install iron_worker
 ```
 
+# IronWorker Helper Functions
 
-## Queue Up a Task for your Worker
-
-TODO: Drop this, should use new cli tool for queueing.
-
-You can quicky queue up a task for your worker from the command line using:
-
-    iron_worker queue hello
-
-Use the `-p` parameter to pass in a payload:
-
-    iron_worker queue hello -p "{\"hi\": \"world\"}"
-
-Use the `--wait` parameter to queue a task, wait for it to complete and print the log.
-
-    iron_worker queue hello -p "{\"hi\": \"world\"}" --wait
-
-### Queue up a task from code
-
-Most commonly you'll be queuing up tasks from code though, so you can do this:
+These functions will help you read in worker payloads and things for when your worker is running. To use these functions
+simple require this gem in your worker and then use the helper functions `IronWorker.payload`, `IronWorker.config` and 
+`IronWorker.id`. For example, this is a complete IronWorker script:
 
 ```ruby
-require "iron_worker_ng"
-client = IronWorkerNG::Client.new
-100.times do
-   client.tasks.create("hello", "foo"=>"bar")
-end
+require 'iron_worker'
+
+puts "Here is the payload: #{IronWorker.payload}"
+puts "Here is the config: #{IronWorker.config}"
 ```
 
-### Setting Task Priority
+# The IronWorker API
 
-TODO: Drop this, use new cli tool
-
-You can specify priority of the task using `--priority` parameter:
-
-```ruby
-iron_worker queue hello --priority 0 # default value, lowest priority
-iron_worker queue hello --priority 1 --label 'medium priority task' # medium priority
-```
-
-Value of priority parameter means the priority queue to run the task in. Valid values are 0, 1, and 2. 0 is the default.
-
-From code you can set the priority like it done in snippet below:
-
-```ruby
-client.tasks.create("hello", some_params, priority: 2) # highest priority
-```
-
-### Setting additional Options
-
-
-You can specify not only priority:
-
-  - **priority**: Setting the priority of your job. Valid values are 0, 1, and 2. The default is 0.
-  - **timeout**: The maximum runtime of your task in seconds. No task can exceed 3600 seconds (60 minutes). The default is 3600 but can be set to a shorter duration.
-  - **delay**: The number of seconds to delay before actually queuing the task. Default is 0.
-  - **label**: Optional text label for your task.
-  - **cluster**: cluster name ex: "high-mem" or "dedicated". If not set default is set to "default" which is the public IronWorker cluster.
-
-## Get task status
-
-
-TODO: Drop, use new cli
-
-When you call `iron_worker queue X`, you'll see the task ID in the output which you can use to get the status.
-
-    iron_worker info task 5032f7360a4681382838e082
-
-## Get task log
-
-
-TODO: Drop, use new cli
-
-Similar to getting status, get the task ID in the queue command output, then:
-
-    iron_worker log 5032f7360a4681382838e082 --wait
-
-## Retry a Task
-
-
-TODO: Drop, use new cli
-
-You can retry task by id using same payload and options:
-
-    iron_worker retry 5032f7360a4681382838e082
-
-or
-```ruby
-client.tasks.retry('5032f7360a4681382838e082', :delay => 10)
-
-## Pause or Resume task processing
-
-
-TODO: Drop, use new cli
-
-You can temporarily pause or resume queued and scheduled tasks processing by code name:
-
-    iron_worker pause hello
-
-    iron_worker resume hello
-
-or by code:
-Pause or resume for the code package specified by `code_id`.
-
-```ruby
-response = client.codes.pause_task_queue('1234567890')
-response = client.codes.resume_task_queue('1234567890')
-```
-
-
-### Debugging
-
-To get a bunch of extra output to debug things, turn it on using:
-
-    IronCore::Logger.logger.level = ::Logger::DEBUG
-
-
-# Queue Up Tasks for Your Worker
-
-Now that the code is uploaded, we can create/queue up tasks. You can call this over and over
-for as many tasks as you want.
-
-```ruby
-client.tasks.create('MyWorker', {:client => 'Joe'})
-```
-
-
-# The Rest of the IronWorker API
+This client will enable you to use the IronWorker API in Ruby. 
+Full API documentation is here: http://dev.iron.io/worker/reference/api/
 
 ## IronWorker::Client
 
-You can use the `IronWorkerNG::Client` class to upload code packages, queue tasks, create schedules, and more.
+You can use the `IronWorker::Client` class to upload code packages, queue tasks, create schedules, and more.
 
 ### initialize(options = {})
 
 Create a client object used for all your interactions with the IronWorker cloud.
 
 ```ruby
-client = IronWorkerNG::Client.new(:token => 'IRON_IO_TOKEN', :project_id => 'IRON_IO_PROJECT_ID')
+client = IronWorker::Client.new(:token => 'IRON_IO_TOKEN', :project_id => 'IRON_IO_PROJECT_ID')
 ```
 
 ### codes.list(options = {})
@@ -182,7 +74,7 @@ puts client.codes.get('1234567890').name
 
 ### codes.create(code)
 
-Upload an `IronWorkerNG::Code::Ruby` object to the IronWorker cloud.
+Upload an `IronWorker::Code::Ruby` object to the IronWorker cloud.
 
 ```ruby
 client.codes.create(code)
