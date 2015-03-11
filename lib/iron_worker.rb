@@ -1,58 +1,21 @@
-puts "WARNING: iron_worker gem is deprecated. Please use iron_worker_ng gem, more info at https://github.com/iron-io/iron_worker_ruby_ng"
+require 'json'
 
-require_relative 'iron_worker/utils'
-require_relative 'iron_worker/service'
-require_relative 'iron_worker/base'
-require_relative 'iron_worker/config'
-require_relative 'iron_worker/used_in_worker'
-
-module IronWorker
-  @@logger = Logger.new(STDOUT)
-  @@logger.level = Logger::INFO
-
-
-  class << self
-    attr_accessor :config,
-                  :service
-
-    def configure()
-      yield(config)
-      if config && config.token
-        IronWorker.service ||= Service.new(config.token, :config=>config)
-      else
-        @@logger.warn "No token specified in configure, be sure to set it!"
-      end
+if (not ''.respond_to?(:start_with?)) or (not ''.respond_to?(:end_with?))
+  class ::String
+    def start_with?(prefix)
+      prefix = prefix.to_s
+      self[0, prefix.length] == prefix
     end
 
-    def config
-      @config ||= Config.new
-    end
-
-    def logger
-      @@logger
-    end
-
-    def api_version
-      2
-    end
-
-    def is_local?
-      !is_remote?
-    end
-
-    def is_remote?
-      false
+    def end_with?(suffix)
+      suffix = suffix.to_s
+      self[-suffix.length, suffix.length] == suffix
     end
   end
-
 end
 
-if defined?(Rails)
-#  puts 'Rails=' + Rails.inspect
-#  puts 'vers=' + Rails::VERSION::MAJOR.inspect
-  if Rails::VERSION::MAJOR == 2
-    require_relative 'iron_worker/rails2_init.rb'
-  else
-    require_relative 'iron_worker/railtie'
-  end
-end
+require 'iron_worker/version'
+require 'iron_worker/api_client'
+require 'iron_worker/client'
+require 'iron_worker/worker_helper'
+
