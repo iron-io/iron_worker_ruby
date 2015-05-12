@@ -133,6 +133,17 @@ task = client.tasks.create('MyWorker', {:client => 'Joe'}, {:delay => 180})
 puts task.id
 ```
 
+### tasks.bulk_create(code_name, array_of_params = [], options = {})
+
+Queue more than 1 tasks in a single api call for the code package specified by `code_name`, passing an array of params/payloads and returning a tasks object with the ids of each task queued.
+Visit http://dev.iron.io/worker/reference/api/#queue_a_task for more information about the available options.
+
+```ruby
+task_ids = client.tasks.bulk_create('hello_ruby', [{:hello => "world"}, {:hello => "world"}, {:hello => "world"}], {:cluster => "mem1"} )
+puts tasks_ids
+# => #<OpenStruct tasks=[{"id"=>"54cc11b8855dc73d9209ce0d"}, {"id"=>"54cc11b8855dc73d9209ce0e"}, {"id"=>"54cc11b8855dc73d9209ce0f"}}], msg="Queued up">
+```
+
 ### tasks.cancel(task_id)
 
 Cancel the task specified by `task_id`.
@@ -210,8 +221,6 @@ puts schedule.id
   - **priority**: Setting the priority of your job. Valid values are 0, 1, and 2. The default is 0. Higher values means tasks spend less time in the queue once they come off the schedule.
   - **start_at**: The time the scheduled task should first be run.
   - **timeout**: The maximum runtime of your task in seconds. No task can exceed 3600 seconds (60 minutes). The default is 3600 but can be set to a shorter duration.
-  - **delay**: The number of seconds to delay before scheduling the tasks. Default is 0.
-  - **task_delay**: The number of seconds to delay before actually queuing the task. Default is 0.
   - **label**: Optional label for adding custom labels to scheduled tasks.
   - **cluster**: cluster name ex: "high-mem" or "dedicated".  This is a premium feature for customers to have access to more powerful or custom built worker solutions. Dedicated worker clusters exist for users who want to reserve a set number of workers just for their queued tasks. If not set default is set to  "default" which is the public IronWorker cluster.
 
