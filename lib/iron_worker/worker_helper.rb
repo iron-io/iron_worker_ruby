@@ -13,12 +13,23 @@ module IronWorker
 
   def self.load
     return if @@loaded
+
     0.upto($*.length - 2) do |i|
       @@args[:root] = $*[i + 1] if $*[i] == '-d'
       @@args[:payload_file] = $*[i + 1] if $*[i] == '-payload'
       @@args[:config_file] = $*[i + 1] if $*[i] == '-config'
       @@args[:task_id] = $*[i + 1] if $*[i] == '-id'
     end
+
+    # New way is ENV vars, so check those too
+    # TASK_ID
+    # PAYLOAD_FILE
+    # TASK_DIR
+    # CONFIG_FILE
+    @@args[:task_id] = ENV['TASK_ID'] if ENV['TASK_ID']
+    @@args[:payload_file] = ENV['PAYLOAD_FILE'] if ENV['PAYLOAD_FILE']
+    @@args[:config_file] = ENV['CONFIG_FILE'] if ENV['CONFIG_FILE']
+    @@args[:root] = ENV['TASK_DIR'] if ENV['TASK_DIR']
 
     # puts "args: #{@@args.inspect}"
 
@@ -67,6 +78,5 @@ module IronWorker
   def self.args
     return @@args
   end
-
 
 end
