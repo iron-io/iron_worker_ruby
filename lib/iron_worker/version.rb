@@ -1,5 +1,5 @@
 module IronWorker
-  VERSION = "3.2.0"
+  VERSION = "3.2.1"
 
   def self.version
     VERSION
@@ -9,4 +9,3 @@ module IronWorker
     'iron_worker_ruby_-' + IronWorker.version + ' (iron_core_ruby-' + IronCore.version + ')'
   end
 end
-
