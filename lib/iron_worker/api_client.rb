@@ -14,19 +14,23 @@ module IronWorker
           :user_agent => IronWorker.full_version
       }
 
-      super('iron', 'worker', options, default_options, [:project_id, :token, :api_version])
+      super('iron', 'worker', options, default_options, [:project_id, :token, :jwt, :api_version])
 
       IronCore::Logger.debug 'IronWorker', "nhp.proxy: #{rest.wrapper.http.proxy_uri}" if defined? Net::HTTP::Persistent
       IronCore::Logger.debug 'IronWorker', "RestClient.proxy: #{RestClient.proxy}" if defined? RestClient
       IronCore::Logger.debug 'IronWorker', "InternalClient.proxy: #{Rest::InternalClient.proxy}" if defined? Rest::InternalClient
 
-      IronCore::Logger.error 'IronWorker', "Token is not set", IronCore::Error if @token.nil?
+      IronCore::Logger.error 'IronWorker', "Token is not set", IronCore::Error if @token.nil? && @jwt.nil?
 
       check_id(@project_id, 'project_id')
     end
 
     def headers
-      super.merge({'Authorization' => "OAuth #{@token}"})
+      if !@jwt.nil?
+        super.merge({'Authorization' => "JWT #{@token}"})
+      else
+        super.merge({'Authorization' => "OAuth #{@token}"})
+      end
     end
 
     def base_url
