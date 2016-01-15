@@ -8,7 +8,7 @@ To run your code in cloud you need to do three things:
 
 You can read how to create, package and upload your worker here: http://dev.iron.io/worker/getting_started/
 
-This gem has two parts to it, one to access the [IronWorker API[(http://dev.iron.io/worker/reference/api) and
+This gem has two parts to it, one to access the [IronWorker API](http://dev.iron.io/worker/reference/api) and
 the other to help you with your Ruby IronWorker's.
 
 # Preparing Your Environment
