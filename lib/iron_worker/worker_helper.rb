@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # This could be a gem to help worker users with common functions like getting config and payload.
 require 'json'
 
@@ -34,8 +35,7 @@ module IronWorker
     # puts "args: #{@@args.inspect}"
 
     if args[:payload_file]
-      @@payload = File.read(@@args[:payload_file])
-
+      @@payload = File.open(@@args[:payload_file], "r:UTF-8", &:read)
       begin
         @@payload = JSON.parse(@@payload)
       rescue => ex
