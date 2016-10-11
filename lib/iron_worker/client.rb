@@ -96,6 +96,16 @@ module IronWorker
       OpenStruct.new(c)
     end
 
+    # For registering docker images: http://dev.iron.io/worker/reference/api/#upload_or_update_a_code_package
+    # Just need name and options[:image] = x
+    def codes_register(name, options={})
+      IronCore::Logger.debug 'IronWorker', "Calling codes.register with code='#{code.to_s}' and options='#{options.to_s}'"
+
+      res = @api.codes_register(name, options)
+      OpenStruct.new(res)
+    end
+
+    # TODO: we should remove all this, legecy stuff. 
     def codes_create(code, options = {})
       IronCore::Logger.debug 'IronWorker', "Calling codes.create with code='#{code.to_s}' and options='#{options.to_s}'"
 

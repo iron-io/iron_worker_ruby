@@ -50,6 +50,10 @@ module IronWorker
       parse_response(get("projects/#{@project_id}/codes/#{id}"))
     end
 
+    def codes_register(name, options) 
+      parse_response(post("projects/#{@project_id}/codes", options))
+    end
+
     def codes_create(name, file, runtime, runner, options)
       parse_response(post_file("projects/#{@project_id}/codes", :file, File.new(file, 'rb'), :data, {:name => name, :runtime => runtime, :file_name => runner}.merge(options)))
     end
