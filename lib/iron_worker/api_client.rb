@@ -16,7 +16,7 @@ module IronWorker
 
       super('iron', 'worker', options, default_options, [:project_id, :token, :jwt, :api_version])
 
-      IronCore::Logger.debug 'IronWorker', "nhp.proxy: #{rest.wrapper.http.proxy_uri}" if defined? Net::HTTP::Persistent
+      #IronCore::Logger.debug 'IronWorker', "nhp.proxy: #{rest.wrapper.http.proxy_uri}" if defined? Net::HTTP::Persistent
       IronCore::Logger.debug 'IronWorker', "RestClient.proxy: #{RestClient.proxy}" if defined? RestClient
       IronCore::Logger.debug 'IronWorker', "InternalClient.proxy: #{Rest::InternalClient.proxy}" if defined? Rest::InternalClient
 
