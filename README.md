@@ -13,12 +13,12 @@ the other to help you with your Ruby IronWorker's.
 
 # Preparing Your Environment
 
-You'll need to register at http://iron.io/ and get your credentials to use IronWorker. Each account can have an unlimited number
+You'll need to register [here](https://hud-e.iron.io/signup) and get your credentials to use IronWorker. Each account can have an unlimited number
  of projects, so take advantage of it by creating separate projects for development, testing and production. 
  Each project is identified by a unique project ID and requires your access token before it will perform any action, 
  like uploading or queuing workers.
 
-Install using the following command.
+Install using the following command:
 
 ```sh
 gem install iron_worker
